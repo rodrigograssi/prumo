@@ -1,0 +1,187 @@
+@page "/usuarios"
+@inject IUsuarioService UsuarioService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Gerenciar Usuários - PesquisaX</PageTitle>
+
+<AuthGuard>
+<MudContainer MaxWidth="MaxWidth.Large">
+    <div class="d-flex align-center justify-space-between mb-4">
+        <MudText Typo="Typo.h4">Gerenciar Usuários</MudText>
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   StartIcon="@Icons.Material.Filled.PersonAdd"
+                   OnClick="AbrirDialogNovoUsuario">
+            Novo Usuário
+        </MudButton>
+    </div>
+
+    <MudCard>
+        <MudCardContent>
+            @if (_carregando)
+            {
+                <div class="d-flex justify-content-center pa-4">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                </div>
+            }
+            else
+            {
+                <MudTable Items="@_usuarios" Hover="true" Striped="true" Loading="_carregando">
+                    <HeaderContent>
+                        <MudTh>Nome</MudTh>
+                        <MudTh>Email</MudTh>
+                        <MudTh>Data de Criação</MudTh>
+                        <MudTh Style="text-align:center">Ações</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Nome">@context.Nome</MudTd>
+                        <MudTd DataLabel="Email">@context.Email</MudTd>
+                        <MudTd DataLabel="Data de Criação">@context.DataCriacao.ToString("dd/MM/yyyy HH:mm")</MudTd>
+                        <MudTd DataLabel="Ações" Style="text-align:center">
+                            <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                                <MudButton StartIcon="@Icons.Material.Filled.Edit"
+                                          Color="Color.Primary"
+                                          OnClick="() => EditarUsuario(context)">
+                                    Editar
+                                </MudButton>
+                                <MudButton StartIcon="@Icons.Material.Filled.VpnKey"
+                                          Color="Color.Secondary"
+                                          OnClick="() => ResetarSenha(context)">
+                                    Resetar Senha
+                                </MudButton>
+                                <MudButton StartIcon="@Icons.Material.Filled.Delete"
+                                          Color="Color.Error"
+                                          OnClick="() => ExcluirUsuario(context)">
+                                    Excluir
+                                </MudButton>
+                            </MudButtonGroup>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+
+                @if (!_usuarios.Any())
+                {
+                    <div class="d-flex justify-content-center pa-8">
+                        <MudText Typo="Typo.body1" Color="Color.Secondary">
+                            Nenhum usuário encontrado
+                        </MudText>
+                    </div>
+                }
+            }
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
+</AuthGuard>
+
+@code {
+    private List<Usuario> _usuarios = new();
+    private bool _carregando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarUsuarios();
+    }
+
+    private async Task CarregarUsuarios()
+    {
+        _carregando = true;
+        try
+        {
+            _usuarios = await UsuarioService.ObterUsuariosAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao carregar usuários: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private async Task AbrirDialogNovoUsuario()
+    {
+        var parametros = new DialogParameters { };
+        var opcoes = new DialogOptions 
+        { 
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+        };
+
+        var dialog = await DialogService.ShowAsync<DialogNovoUsuario>("Novo Usuário", parametros, opcoes);
+        var resultado = await dialog.Result;
+
+        if (resultado != null && !resultado.Canceled)
+        {
+            await CarregarUsuarios();
+        }
+    }
+
+    private async Task EditarUsuario(Usuario usuario)
+    {
+        var parametros = new DialogParameters 
+        { 
+            ["Usuario"] = usuario 
+        };
+        var opcoes = new DialogOptions 
+        { 
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+        };
+
+        var dialog = await DialogService.ShowAsync<DialogEditarUsuario>("Editar Usuário", parametros, opcoes);
+        var resultado = await dialog.Result;
+
+        if (resultado != null && !resultado.Canceled)
+        {
+            await CarregarUsuarios();
+        }
+    }
+
+    private async Task ResetarSenha(Usuario usuario)
+    {
+        var parametros = new DialogParameters 
+        { 
+            ["Usuario"] = usuario 
+        };
+        var opcoes = new DialogOptions 
+        { 
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = true,
+        };
+
+        var dialog = await DialogService.ShowAsync<DialogResetarSenha>("Resetar Senha", parametros, opcoes);
+        var resultado = await dialog.Result;
+
+        if (resultado != null && !resultado.Canceled)
+        {
+            Snackbar.Add("Senha resetada com sucesso!", Severity.Success);
+        }
+    }
+
+    private async Task ExcluirUsuario(Usuario usuario)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Confirmar Exclusão",
+            $"Tem certeza que deseja excluir o usuário '{usuario.Nome}'? Esta ação não pode ser desfeita.",
+            yesText: "Excluir", cancelText: "Cancelar");
+
+        if (confirmed == true)
+        {
+            try
+            {
+                await UsuarioService.ExcluirUsuarioAsync(usuario.Id);
+                Snackbar.Add("Usuário excluído com sucesso!", Severity.Success);
+                await CarregarUsuarios();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Erro ao excluir usuário: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+}

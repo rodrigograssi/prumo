@@ -60,25 +60,33 @@
                             </MudStack>
                         </MudCardContent>
                         <MudCardActions>
-                            <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
-                                <MudButton StartIcon="Icons.Material.Filled.PlayArrow" Color="Color.Primary"
-                                           OnClick="() => ApplyPesquisa(survey.Id)">
-                                    Aplicar
-                                </MudButton>
-                                <MudButton StartIcon="Icons.Material.Filled.Edit" Color="Color.Secondary"
-                                           OnClick="() => EditPesquisa(survey.Id)">
-                                    Editar
-                                </MudButton>
-                                <MudButton StartIcon="Icons.Material.Filled.Assessment" Color="Color.Info"
-                                           OnClick="() => ViewResultados(survey.Id)"
-                                           Disabled="@(survey.ObterTotalAplicacoes() == 0)">
-                                    Resultados
-                                </MudButton>
-                                <MudButton StartIcon="Icons.Material.Filled.Delete" Color="Color.Error"
-                                           OnClick="() => DeletePesquisa(survey)">
-                                    Excluir
-                                </MudButton>
-                            </MudButtonGroup>
+                            <MudStack Spacing="1">
+                                <MudStack Row Spacing="1">
+                                    <MudButton StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Primary"
+                                               Variant="Variant.Filled" Size="Size.Small" FullWidth="true"
+                                               OnClick="() => ApplyPesquisa(survey.Id)">
+                                        Aplicar
+                                    </MudButton>
+                                    <MudButton StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary"
+                                               Variant="Variant.Outlined" Size="Size.Small" FullWidth="true"
+                                               OnClick="() => EditPesquisa(survey.Id)">
+                                        Editar
+                                    </MudButton>
+                                </MudStack>
+                                <MudStack Row Spacing="1">
+                                    <MudButton StartIcon="@Icons.Material.Filled.Assessment" Color="Color.Info"
+                                               Variant="Variant.Text" Size="Size.Small" FullWidth="true"
+                                               OnClick="() => ViewResultados(survey.Id)"
+                                               Disabled="@(survey.ObterTotalAplicacoes() == 0)">
+                                        Resultados
+                                    </MudButton>
+                                    <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                               Variant="Variant.Text" Size="Size.Small" FullWidth="true"
+                                               OnClick="() => DeletePesquisa(survey)">
+                                        Excluir
+                                    </MudButton>
+                                </MudStack>
+                            </MudStack>
                         </MudCardActions>
                     </MudCard>
                 </MudItem>

@@ -135,7 +135,7 @@ namespace PesquisaX.Infra.Migrations
 
                     b.HasKey("QuestaoId", "ResultadoPessoaId");
 
-                    b.HasIndex("resultado_pessoa_id");
+                    b.HasIndex("ResultadoPessoaId");
 
                     b.ToTable("respostas", null, t =>
                         {
@@ -178,6 +178,45 @@ namespace PesquisaX.Infra.Migrations
                     b.ToTable("resultados_pessoas", (string)null);
                 });
 
+            modelBuilder.Entity("PesquisaX.Shared.Usuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_criacao");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("nome");
+
+                    b.Property<string>("Senha")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("senha");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("ix_usuarios_email");
+
+                    b.ToTable("usuarios", (string)null);
+                });
+
             modelBuilder.Entity("PesquisaX.Shared.Modelos.GrupoQuestao", b =>
                 {
                     b.HasOne("PesquisaX.Shared.Modelos.Pesquisa", null)
@@ -204,8 +243,9 @@ namespace PesquisaX.Infra.Migrations
 
                     b.HasOne("PesquisaX.Shared.Modelos.ResultadoPessoa", null)
                         .WithMany("Respostas")
-                        .HasForeignKey("resultado_pessoa_id")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ResultadoPessoaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("PesquisaX.Shared.Modelos.ResultadoPessoa", b =>

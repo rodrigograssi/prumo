@@ -1,14 +1,21 @@
 {
-  "name": "Sistema de Pesquisas",
+  "name": "PesquisaX - Sistema de Pesquisas",
   "short_name": "PesquisaX",
-  "description": "Sistema para criar e aplicar pesquisas personalizadas com visualizações em gráfico radar",
+  "description": "Sistema completo para criar e aplicar pesquisas personalizadas com visualizações em radar charts",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#594ae2",
-  "orientation": "portrait",
+  "orientation": "any",
   "scope": "/",
+  "prefer_related_applications": false,
   "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "icon-192.png",
       "sizes": "192x192",
@@ -22,6 +29,32 @@
       "purpose": "maskable any"
     }
   ],
-  "categories": ["productivity", "business"],
-  "lang": "pt-BR"
+  "categories": ["productivity", "business", "utilities"],
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "Nova Pesquisa",
+      "short_name": "Nova",
+      "description": "Criar uma nova pesquisa",
+      "url": "/criar-pesquisa",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Minhas Pesquisas",
+      "short_name": "Pesquisas",
+      "description": "Ver todas as pesquisas",
+      "url": "/pesquisas",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Interface principal do PesquisaX"
+    }
+  ]
 }

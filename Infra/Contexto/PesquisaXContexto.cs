@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PesquisaX.Shared.Modelos;
+using PesquisaX.Shared;
 
 namespace PesquisaX.Infra.Contexto;
 
@@ -14,6 +15,7 @@ public class PesquisaXContexto : DbContext
     public DbSet<Questao> Questoes { get; set; } = null!;
     public DbSet<ResultadoPessoa> ResultadosPessoas { get; set; } = null!;
     public DbSet<Resposta> Respostas { get; set; } = null!;
+    public DbSet<Usuario> Usuarios { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -143,12 +145,8 @@ public class PesquisaXContexto : DbContext
         {
             entity.ToTable("respostas");
             
-            // Configurar shadow property para foreign key
-            entity.Property<Guid>("ResultadoPessoaId")
-                .HasColumnName("resultado_pessoa_id");
-            
             // Chave composta: QuestaoId + ResultadoPessoaId
-            entity.HasKey("QuestaoId", "ResultadoPessoaId");
+            entity.HasKey("QuestaoId", "resultado_pessoa_id");
             
             entity.Property(e => e.QuestaoId)
                 .HasColumnName("questao_id");
@@ -166,6 +164,39 @@ public class PesquisaXContexto : DbContext
                 .WithMany()
                 .HasForeignKey(r => r.QuestaoId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuração da entidade Usuario
+        modelBuilder.Entity<Usuario>(entity =>
+        {
+            entity.ToTable("usuarios");
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.Id)
+                .HasColumnName("id");
+                
+            entity.Property(e => e.Nome)
+                .HasColumnName("nome")
+                .HasMaxLength(100)
+                .IsRequired();
+                
+            entity.Property(e => e.Email)
+                .HasColumnName("email")
+                .HasMaxLength(255)
+                .IsRequired();
+                
+            entity.Property(e => e.Senha)
+                .HasColumnName("senha")
+                .IsRequired();
+                
+            entity.Property(e => e.DataCriacao)
+                .HasColumnName("data_criacao")
+                .IsRequired();
+
+            // Índice único para email
+            entity.HasIndex(e => e.Email)
+                .IsUnique()
+                .HasDatabaseName("ix_usuarios_email");
         });
     }
 }

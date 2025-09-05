@@ -44,7 +44,7 @@ else
 
             @foreach (var group in survey.GruposQuestoes)
             {
-                <MudPaper Elevation="1" Class="pa-4 mb-4">
+                <MudPaper Elevation="2" Class="pa-4 mb-4" Style="@($"background: linear-gradient(135deg, #f8f9ff 0%, #e8f5e8 100%); border-left: 4px solid {group.Cor}; box-shadow: 0 2px 8px rgba(0,0,0,0.1);")">
                     <MudStack>
                         <MudStack Row AlignItems="AlignItems.Center">
                             <div style="width: 20px; height: 20px; background-color: @group.Cor; border-radius: 50%; margin-right: 8px;"></div>
@@ -84,7 +84,10 @@ else
                                                  Value="@GetRespostaValue(questionId)" 
                                                  ValueChanged="@(val => SetRespostaValue(questionId, val))"
                                                  Min="0" Max="10" Step="1" 
-                                                 Style="flex-grow: 1;" />
+                                                 Style="flex-grow: 1;" 
+                                                 TickMarks="true"
+                                                 TickMarkLabels="@_labels"
+                                                 />
                                         <MudText Typo="Typo.body2" Style="min-width: 20px;">10</MudText>
                                         <MudPaper Elevation="1" Class="pa-2" Style="min-width: 40px; text-align: center;">
                                             <MudText Typo="Typo.h6" Color="Color.Primary">
@@ -143,6 +146,8 @@ else
     private ResultadoPessoa personResult = new();
     private Dictionary<Guid, int> answers = new();
 
+    readonly string[] _labels = new[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" };
+    
     protected override async Task OnInitializedAsync()
     {
         survey = await ServicoPesquisa.ObterPesquisaPorIdAsync(PesquisaId);

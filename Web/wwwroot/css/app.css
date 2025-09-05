@@ -112,3 +112,77 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* PWA Styles */
+@media (display-mode: standalone) {
+    /* Estilos para quando o app está instalado */
+    body {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    
+    /* Esconder barra de status no iOS */
+    .mud-appbar {
+        padding-top: env(safe-area-inset-top);
+    }
+}
+
+/* Status offline */
+body.offline::before {
+    content: "🔌 Offline";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #ff6b6b;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    z-index: 9999;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+body.offline .mud-main-content {
+    padding-top: 40px;
+}
+
+/* Animação de carregamento PWA */
+.pwa-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #594ae2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    z-index: 10000;
+}
+
+.pwa-loading .logo {
+    width: 120px;
+    height: 120px;
+    background: white;
+    border-radius: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+}
+
+/* Responsividade para PWA */
+@media (max-width: 768px) {
+    .mud-container {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+}

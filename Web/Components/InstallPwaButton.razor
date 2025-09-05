@@ -1,0 +1,72 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+@if (showInstallButton)
+{
+    <MudButton Variant="Variant.Outlined" 
+               Color="Color.Primary" 
+               StartIcon="@Icons.Material.Filled.GetApp"
+               OnClick="InstallApp"
+               Class="install-pwa-btn">
+        Instalar App
+    </MudButton>
+}
+
+@code {
+    private bool showInstallButton = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // Verificar se o browser suporta PWA e se pode ser instalado
+                showInstallButton = await JSRuntime.InvokeAsync<bool>("eval", 
+                    "window.deferredPrompt !== null && window.deferredPrompt !== undefined");
+                StateHasChanged();
+            }
+            catch
+            {
+                // Ignorar erros de JS
+            }
+        }
+    }
+
+    private async Task InstallApp()
+    {
+        try
+        {
+            var result = await JSRuntime.InvokeAsync<object>("eval", @"
+                (async () => {
+                    if (window.deferredPrompt) {
+                        const result = await window.deferredPrompt.prompt();
+                        window.deferredPrompt = null;
+                        return result.outcome === 'accepted';
+                    }
+                    return false;
+                })()
+            ");
+
+            if (result != null && (bool)result)
+            {
+                showInstallButton = false;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao instalar PWA: {ex.Message}");
+        }
+    }
+}
+
+<style>
+    .install-pwa-btn {
+        position: fixed !important;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+</style>
