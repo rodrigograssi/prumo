@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Fundo -->
+  <rect width="32" height="32" rx="6" fill="#1976D2"/>
+  
+  <!-- Gráfico Radar (pentágono) -->
+  <g transform="translate(16,16)">
+    <!-- Linhas do radar -->
+    <g stroke="#ffffff" stroke-width="0.5" fill="none" opacity="0.6">
+      <!-- Círculos concêntricos -->
+      <circle r="2" />
+      <circle r="4" />
+      <circle r="6" />
+      
+      <!-- Linhas radiais -->
+      <line x1="0" y1="0" x2="0" y2="-6" />
+      <line x1="0" y1="0" x2="5.7" y2="-1.85" />
+      <line x1="0" y1="0" x2="3.5" y2="4.85" />
+      <line x1="0" y1="0" x2="-3.5" y2="4.85" />
+      <line x1="0" y1="0" x2="-5.7" y2="-1.85" />
+    </g>
+    
+    <!-- Área preenchida do radar -->
+    <polygon points="0,-4 3.8,-1.24 2.35,3.24 -2.35,3.24 -3.8,-1.24" 
+             fill="#FF6B6B" 
+             fill-opacity="0.7" 
+             stroke="#FF6B6B" 
+             stroke-width="1"/>
+    
+    <!-- Pontos de dados -->
+    <g fill="#ffffff">
+      <circle cx="0" cy="-4" r="0.8"/>
+      <circle cx="3.8" cy="-1.24" r="0.8"/>
+      <circle cx="2.35" cy="3.24" r="0.8"/>
+      <circle cx="-2.35" cy="3.24" r="0.8"/>
+      <circle cx="-3.8" cy="-1.24" r="0.8"/>
+    </g>
+  </g>
+  
+  <!-- Ícone de pesquisa (lupa) no canto -->
+  <g transform="translate(24,8)">
+    <circle r="2.5" fill="none" stroke="#ffffff" stroke-width="1"/>
+    <line x1="4" y1="4" x2="6" y2="6" stroke="#ffffff" stroke-width="1" stroke-linecap="round"/>
+  </g>
+</svg>

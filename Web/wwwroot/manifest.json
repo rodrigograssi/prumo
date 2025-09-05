@@ -1,0 +1,27 @@
+{
+  "name": "Sistema de Pesquisas",
+  "short_name": "PesquisaX",
+  "description": "Sistema para criar e aplicar pesquisas personalizadas com visualizações em gráfico radar",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#594ae2",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["productivity", "business"],
+  "lang": "pt-BR"
+}

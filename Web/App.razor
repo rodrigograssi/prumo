@@ -1,0 +1,81 @@
+﻿@inject IServicoTema ServicoTema
+@implements IDisposable
+
+<MudThemeProvider Theme="@_theme" IsDarkMode="@ServicoTema.EModoEscuro" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Página não encontrada</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <MudContainer>
+                <MudAlert Severity="Severity.Error">
+                    Desculpe, não há nada neste endereço.
+                </MudAlert>
+            </MudContainer>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code {
+    private MudTheme _theme = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ServicoTema.InicializarAsync();
+        ServicoTema.AoMudarTema += StateHasChanged;
+        
+        // Configurar cores personalizadas para o tema
+        _theme = new MudTheme()
+        {
+            PaletteDark = new PaletteDark()
+            {
+                Primary = "#FF6B6B",
+                Secondary = "#4ECDC4", 
+                Tertiary = "#45B7D1",
+                Success = "#96CEB4",
+                Warning = "#FECA57",
+                Error = "#FF6B6B",
+                Info = "#45B7D1",
+                
+                Background = "#121212",
+                BackgroundGray = "#1E1E1E",
+                Surface = "#1E1E1E",
+                
+                AppbarBackground = "#1E1E1E",
+                DrawerBackground = "#121212",
+                
+                TextPrimary = "#FFFFFF",
+                TextSecondary = "#AAAAAA",
+            },
+            PaletteLight = new PaletteLight()
+            {
+                Primary = "#1976D2",
+                Secondary = "#4ECDC4",
+                Tertiary = "#45B7D1", 
+                Success = "#4CAF50",
+                Warning = "#FF9800",
+                Error = "#F44336",
+                Info = "#2196F3",
+                
+                Background = "#FFFFFF",
+                BackgroundGray = "#F5F5F5",
+                Surface = "#FFFFFF",
+                
+                AppbarBackground = "#1976D2",
+                DrawerBackground = "#FFFFFF",
+            }
+        };
+    }
+
+    public void Dispose()
+    {
+        ServicoTema.AoMudarTema -= StateHasChanged;
+    }
+}

@@ -1,0 +1,55 @@
+﻿@inherits LayoutComponentBase
+@inject IServicoTema ServicoTema
+@implements IDisposable
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudSpacer />
+        <MudText Typo="Typo.h6">Sistema de Pesquisas</MudText>
+        <MudSpacer />
+        <MudTooltip Text="@(ServicoTema.EModoEscuro ? "Modo Claro" : "Modo Escuro")">
+            <MudIconButton Icon="@(ServicoTema.EModoEscuro ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
+                         Color="Color.Inherit" 
+                         OnClick="ToggleTheme" />
+        </MudTooltip>
+    </MudAppBar>
+    
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="1" Variant="@DrawerVariant.Temporary" ClipMode="DrawerClipMode.Always">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">Menu</MudText>
+        </MudDrawerHeader>
+        <NavMenu />
+    </MudDrawer>
+    
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    bool _drawerOpen = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ServicoTema.InicializarAsync();
+        ServicoTema.AoMudarTema += StateHasChanged;
+    }
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    async Task ToggleTheme()
+    {
+        await ServicoTema.AlternarTemaAsync();
+    }
+
+    public void Dispose()
+    {
+        ServicoTema.AoMudarTema -= StateHasChanged;
+    }
+}
