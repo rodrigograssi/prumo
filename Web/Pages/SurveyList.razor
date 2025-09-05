@@ -1,0 +1,142 @@
+@page "/pesquisas"
+@inject IServicoPesquisa ServicoPesquisa
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Lista de Pesquisas</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudPaper Elevation="2" Class="pa-4 mb-4">
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h4">Minhas Pesquisas</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="Icons.Material.Filled.Add" 
+                       Href="/criar-pesquisa">
+                Nova Pesquisa
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+
+    @if (surveys == null)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else if (surveys.Count == 0)
+    {
+        <MudPaper Elevation="1" Class="pa-8 text-center">
+            <MudIcon Icon="Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
+            <MudText Typo="Typo.h6" Class="mb-2">Nenhuma pesquisa encontrada</MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+                Crie sua primeira pesquisa para começar
+            </MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="Icons.Material.Filled.Add" 
+                       Href="/criar-pesquisa">
+                Criar Primeira Pesquisa
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var survey in surveys)
+            {
+                <MudItem xs="12" md="6" lg="4">
+                    <MudCard Elevation="2" Class="h-100">
+                        <MudCardContent>
+                            <MudStack>
+                                <MudText Typo="Typo.h6">@survey.Nome</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Criado em: @survey.DataCriacao.ToString("dd/MM/yyyy")
+                                </MudText>
+                                <MudDivider />
+                                <MudStack Row>
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Info">
+                                        @survey.ObterTotalQuestoes() perguntas
+                                    </MudChip>
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Success">
+                                        @survey.ObterTotalAplicacoes() aplicações
+                                    </MudChip>
+                                </MudStack>
+                            </MudStack>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudStack Spacing="1">
+                                <MudStack Row Spacing="1">
+                                    <MudButton StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Primary"
+                                               Variant="Variant.Filled" Size="Size.Small" FullWidth="true"
+                                               OnClick="() => ApplyPesquisa(survey.Id)">
+                                        Aplicar
+                                    </MudButton>
+                                    <MudButton StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary"
+                                               Variant="Variant.Outlined" Size="Size.Small" FullWidth="true"
+                                               OnClick="() => EditPesquisa(survey.Id)">
+                                        Editar
+                                    </MudButton>
+                                </MudStack>
+                                <MudStack Row Spacing="1">
+                                    <MudButton StartIcon="@Icons.Material.Filled.Assessment" Color="Color.Info"
+                                               Variant="Variant.Text" Size="Size.Small" FullWidth="true"
+                                               OnClick="() => ViewResultados(survey.Id)"
+                                               Disabled="@(survey.ObterTotalAplicacoes() == 0)">
+                                        Resultados
+                                    </MudButton>
+                                    <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                               Variant="Variant.Text" Size="Size.Small" FullWidth="true"
+                                               OnClick="() => DeletePesquisa(survey)">
+                                        Excluir
+                                    </MudButton>
+                                </MudStack>
+                            </MudStack>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private List<Pesquisa>? surveys;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPesquisas();
+    }
+
+    private async Task LoadPesquisas()
+    {
+        surveys = await ServicoPesquisa.ObterTodasPesquisasAsync();
+    }
+
+    private void ApplyPesquisa(Guid surveyId)
+    {
+        Navigation.NavigateTo($"/aplicar-pesquisa/{surveyId}");
+    }
+
+    private void EditPesquisa(Guid surveyId)
+    {
+        Navigation.NavigateTo($"/editar-pesquisa/{surveyId}");
+    }
+
+    private void ViewResultados(Guid surveyId)
+    {
+        Navigation.NavigateTo($"/resultados/{surveyId}");
+    }
+
+    private async Task DeletePesquisa(Pesquisa survey)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirmar Exclusão", 
+            $"Tem certeza que deseja excluir a pesquisa '{survey.Nome}'? Esta ação não pode ser desfeita.",
+            yesText:"Excluir", 
+            cancelText:"Cancelar");
+            
+        if (result == true)
+        {
+            await ServicoPesquisa.ExcluirPesquisaAsync(survey.Id);
+            await LoadPesquisas();
+            Snackbar.Add("Pesquisa excluída com sucesso", Severity.Success);
+        }
+    }
+}
+

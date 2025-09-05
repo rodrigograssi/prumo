@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  pesquisax-db:
+    build: .
+    container_name: pesquisax-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=pesquisax
+      - POSTGRES_USER=pesquisax_user
+      - POSTGRES_PASSWORD=pesquisax_2024!
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --auth-local=scram-sha-256
+    ports:
+      - "5432:5432"
+    volumes:
+      - pesquisax_data:/var/lib/postgresql/data
+      - ./logs:/var/log/postgresql
+    networks:
+      - pesquisax-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pesquisax_user -d pesquisax"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  pesquisax_data:
+    driver: local
+
+networks:
+  pesquisax-network:
+    driver: bridge

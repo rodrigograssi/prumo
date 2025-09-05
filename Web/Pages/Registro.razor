@@ -1,0 +1,152 @@
+@page "/registro"
+@using PesquisaX.Shared
+@using MudBlazor
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+
+<PageTitle>Registrar - PesquisaX</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudCard>
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-3" />
+                <MudText Typo="Typo.h5">Criar Nova Conta</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        
+        <MudForm @ref="form">
+            <MudCardContent>
+                <MudTextField @bind-Value="registroRequest.Nome"
+                             Label="Nome Completo"
+                             Variant="Variant.Outlined"
+                             Required="true"
+                             RequiredError="Nome é obrigatório"
+                             Counter="100"
+                             MaxLength="100"
+                             Class="mb-4" />
+                
+                <MudTextField @bind-Value="registroRequest.Email"
+                             Label="Email"
+                             Variant="Variant.Outlined"
+                             InputType="InputType.Email"
+                             Required="true"
+                             RequiredError="Email é obrigatório"
+                             Validation="@(new EmailAddressAttribute() {ErrorMessage = "Email deve ter um formato válido"})"
+                             Class="mb-4" />
+                
+                <MudTextField @bind-Value="registroRequest.Senha"
+                             Label="Senha"
+                             Variant="Variant.Outlined"
+                             InputType="InputType.Password"
+                             Required="true"
+                             RequiredError="Senha é obrigatória"
+                             Validation="@(new Func<string, string?>(ValidarSenha))"
+                             Class="mb-4" />
+                
+                <MudTextField @bind-Value="registroRequest.ConfirmarSenha"
+                             Label="Confirmar Senha"
+                             Variant="Variant.Outlined"
+                             InputType="InputType.Password"
+                             Required="true"
+                             RequiredError="Confirmação de senha é obrigatória"
+                             Validation="@(new Func<string, string?>(ValidarConfirmacaoSenha))"
+                             Class="mb-4" />
+            </MudCardContent>
+            
+            <MudCardActions Class="pa-4">
+                <MudButton OnClick="RealizarRegistro"
+                          Variant="Variant.Filled"
+                          Color="Color.Primary"
+                          Size="Size.Large"
+                          FullWidth="true"
+                          Disabled="carregando">
+                    @if (carregando)
+                    {
+                        <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small" Indeterminate="true"/>
+                        <span>Criando conta</span>
+                    }
+                    else
+                    {
+                        <span>Criar Conta</span>
+                    }
+                </MudButton>
+            </MudCardActions>
+        </MudForm>
+        
+        <MudCardContent Class="pa-4 pt-0">
+            <MudDivider Class="mb-4" />
+            <MudText Align="Align.Center" Class="mb-2">
+                Já tem uma conta?
+            </MudText>
+            <MudButton Href="/login"
+                      Variant="Variant.Text"
+                      Color="Color.Secondary"
+                      FullWidth="true">
+                Fazer Login
+            </MudButton>
+        </MudCardContent>
+    </MudCard>
+</MudContainer>
+
+@code {
+    private MudForm form = new();
+    private RegistroRequest registroRequest = new();
+    private bool carregando = false;
+
+    private async Task RealizarRegistro()
+    {
+        await form.Validate();
+        if (!form.IsValid) return;
+
+        carregando = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await AuthService.RegistroAsync(registroRequest);
+            
+            if (response.Sucesso)
+            {
+                Snackbar.Add(response.Mensagem, Severity.Success);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                Snackbar.Add(response.Mensagem, Severity.Error);
+            }
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Erro ao criar conta. Tente novamente.", Severity.Error);
+        }
+        finally
+        {
+            carregando = false;
+            StateHasChanged();
+        }
+    }
+
+    private string? ValidarSenha(string senha)
+    {
+        if (string.IsNullOrWhiteSpace(senha))
+            return "Senha é obrigatória";
+        
+        if (senha.Length < 6)
+            return "Senha deve ter no mínimo 6 caracteres";
+        
+        return null;
+    }
+
+    private string? ValidarConfirmacaoSenha(string confirmacao)
+    {
+        if (string.IsNullOrWhiteSpace(confirmacao))
+            return "Confirmação de senha é obrigatória";
+        
+        if (confirmacao != registroRequest.Senha)
+            return "Senhas não conferem";
+        
+        return null;
+    }
+}

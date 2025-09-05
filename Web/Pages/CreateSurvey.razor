@@ -1,0 +1,203 @@
+@page "/criar-pesquisa"
+@page "/editar-pesquisa/{PesquisaId:guid}"
+@inject IServicoPesquisa ServicoPesquisa
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@(IsEditing ? "Editar Pesquisa" : "Criar Nova Pesquisa")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudPaper Elevation="2" Class="pa-4 mb-4">
+        <MudText Typo="Typo.h4">@(IsEditing ? "Editar Pesquisa" : "Criar Nova Pesquisa")</MudText>
+    </MudPaper>
+
+    <MudForm @ref="form" Model="survey" @bind-IsValid="formIsValid">
+        <MudPaper Elevation="1" Class="pa-4 mb-4">
+            <MudTextField T="string" Label="Nome da Pesquisa" 
+                          @bind-Value="survey.Nome" 
+                          Required="true"
+                          Variant="Variant.Outlined" 
+                          Class="mb-4" />
+        </MudPaper>
+
+        @foreach (var group in survey.GruposQuestoes)
+        {
+            <MudPaper Elevation="2" Class="pa-4 mb-4" Style="background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%); border-left: 4px solid #2196f3;">
+                <MudStack>
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">Grupo de Perguntas</MudText>
+                        <MudIconButton Icon="Icons.Material.Filled.Delete" 
+                                     Color="Color.Error" 
+                                     Size="Size.Small"
+                                     OnClick="() => RemoveGroup(group)" />
+                    </MudStack>
+                    
+                    <MudGrid>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Nome do Grupo" 
+                                        @bind-Value="group.Nome" 
+                                        Required="true"
+                                        Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Categoria (para gráfico)" 
+                                        @bind-Value="group.Categoria" 
+                                        Required="true"
+                                        Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Cor (Hex)" 
+                                        @bind-Value="group.Cor" 
+                                        Variant="Variant.Outlined"
+                                        Placeholder="#FF6B6B" />
+                        </MudItem>
+                    </MudGrid>
+
+                    <MudDivider Class="my-2" />
+                    
+                    <MudText Typo="Typo.subtitle1">Perguntas:</MudText>
+                    
+                    @foreach (var question in group.Questoes)
+                    {
+                        <MudPaper Elevation="0" Class="pa-3 mb-2" Style="border: 1px dashed #ddd;">
+                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudTextField T="string" Label="Pergunta" 
+                                            @bind-Value="question.Texto" 
+                                            Required="true"
+                                            Variant="Variant.Text" 
+                                            Style="flex-grow: 1; margin-right: 16px;" />
+                                            
+                                <MudCheckBox T="bool" Label="Escala Invertida (10 = ruim)" 
+                                           @bind-Value="question.EInvertida" 
+                                           Color="Color.Primary" />
+                                           
+                                <MudIconButton Icon="Icons.Material.Filled.Delete" 
+                                             Color="Color.Error" 
+                                             Size="Size.Small"
+                                             OnClick="() => RemoveQuestao(group, question)" />
+                            </MudStack>
+                        </MudPaper>
+                    }
+                    
+                    <MudButton Variant="Variant.Text" 
+                             Color="Color.Primary" 
+                             StartIcon="Icons.Material.Filled.Add"
+                             OnClick="() => AddQuestao(group)">
+                        Adicionar Pergunta
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        }
+
+        <MudPaper Elevation="1" Class="pa-4 mb-4 text-center">
+            <MudButton Variant="Variant.Outlined" 
+                     Color="Color.Success" 
+                     StartIcon="Icons.Material.Filled.Add" 
+                     OnClick="AddGroup">
+                Adicionar Grupo de Perguntas
+            </MudButton>
+        </MudPaper>
+
+        <MudPaper Elevation="1" Class="pa-4">
+            <MudStack Row Justify="Justify.SpaceBetween">
+                <MudButton Variant="Variant.Text" 
+                         StartIcon="Icons.Material.Filled.ArrowBack"
+                         OnClick="GoBack">
+                    Voltar
+                </MudButton>
+                
+                <MudButtonGroup>
+                    <MudButton Variant="Variant.Filled" 
+                             Color="Color.Primary" 
+                             Disabled="@(!formIsValid || survey.GruposQuestoes.Count == 0)"
+                             OnClick="SavePesquisa">
+                        @(IsEditing ? "Salvar Alterações" : "Criar Pesquisa")
+                    </MudButton>
+                </MudButtonGroup>
+            </MudStack>
+        </MudPaper>
+    </MudForm>
+</MudContainer>
+
+@code {
+    [Parameter] public Guid? PesquisaId { get; set; }
+    
+    private MudForm form = new();
+    private bool formIsValid;
+    private Pesquisa survey = new();
+    
+    private bool IsEditing => PesquisaId.HasValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEditing && PesquisaId.HasValue)
+        {
+            var existingPesquisa = await ServicoPesquisa.ObterPesquisaPorIdAsync(PesquisaId.Value);
+            if (existingPesquisa != null)
+                survey = existingPesquisa;
+            else
+                Navigation.NavigateTo("/pesquisas");
+        }
+        
+        // Garantir que há pelo menos um grupo
+        if (survey.GruposQuestoes.Count == 0)
+            AddGroup();
+    }
+
+    private void AddGroup()
+    {
+        survey.GruposQuestoes.Add(new GrupoQuestao 
+        { 
+            Nome = "",
+            Categoria = "",
+            Cor = "#FF6B6B"
+        });
+    }
+
+    private void RemoveGroup(GrupoQuestao group)
+    {
+        if (survey.GruposQuestoes.Count > 1)
+            survey.GruposQuestoes.Remove(group);
+    }
+
+    private void AddQuestao(GrupoQuestao group)
+    {
+        group.Questoes.Add(new Questao 
+        { 
+            Texto = "",
+            EInvertida = false 
+        });
+    }
+
+    private void RemoveQuestao(GrupoQuestao group, Questao question)
+    {
+        group.Questoes.Remove(question);
+    }
+
+    private async Task SavePesquisa()
+    {
+        // Validar se todos os grupos têm pelo menos uma pergunta
+        var emptyGroups = survey.GruposQuestoes.Where(g => g.Questoes.Count == 0).ToList();
+        if (emptyGroups.Any())
+        {
+            Snackbar.Add("Todos os grupos devem ter pelo menos uma pergunta", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            await ServicoPesquisa.SalvarPesquisaAsync(survey);
+            Snackbar.Add(IsEditing ? "Pesquisa atualizada com sucesso" : "Pesquisa criada com sucesso", Severity.Success);
+            Navigation.NavigateTo("/pesquisas");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao salvar pesquisa: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/pesquisas");
+    }
+}

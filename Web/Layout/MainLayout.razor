@@ -1,0 +1,114 @@
+﻿@using PesquisaX.Shared
+@using PesquisaX.Web.Services
+@inherits LayoutComponentBase
+@inject IServicoTema ServicoTema
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<MudDialogProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudSpacer />
+        <MudText Typo="Typo.h6">Sistema de Pesquisas</MudText>
+        <MudSpacer />
+        <MudTooltip Text="@(ServicoTema.EModoEscuro ? "Modo Claro" : "Modo Escuro")">
+            <MudIconButton Icon="@(ServicoTema.EModoEscuro ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
+                         Color="Color.Inherit" 
+                         OnClick="ToggleTheme" />
+        </MudTooltip>
+        
+        @if (_estaAutenticado && _usuarioAtual != null)
+        {
+            <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit">
+                <MudMenuItem OnClick="@(() => Navigation.NavigateTo("/perfil"))">
+                    <div style="display: flex; align-items: center;">
+                        <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" />
+                        @_usuarioAtual.Nome
+                    </div>
+                </MudMenuItem>
+                <MudDivider />
+                <MudMenuItem OnClick="RealizarLogout">
+                    <div style="display: flex; align-items: center;">
+                        <MudIcon Icon="@Icons.Material.Filled.Logout" Class="mr-2" />
+                        Sair
+                    </div>
+                </MudMenuItem>
+            </MudMenu>
+        }
+        else
+        {
+            <MudButton Href="/login" 
+                      Color="Color.Inherit" 
+                      StartIcon="@Icons.Material.Filled.Login">
+                Entrar
+            </MudButton>
+        }
+    </MudAppBar>
+    
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="1" Variant="@DrawerVariant.Temporary" ClipMode="DrawerClipMode.Always">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">Menu</MudText>
+        </MudDrawerHeader>
+        <NavMenu />
+    </MudDrawer>
+    
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+    
+    <!-- Botão de instalação PWA -->
+    <InstallPwaButton />
+</MudLayout>
+
+@code {
+    bool _drawerOpen = false;
+    bool _estaAutenticado = false;
+    Usuario? _usuarioAtual = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ServicoTema.InicializarAsync();
+        ServicoTema.AoMudarTema += StateHasChanged;
+        
+        // Verificar se o usuário está autenticado
+        await VerificarAutenticacao();
+    }
+
+    private async Task VerificarAutenticacao()
+    {
+        _estaAutenticado = await AuthService.EstaAutenticadoAsync();
+        if (_estaAutenticado)
+        {
+            _usuarioAtual = await AuthService.ObterUsuarioAtualAsync();
+        }
+        StateHasChanged();
+    }
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    async Task ToggleTheme()
+    {
+        await ServicoTema.AlternarTemaAsync();
+    }
+
+    private async Task RealizarLogout()
+    {
+        await AuthService.LogoutAsync();
+        _estaAutenticado = false;
+        _usuarioAtual = null;
+        Navigation.NavigateTo("/");
+    }
+
+    public void Dispose()
+    {
+        ServicoTema.AoMudarTema -= StateHasChanged;
+    }
+}

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/E:\\Desenvolvimento/**)",
+      "Bash(dotnet new:*)",
+      "Bash(dotnet add package:*)",
+      "Bash(cp:*)",
+      "Bash(rm:*)",
+      "Bash(find:*)",
+      "Bash(sed:*)",
+      "Bash(dotnet build)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

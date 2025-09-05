@@ -1,0 +1,120 @@
+@page "/login"
+@using PesquisaX.Shared
+@using MudBlazor
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+
+<PageTitle>Login - PesquisaX</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudCard>
+        <MudCardHeader>
+            <CardHeaderContent>
+                <MudIcon Icon="@Icons.Material.Filled.Login" Class="mr-3" />
+                <MudText Typo="Typo.h5">Entrar no Sistema</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+        
+        <MudForm @ref="form">
+            <MudCardContent>
+                <MudTextField @bind-Value="loginRequest.Email"
+                             Label="Email"
+                             Variant="Variant.Outlined"
+                             InputType="InputType.Email"
+                             Required="true"
+                             RequiredError="Email é obrigatório"
+                             Class="mb-4" />
+                
+                <MudTextField @bind-Value="loginRequest.Senha"
+                             Label="Senha"
+                             Variant="Variant.Outlined"
+                             InputType="InputType.Password"
+                             Required="true"
+                             RequiredError="Senha é obrigatória"
+                             Class="mb-4" />
+            </MudCardContent>
+            
+            <MudCardActions Class="pa-4">
+                <MudButton OnClick="RealizarLogin"
+                          Variant="Variant.Filled"
+                          Color="Color.Primary"
+                          Size="Size.Large"
+                          FullWidth="true"
+                          Disabled="carregando">
+                    @if (carregando)
+                    {
+                        <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small" Indeterminate="true"/>
+                        <span>Entrando</span>
+                    }
+                    else
+                    {
+                        <span>Entrar</span>
+                    }
+                </MudButton>
+            </MudCardActions>
+        </MudForm>
+        
+        @if (_podeRegistrar)
+        {
+            <MudCardContent Class="pa-4 pt-0">
+                <MudDivider Class="mb-4" />
+                <MudText Align="Align.Center" Class="mb-2">
+                    Não tem uma conta?
+                </MudText>
+                <MudButton Href="/registro"
+                          Variant="Variant.Text"
+                          Color="Color.Secondary"
+                          FullWidth="true">
+                    Criar Nova Conta
+                </MudButton>
+            </MudCardContent>
+        }
+    </MudCard>
+</MudContainer>
+
+@code {
+    private MudForm form = new();
+    private LoginRequest loginRequest = new();
+    private bool carregando = false;
+    private bool _podeRegistrar = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Verificar se pode registrar (só se não há usuários)
+        _podeRegistrar = !(await AuthService.ExistemUsuariosAsync());
+    }
+
+    private async Task RealizarLogin()
+    {
+        await form.Validate();
+        if (!form.IsValid) return;
+
+        carregando = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await AuthService.LoginAsync(loginRequest);
+            
+            if (response.Sucesso)
+            {
+                Snackbar.Add(response.Mensagem, Severity.Success);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                Snackbar.Add(response.Mensagem, Severity.Error);
+            }
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Erro ao realizar login. Tente novamente.", Severity.Error);
+        }
+        finally
+        {
+            carregando = false;
+            StateHasChanged();
+        }
+    }
+}

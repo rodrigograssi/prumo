@@ -1,0 +1,108 @@
+@using PesquisaX.Shared
+@using MudBlazor
+@using MudBlazor.Services
+@inject IUsuarioService UsuarioService
+@inject ISnackbar Snackbar
+
+
+<MudDialog>
+    <DialogContent>
+        <MudAlert Severity="Severity.Warning" Class="mb-4">
+            <strong>Resetar senha de:</strong> @Usuario.Nome (@Usuario.Email)
+        </MudAlert>
+        
+        <MudForm @ref="form">
+            <MudTextField @bind-Value="resetRequest.NovaSenha"
+                         Label="Nova Senha"
+                         Variant="Variant.Outlined"
+                         InputType="InputType.Password"
+                         Required="true"
+                         RequiredError="Nova senha é obrigatória"
+                         Validation="@(new Func<string, string?>(ValidarSenha))"
+                         Class="mb-4" />
+            
+            <MudTextField @bind-Value="resetRequest.ConfirmarNovaSenha"
+                         Label="Confirmar Nova Senha"
+                         Variant="Variant.Outlined"
+                         InputType="InputType.Password"
+                         Required="true"
+                         RequiredError="Confirmação de senha é obrigatória"
+                         Validation="@(new Func<string, string?>(ValidarConfirmacaoSenha))"
+                         Class="mb-4" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Color="Color.Secondary" 
+                   Variant="Variant.Filled" 
+                   OnClick="ResetarSenha"
+                   Disabled="carregando">
+            @if (carregando)
+            {
+                <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small" Indeterminate="true"/>
+                <span>Resetando...</span>
+            }
+            else
+            {
+                <span>Resetar Senha</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public Usuario Usuario { get; set; } = null!;
+    
+    private MudForm form = new();
+    private ResetPasswordRequest resetRequest = new();
+    private bool carregando = false;
+
+    private void Cancelar() => MudDialog?.Cancel();
+
+    private async Task ResetarSenha()
+    {
+        await form.Validate();
+        if (!form.IsValid) return;
+
+        carregando = true;
+        StateHasChanged();
+
+        try
+        {
+            await UsuarioService.ResetarSenhaAsync(Usuario.Id, resetRequest);
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao resetar senha: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            carregando = false;
+            StateHasChanged();
+        }
+    }
+
+    private string? ValidarSenha(string senha)
+    {
+        if (string.IsNullOrWhiteSpace(senha))
+            return "Nova senha é obrigatória";
+        
+        if (senha.Length < 6)
+            return "Nova senha deve ter no mínimo 6 caracteres";
+        
+        return null;
+    }
+
+    private string? ValidarConfirmacaoSenha(string confirmacao)
+    {
+        if (string.IsNullOrWhiteSpace(confirmacao))
+            return "Confirmação de senha é obrigatória";
+        
+        if (confirmacao != resetRequest.NovaSenha)
+            return "Senhas não conferem";
+        
+        return null;
+    }
+}

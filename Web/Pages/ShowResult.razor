@@ -1,0 +1,298 @@
+@page "/resultado/{PesquisaId:guid}/{PersonId:guid}"
+@page "/resultados/{PesquisaId:guid}"
+@inject IServicoPesquisa ServicoPesquisa
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@(IsResultView ? $"Resultado - {personResult?.NomePessoa}" : $"Resultados - {survey?.Nome}")</PageTitle>
+
+@if (survey == null)
+{
+    <MudContainer>
+        <MudProgressLinear Indeterminate="true" />
+        <MudText Align="Align.Center" Class="mt-4">Carregando...</MudText>
+    </MudContainer>
+}
+else if (IsResultView && personResult != null)
+{
+    <!-- Visualização Individual do Resultado -->
+    <div style="background: white; min-height: 100vh; padding: 0;">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Style="padding: 24px;">
+            <!-- Cabeçalho para compartilhamento de tela -->
+            <MudPaper Elevation="0" Class="pa-4 mb-6 text-center" Style="border-bottom: 2px solid #1976d2;">
+                <MudText Typo="Typo.h3" Color="Color.Primary" Class="mb-2">
+                    Resultado da Avaliação
+                </MudText>
+                <MudText Typo="Typo.h5" Class="mb-1">@personResult.NomePessoa</MudText>
+                <MudText Typo="Typo.body1" Color="Color.Secondary">
+                    @survey.Nome - @personResult.DataAvaliacao.ToString("dd/MM/yyyy HH:mm")
+                </MudText>
+            </MudPaper>
+
+            <!-- Gráficos lado a lado -->
+            <MudGrid Justify="Justify.Center">
+                <MudItem xs="12" lg="6">
+                    <MudPaper Elevation="2" Class="pa-4">
+                        <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-4" Color="Color.Error">
+                            Situação Atual
+                        </MudText>
+                        <RadarChart Title=""
+                                  Labels="@chartLabels"
+                                  Data="@actualData"
+                                  BorderColor="rgb(244, 67, 54)"
+                                  BackgroundColor="rgba(244, 67, 54, 0.1)"
+                                  ShowLegend="false" />
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" lg="6">
+                    <MudPaper Elevation="2" Class="pa-4">
+                        <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-4" Color="Color.Success">
+                            Situação Desejada
+                        </MudText>
+                        <RadarChart Title=""
+                                  Labels="@chartLabels"
+                                  Data="@desiredData"
+                                  BorderColor="rgb(76, 175, 80)"
+                                  BackgroundColor="rgba(76, 175, 80, 0.1)"
+                                  ShowLegend="false" />
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+            <!-- Detalhes por Grupo -->
+            <MudPaper Elevation="1" Class="pa-4 mt-6">
+                <MudText Typo="Typo.h6" Class="mb-4">Detalhes por Categoria</MudText>
+                <MudGrid>
+                    @foreach (var kvp in groupPercentages)
+                    {
+                        var group = survey.GruposQuestoes.First(g => g.Categoria == kvp.Key);
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudCard Elevation="0" Style="border: 1px solid #e0e0e0;">
+                                <MudCardContent Class="text-center">
+                                    <div style="width: 20px; height: 20px; background-color: @group.Cor; border-radius: 50%; margin: 0 auto 8px;"></div>
+                                    <MudText Typo="Typo.subtitle1">@kvp.Key</MudText>
+                                    <MudText Typo="Typo.h4" Color="Color.Primary">
+                                        @kvp.Value.ToString("0")%
+                                    </MudText>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudPaper>
+
+            <!-- Botões de ação -->
+            <MudPaper Elevation="0" Class="pa-4 mt-6">
+                <MudStack Row Justify="Justify.Center" Spacing="3">
+                    <MudButton Variant="Variant.Text" 
+                             StartIcon="Icons.Material.Filled.ArrowBack"
+                             OnClick="@(() => Navigation.NavigateTo($"/resultados/{PesquisaId}"))">
+                        Ver Todos os Resultados
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" 
+                             Color="Color.Primary"
+                             StartIcon="Icons.Material.Filled.PlayArrow"
+                             OnClick="@(() => Navigation.NavigateTo($"/aplicar-pesquisa/{PesquisaId}"))">
+                        Nova Avaliação
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudContainer>
+    </div>
+}
+else
+{
+    <!-- Lista de Todos os Resultados -->
+    <MudContainer MaxWidth="MaxWidth.Large">
+        <MudPaper Elevation="2" Class="pa-4 mb-4">
+            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h4">Resultados - @survey.Nome</MudText>
+                <MudButton Variant="Variant.Filled" 
+                         Color="Color.Primary" 
+                         StartIcon="Icons.Material.Filled.PlayArrow"
+                         Href="@($"/aplicar-pesquisa/{PesquisaId}")">
+                    Nova Aplicação
+                </MudButton>
+            </MudStack>
+        </MudPaper>
+
+        @if (allResultados?.Count == 0)
+        {
+            <MudPaper Elevation="1" Class="pa-8 text-center">
+                <MudIcon Icon="Icons.Material.Filled.Assessment" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
+                <MudText Typo="Typo.h6" Class="mb-2">Nenhum resultado encontrado</MudText>
+                <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+                    Aplique esta pesquisa para começar a ver resultados
+                </MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="Icons.Material.Filled.PlayArrow" 
+                           Href="@($"/aplicar-pesquisa/{PesquisaId}")">
+                    Aplicar Pesquisa
+                </MudButton>
+            </MudPaper>
+        }
+        else if (allResultados != null)
+        {
+            <MudGrid>
+                @foreach (var result in allResultados.OrderByDescending(r => r.DataAvaliacao))
+                {
+                    var resultPercentages = result.ObterPercentuaisGrupos(survey.GruposQuestoes);
+                    var average = resultPercentages.Values.Average();
+                    
+                    <MudItem xs="12" md="6" lg="4">
+                        <MudCard Elevation="2" Class="h-100">
+                            <MudCardContent>
+                                <MudStack>
+                                    <MudText Typo="Typo.h6">@result.NomePessoa</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        @result.DataAvaliacao.ToString("dd/MM/yyyy HH:mm")
+                                    </MudText>
+                                    @if (!string.IsNullOrWhiteSpace(result.Email))
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @result.Email
+                                        </MudText>
+                                    }
+                                    
+                                    <MudDivider />
+                                    
+                                    <MudText Typo="Typo.subtitle1">
+                                        Média Geral: 
+                                        <span style="color: @GetScoreColor(average); font-weight: bold;">
+                                            @average.ToString("0")%
+                                        </span>
+                                    </MudText>
+                                    
+                                    <MudStack Spacing="1">
+                                        @foreach (var kvp in resultPercentages)
+                                        {
+                                            <MudStack Row Justify="Justify.SpaceBetween">
+                                                <MudText Typo="Typo.body2">@kvp.Key:</MudText>
+                                                <MudText Typo="Typo.body2" Style="@($"color: {GetScoreColor(kvp.Value)}; font-weight: 500;")">
+                                                    @kvp.Value.ToString("0")%
+                                                </MudText>
+                                            </MudStack>
+                                        }
+                                    </MudStack>
+                                </MudStack>
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButtonGroup Size="Size.Small" Variant="Variant.Text">
+                                    <MudButton StartIcon="Icons.Material.Filled.Visibility" Color="Color.Primary"
+                                               OnClick="() => ViewIndividualResult(result.Id)">
+                                        Ver Resultado
+                                    </MudButton>
+                                    <MudButton StartIcon="Icons.Material.Filled.Delete" Color="Color.Error"
+                                               OnClick="() => DeleteResult(result)">
+                                        Excluir
+                                    </MudButton>
+                                </MudButtonGroup>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+
+        <MudPaper Elevation="1" Class="pa-4 mt-4">
+            <MudButton Variant="Variant.Text" 
+                     StartIcon="Icons.Material.Filled.ArrowBack"
+                     OnClick="@(() => Navigation.NavigateTo("/pesquisas"))">
+                Voltar para Pesquisas
+            </MudButton>
+        </MudPaper>
+    </MudContainer>
+}
+
+@code {
+    [Parameter] public Guid PesquisaId { get; set; }
+    [Parameter] public Guid? PersonId { get; set; }
+
+    private Pesquisa? survey;
+    private ResultadoPessoa? personResult;
+    private List<ResultadoPessoa>? allResultados;
+    private Dictionary<string, double> groupPercentages = new();
+    private List<string> chartLabels = new();
+    private List<double> actualData = new();
+    private List<double> desiredData = new();
+
+    private bool IsResultView => PersonId.HasValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        survey = await ServicoPesquisa.ObterPesquisaPorIdAsync(PesquisaId);
+        if (survey == null)
+        {
+            Snackbar.Add("Pesquisa não encontrada", Severity.Error);
+            Navigation.NavigateTo("/pesquisas");
+            return;
+        }
+
+        if (IsResultView && PersonId.HasValue)
+        {
+            personResult = await ServicoPesquisa.ObterResultadoPessoaAsync(PesquisaId, PersonId.Value);
+            if (personResult == null)
+            {
+                Snackbar.Add("Resultado não encontrado", Severity.Error);
+                Navigation.NavigateTo($"/resultados/{PesquisaId}");
+                return;
+            }
+            
+            PrepareChartData();
+        }
+        else
+        {
+            allResultados = await ServicoPesquisa.ObterResultadosPesquisaAsync(PesquisaId);
+        }
+    }
+
+    private void PrepareChartData()
+    {
+        if (survey == null || personResult == null) return;
+
+        groupPercentages = personResult.ObterPercentuaisGrupos(survey.GruposQuestoes);
+        
+        chartLabels = survey.GruposQuestoes.Select(g => g.Categoria).ToList();
+        actualData = chartLabels.Select(label => groupPercentages.GetValueOrDefault(label, 0)).ToList();
+        desiredData = chartLabels.Select(_ => 100.0).ToList();
+    }
+
+    private string GetScoreColor(double score)
+    {
+        return score switch
+        {
+            >= 80 => "#4caf50", // Verde
+            >= 60 => "#ff9800", // Laranja
+            >= 40 => "#f44336", // Vermelho
+            _ => "#9e9e9e"       // Cinza
+        };
+    }
+
+    private void ViewIndividualResult(Guid resultId)
+    {
+        Navigation.NavigateTo($"/resultado/{PesquisaId}/{resultId}");
+    }
+
+    private async Task DeleteResult(ResultadoPessoa result)
+    {
+        bool? confirmed = await DialogService.ShowMessageBox(
+            "Confirmar Exclusão",
+            $"Tem certeza que deseja excluir o resultado de '{result.NomePessoa}'? Esta ação não pode ser desfeita.",
+            yesText: "Excluir",
+            cancelText: "Cancelar");
+            
+        if (confirmed == true)
+        {
+            // Remove resultado da pesquisa
+            survey!.Resultados.Remove(result);
+            await ServicoPesquisa.SalvarPesquisaAsync(survey);
+            
+            // Recarrega a lista
+            allResultados = await ServicoPesquisa.ObterResultadosPesquisaAsync(PesquisaId);
+            Snackbar.Add("Resultado excluído com sucesso", Severity.Success);
+            StateHasChanged();
+        }
+    }
+}
+

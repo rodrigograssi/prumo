@@ -1,0 +1,109 @@
+﻿@page "/"
+@inject IServicoPesquisa ServicoPesquisa
+@inject ISnackbar Snackbar
+
+<PageTitle>Sistema de Pesquisas</PageTitle>
+
+<AuthGuard>
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudPaper Elevation="2" Class="pa-4 ma-2">
+        <MudText Typo="Typo.h4" GutterBottom="true">Sistema de Pesquisas com Gráfico Radar</MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+            Crie pesquisas personalizadas, aplique-as durante meetings e visualize os resultados através de gráficos radar comparativos.
+        </MudText>
+    </MudPaper>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="1" Class="pa-4 ma-2">
+                <MudStack Spacing="3">
+                    <MudText Typo="Typo.h6">
+                        <MudIcon Icon="Icons.Material.Filled.List" Class="mr-2" />
+                        Minhas Pesquisas
+                    </MudText>
+                    <MudText Typo="Typo.body2">Total de pesquisas: @totalPesquisas</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/pesquisas" StartIcon="Icons.Material.Filled.Visibility">
+                        Ver Todas as Pesquisas
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="1" Class="pa-4 ma-2">
+                <MudStack Spacing="3">
+                    <MudText Typo="Typo.h6">
+                        <MudIcon Icon="Icons.Material.Filled.Add" Class="mr-2" />
+                        Nova Pesquisa
+                    </MudText>
+                    <MudText Typo="Typo.body2">Crie uma nova pesquisa personalizada</MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" Href="/criar-pesquisa" StartIcon="Icons.Material.Filled.Add">
+                        Criar Nova Pesquisa
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudPaper Elevation="1" Class="pa-4 ma-2 mt-4">
+        <MudText Typo="Typo.h6" Class="mb-2">Como Funciona:</MudText>
+        <MudList T="string">
+            <MudListItem T="string" Icon="Icons.Material.Filled.Create">
+                <MudText><strong>1. Criar:</strong> Monte sua pesquisa com grupos de perguntas</MudText>
+            </MudListItem>
+            <MudListItem T="string" Icon="Icons.Material.Filled.Assignment">
+                <MudText><strong>2. Aplicar:</strong> Use durante meetings para avaliar pessoas</MudText>
+            </MudListItem>
+            <MudListItem T="string" Icon="Icons.Material.Filled.Assessment">
+                <MudText><strong>3. Visualizar:</strong> Compare resultados com gráficos radar</MudText>
+            </MudListItem>
+        </MudList>
+    </MudPaper>
+
+    @if (totalPesquisas == 0)
+    {
+        <MudPaper Elevation="1" Class="pa-4 ma-2 mt-4 text-center">
+            <MudText Typo="Typo.h6" Class="mb-2">Começar Rapidamente</MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-3">
+                Quer testar o sistema? Crie uma pesquisa de exemplo sobre avaliação de tênis
+            </MudText>
+            <MudButton Variant="Variant.Outlined" 
+                     Color="Color.Info" 
+                     StartIcon="Icons.Material.Filled.AutoAwesome"
+                     OnClick="CreateSamplePesquisa">
+                Criar Pesquisa de Exemplo
+            </MudButton>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private int totalPesquisas = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var surveys = await ServicoPesquisa.ObterTodasPesquisasAsync();
+        totalPesquisas = surveys.Count;
+    }
+
+    private async Task CreateSamplePesquisa()
+    {
+        try
+        {
+            var samplePesquisa = SampleDataService.CreateTennisEvaluationPesquisa();
+            await ServicoPesquisa.SalvarPesquisaAsync(samplePesquisa);
+            
+            Snackbar.Add("Pesquisa de exemplo criada com sucesso!", Severity.Success);
+            
+            // Atualizar o contador
+            var surveys = await ServicoPesquisa.ObterTodasPesquisasAsync();
+            totalPesquisas = surveys.Count;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao criar pesquisa de exemplo: {ex.Message}", Severity.Error);
+        }
+    }
+}
+</AuthGuard>
