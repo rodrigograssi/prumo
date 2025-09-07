@@ -1,12 +1,11 @@
 ﻿@using PesquisaX.Shared
+@using PesquisaX.Shared.Version
 @using PesquisaX.Web.Services
 @inherits LayoutComponentBase
 @inject IServicoTema ServicoTema
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 @implements IDisposable
-
-<MudDialogProvider />
 
 <MudLayout>
     <MudAppBar Elevation="1">
@@ -20,7 +19,7 @@
                          OnClick="ToggleTheme" />
         </MudTooltip>
         
-        @if (_estaAutenticado && _usuarioAtual != null)
+        @if (_usuarioAtual != null)
         {
             <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit">
                 <MudMenuItem OnClick="@(() => Navigation.NavigateTo("/perfil"))">
@@ -38,13 +37,12 @@
                 </MudMenuItem>
             </MudMenu>
         }
-        else
+        else if (!_isLoading)
         {
-            <MudButton Href="/login" 
-                      Color="Color.Inherit" 
-                      StartIcon="@Icons.Material.Filled.Login">
-                Entrar
-            </MudButton>
+            <!-- Fallback caso haja problemas na verificação -->
+            <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" 
+                          Color="Color.Inherit" 
+                          OnClick="@(() => Navigation.NavigateTo("/"))" />
         }
     </MudAppBar>
     
@@ -56,9 +54,33 @@
     </MudDrawer>
     
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 pb-16">
             @Body
         </MudContainer>
+        
+        <!-- Footer com informações de versão -->
+        <MudPaper Elevation="0" 
+                 Class="pa-3 mt-4" 
+                 Style="position: fixed; bottom: 0; width: 100%; z-index: 1000; background: var(--mud-palette-surface); border-top: 1px solid var(--mud-palette-divider);">
+            <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        @AppVersion.Copyright
+                    </MudText>
+                    <MudStack Row AlignItems="AlignItems.Center" Spacing="2">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @AppVersion.DetailedVersion
+                        </MudText>
+                        <MudTooltip Text="Ver histórico de mudanças">
+                            <MudIconButton Icon="@Icons.Material.Filled.Timeline" 
+                                         Size="Size.Small" 
+                                         Color="Color.Secondary"
+                                         OnClick="@(() => Navigation.NavigateTo("/changelog"))" />
+                        </MudTooltip>
+                    </MudStack>
+                </MudStack>
+            </MudContainer>
+        </MudPaper>
     </MudMainContent>
     
     <!-- Botão de instalação PWA -->
@@ -67,7 +89,7 @@
 
 @code {
     bool _drawerOpen = false;
-    bool _estaAutenticado = false;
+    bool _isLoading = true;
     Usuario? _usuarioAtual = null;
 
     protected override async Task OnInitializedAsync()
@@ -75,18 +97,25 @@
         await ServicoTema.InicializarAsync();
         ServicoTema.AoMudarTema += StateHasChanged;
         
-        // Verificar se o usuário está autenticado
-        await VerificarAutenticacao();
+        // Carregar dados do usuário (se chegou até aqui, está autenticado)
+        await CarregarUsuario();
     }
 
-    private async Task VerificarAutenticacao()
+    private async Task CarregarUsuario()
     {
-        _estaAutenticado = await AuthService.EstaAutenticadoAsync();
-        if (_estaAutenticado)
+        try
         {
             _usuarioAtual = await AuthService.ObterUsuarioAtualAsync();
         }
-        StateHasChanged();
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erro ao carregar usuário: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
     }
 
     void DrawerToggle()
@@ -102,9 +131,8 @@
     private async Task RealizarLogout()
     {
         await AuthService.LogoutAsync();
-        _estaAutenticado = false;
         _usuarioAtual = null;
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("/", replace: true);
     }
 
     public void Dispose()

@@ -1,0 +1,187 @@
+# GitHub Actions workflow para build e deploy automático do PesquisaX
+name: Build and Deploy PesquisaX
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ created ]
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 🔄 Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Necessário para obter histórico completo do git
+    
+    - name: 🔧 Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: 📝 Set build variables
+      run: |
+        echo "BUILD_NUMBER=${{ github.run_number }}" >> $GITHUB_ENV
+        echo "GIT_COMMIT_HASH=${{ github.sha }}" >> $GITHUB_ENV
+        echo "GIT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+        echo "BUILD_TIMESTAMP=$(date -u +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+        
+        # Determinar ambiente baseado na branch
+        if [[ "${{ github.ref_name }}" == "main" ]]; then
+          echo "ASPNETCORE_ENVIRONMENT=Production" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=production" >> $GITHUB_ENV
+        elif [[ "${{ github.ref_name }}" == "develop" ]]; then
+          echo "ASPNETCORE_ENVIRONMENT=Staging" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=staging" >> $GITHUB_ENV
+        else
+          echo "ASPNETCORE_ENVIRONMENT=Development" >> $GITHUB_ENV
+          echo "DEPLOY_ENV=development" >> $GITHUB_ENV
+        fi
+    
+    - name: 📦 Restore dependencies
+      run: dotnet restore
+    
+    - name: 🔨 Build solution
+      run: dotnet build --configuration Release --no-restore
+    
+    - name: 🧪 Run tests
+      run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
+    
+    - name: 📊 Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: |
+          **/TestResults/**/*.xml
+          **/TestResults/**/*.trx
+    
+    - name: 📄 Generate build info
+      run: |
+        echo "# Build Information" > build-info.md
+        echo "- **Build Number**: ${{ env.BUILD_NUMBER }}" >> build-info.md
+        echo "- **Commit**: \`${{ env.GIT_COMMIT_HASH }}\`" >> build-info.md
+        echo "- **Branch**: ${{ env.GIT_BRANCH }}" >> build-info.md
+        echo "- **Environment**: ${{ env.ASPNETCORE_ENVIRONMENT }}" >> build-info.md
+        echo "- **Timestamp**: $(date -u)" >> build-info.md
+        echo "- **Workflow**: ${{ github.workflow }} #${{ github.run_number }}" >> build-info.md
+        
+        cat build-info.md
+    
+    - name: 🏗️ Publish API
+      run: |
+        dotnet publish Api/Api.csproj \
+          --configuration Release \
+          --output ./publish/api \
+          --no-build \
+          --self-contained false \
+          --runtime linux-x64
+    
+    - name: 🌐 Publish Web
+      run: |
+        dotnet publish Web/Web.csproj \
+          --configuration Release \
+          --output ./publish/web \
+          --no-build
+    
+    - name: 📁 Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pesquisax-${{ env.BUILD_NUMBER }}
+        path: |
+          ./publish/
+          build-info.md
+    
+    - name: 🏷️ Create version tag
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        # Extrair versão do AppVersion.cs
+        VERSION=$(grep -oP 'public const string Current = "\K[^"]+' Shared/Version/AppVersion.cs)
+        TAG_NAME="v${VERSION}-build.${{ env.BUILD_NUMBER }}"
+        
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git tag -a "$TAG_NAME" -m "Automated build ${{ env.BUILD_NUMBER }}"
+        git push origin "$TAG_NAME"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  # Job de deployment (exemplo para staging/production)
+  deploy-staging:
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+    - name: 📥 Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: pesquisax-${{ github.run_number }}
+    
+    - name: 🚀 Deploy to staging
+      run: |
+        echo "🔄 Deploying to staging environment..."
+        # Aqui você adicionaria os comandos específicos para seu ambiente de staging
+        # Por exemplo: Azure Web Apps, Docker, Kubernetes, etc.
+        echo "✅ Deployment to staging completed"
+  
+  deploy-production:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+    - name: 📥 Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: pesquisax-${{ github.run_number }}
+    
+    - name: 🚀 Deploy to production
+      run: |
+        echo "🔄 Deploying to production environment..."
+        # Aqui você adicionaria os comandos específicos para seu ambiente de produção
+        echo "✅ Deployment to production completed"
+  
+  # Job para criar release quando uma tag é criada
+  create-release:
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: pesquisax-${{ github.run_number }}
+    
+    - name: 📋 Generate changelog
+      run: |
+        echo "# Changelog for ${{ github.event.release.tag_name }}" > release-notes.md
+        echo "" >> release-notes.md
+        echo "## Changes in this release" >> release-notes.md
+        echo "- Build #${{ github.run_number }}" >> release-notes.md
+        echo "- Commit: ${{ github.sha }}" >> release-notes.md
+        echo "" >> release-notes.md
+        echo "## Artifacts" >> release-notes.md
+        echo "- API: \`./publish/api/\`" >> release-notes.md
+        echo "- Web: \`./publish/web/\`" >> release-notes.md
+    
+    - name: 🎯 Update release with artifacts
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./publish/
+        asset_name: pesquisax-${{ github.event.release.tag_name }}.zip
+        asset_content_type: application/zip

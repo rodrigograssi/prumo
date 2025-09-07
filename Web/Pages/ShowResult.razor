@@ -285,8 +285,8 @@ else
         if (confirmed == true)
         {
             // Remove resultado da pesquisa
-            survey!.Resultados.Remove(result);
-            await ServicoPesquisa.SalvarPesquisaAsync(survey);
+            survey!.ResultadosPessoas.Remove(result);
+            await ServicoPesquisa.AlterarPesquisaAsync(survey);
             
             // Recarrega a lista
             allResultados = await ServicoPesquisa.ObterResultadosPesquisaAsync(PesquisaId);

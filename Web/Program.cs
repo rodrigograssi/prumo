@@ -9,12 +9,18 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Configurar HttpClient para API
+// Configurar HttpClient para API com base no ambiente
 builder.Services.AddScoped(sp => 
 {
     var httpClient = new HttpClient();
-    // URL da API - porta configurada no launchSettings.json da API
-    httpClient.BaseAddress = new Uri("https://localhost:7088/");
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7001/";
+    
+    // Log para debug (remover depois)
+    Console.WriteLine($"[DEBUG] Configurando HttpClient com BaseAddress: {apiBaseUrl}");
+    Console.WriteLine($"[DEBUG] Ambiente: {builder.HostEnvironment.Environment}");
+    
+    httpClient.BaseAddress = new Uri(apiBaseUrl);
     return httpClient;
 });
 
@@ -26,4 +32,13 @@ builder.Services.AddScoped<IServicoTema, ServicoTema>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+
+// Inicializar AuthService
+var authService = app.Services.GetService<IAuthService>();
+if (authService != null)
+{
+    await authService.InicializarAsync();
+}
+
+await app.RunAsync();

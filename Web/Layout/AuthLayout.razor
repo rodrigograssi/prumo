@@ -1,0 +1,36 @@
+@inherits LayoutComponentBase
+@using MudBlazor
+
+<MudLayout>
+    <!-- Container principal centralizado -->
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="d-flex flex-column justify-center align-center" Style="min-height: 100vh;">
+        
+        <!-- Header com logo/título -->
+        <MudPaper Elevation="0" Class="pa-6 mb-4 text-center" Style="background: transparent;">
+            <MudIcon Icon="@Icons.Material.Filled.Quiz" 
+                    Style="font-size: 4rem;" 
+                    Color="Color.Primary" 
+                    Class="mb-2" />
+            <MudText Typo="Typo.h3" Color="Color.Primary" GutterBottom="true">
+                PesquisaX
+            </MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+                Sistema de Pesquisas com Radar Charts
+            </MudText>
+        </MudPaper>
+
+        <!-- Conteúdo da página (Login/Registro) -->
+        <div class="flex-grow-1 d-flex flex-column justify-center" style="width: 100%; max-width: 400px;">
+            @Body
+        </div>
+
+        <!-- Footer -->
+        <MudPaper Elevation="0" Class="pa-4 mt-6 text-center" Style="background: transparent;">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                © @DateTime.Now.Year PesquisaX - Todos os direitos reservados
+            </MudText>
+        </MudPaper>
+
+    </MudContainer>
+</MudLayout>
+

@@ -1,12 +1,13 @@
 namespace PesquisaX.Shared.Modelos;
 
-public class ResultadoPessoa
+public class ResultadoPessoa: Entidade
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
     public string NomePessoa { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public DateTime DataAvaliacao { get; set; } = DateTime.UtcNow;
-    public List<Resposta> Respostas { get; set; } = new();
+    public List<Resposta> Respostas { get; set; } = [];
+
+    public Guid PesquisaId { get; set; }
     
     public Dictionary<string, double> ObterPercentuaisGrupos(List<GrupoQuestao> grupos)
     {

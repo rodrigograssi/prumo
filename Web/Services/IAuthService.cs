@@ -11,4 +11,5 @@ public interface IAuthService
     Task<Usuario?> ObterUsuarioAtualAsync();
     string? ObterToken();
     Task<bool> ExistemUsuariosAsync();
+    Task InicializarAsync();
 }

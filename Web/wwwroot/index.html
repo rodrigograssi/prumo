@@ -9,7 +9,7 @@
     <base href="/" />
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/app.css?v=1.0.1" />
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -51,7 +51,7 @@
     
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
-    <script src="js/chartInterop.js"></script>
+    <script src="js/chartInterop.js?v=1.0.1"></script>
     
     <!-- PWA Service Worker Registration -->
     <script>
@@ -67,7 +67,12 @@
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                                     // Há uma nova versão disponível
-                                    if (confirm('Uma nova versão do PesquisaX está disponível. Deseja atualizar?')) {
+                                    // Para desenvolvimento: atualizar automaticamente
+                                    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                                        console.log('[PWA] Atualizando automaticamente (modo desenvolvimento)...');
+                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                        window.location.reload();
+                                    } else if (confirm('Uma nova versão do PesquisaX está disponível. Deseja atualizar?')) {
                                         newWorker.postMessage({ type: 'SKIP_WAITING' });
                                         window.location.reload();
                                     }

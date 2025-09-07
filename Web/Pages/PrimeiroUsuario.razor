@@ -1,4 +1,5 @@
 @page "/primeiro-usuario"
+@layout AuthLayout
 @using PesquisaX.Shared
 @using MudBlazor
 @inject ISnackbar Snackbar
@@ -98,12 +99,19 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Verificar se já está autenticado
+        if (await AuthService.EstaAutenticadoAsync())
+        {
+            Navigation.NavigateTo("/home", replace: true);
+            return;
+        }
+
         // Verificar se já existem usuários
         var existemUsuarios = await AuthService.ExistemUsuariosAsync();
         if (existemUsuarios)
         {
             // Se já existem usuários, redirecionar para login
-            Navigation.NavigateTo("/login", true);
+            Navigation.NavigateTo("/", replace: true);
         }
     }
 
@@ -122,7 +130,7 @@
             if (response.Sucesso)
             {
                 Snackbar.Add($"Bem-vindo, {registroRequest.Nome}! Conta criada com sucesso.", Severity.Success);
-                Navigation.NavigateTo("/");
+                Navigation.NavigateTo("/home", replace: true);
             }
             else
             {

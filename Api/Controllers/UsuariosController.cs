@@ -125,7 +125,7 @@ public class UsuariosController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<Usuario>> AtualizarUsuario(Guid id, [FromBody] Usuario usuarioAtualizado)
+    public async Task<ActionResult<Usuario>> AtualizarUsuario(int id, [FromBody] Usuario usuarioAtualizado)
     {
         try
         {

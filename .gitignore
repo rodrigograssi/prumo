@@ -341,3 +341,6 @@ $RECYCLE.BIN/
 # Arquivos específicos do projeto
 wwwroot/dist/
 *.DotSettings.user
+
+# Docker images - too large for GitHub
+Scripts/docker-images/*.tar

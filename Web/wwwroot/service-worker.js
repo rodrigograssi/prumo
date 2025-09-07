@@ -1,5 +1,5 @@
-// PesquisaX Service Worker
-const CACHE_NAME = 'pesquisax-v1.0.0';
+// PesquisaX Service Worker  
+const CACHE_NAME = 'pesquisax-v1.0.1';
 const urlsToCache = [
   '/',
   '/css/app.css',
@@ -72,42 +72,50 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Estratégia Cache First para recursos estáticos
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Retorna do cache se disponível
-        if (response) {
-          return response;
-        }
-        
-        // Senão, busca da rede
-        return fetch(event.request)
-          .then((response) => {
-            // Verifica se a resposta é válida
-            if (!response || response.status !== 200 || response.type !== 'basic') {
+  // Estratégia Network First para desenvolvimento, Cache First apenas para recursos específicos
+  const shouldCacheFirst = requestURL.pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|woff2?|ttf)$/i);
+  
+  if (shouldCacheFirst) {
+    // Cache First apenas para imagens e fontes
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          return response || fetch(event.request)
+            .then((response) => {
+              if (response.status === 200) {
+                const responseToCache = response.clone();
+                caches.open(CACHE_NAME)
+                  .then((cache) => {
+                    cache.put(event.request, responseToCache);
+                  });
+              }
               return response;
-            }
-            
-            // Clone a resposta
+            });
+        })
+    );
+  } else {
+    // Network First para HTML, CSS, JS - sempre busca versão mais recente
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.status === 200) {
             const responseToCache = response.clone();
-            
-            // Adiciona ao cache
             caches.open(CACHE_NAME)
               .then((cache) => {
                 cache.put(event.request, responseToCache);
               });
-            
-            return response;
-          })
-          .catch(() => {
-            // Se falhar completamente, retorna página offline se disponível
-            if (event.request.destination === 'document') {
-              return caches.match('/offline.html');
-            }
-          });
-      })
-  );
+          }
+          return response;
+        })
+        .catch(() => {
+          // Fallback para cache apenas se a rede falhar
+          return caches.match(event.request)
+            .then((cachedResponse) => {
+              return cachedResponse || caches.match('/offline.html');
+            });
+        })
+    );
+  }
 });
 
 // Listener para mensagens do app principal

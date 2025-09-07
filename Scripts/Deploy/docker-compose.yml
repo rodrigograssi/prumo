@@ -1,0 +1,266 @@
+#secrets:
+#  postgres_password:
+#    external: true
+#    name: pesquisax_postgres_password
+#  jwt_secret:
+#    external: true
+#    name: pesquisax_jwt_secret
+
+services:
+  # PostgreSQL Database
+  database:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=pesquisax
+      - POSTGRES_USER=pesquisax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+#    secrets:
+#      - postgres_password
+    volumes:
+      - /data/services/pesquisax/postgres/data:/var/lib/postgresql/data
+      - /data/services/pesquisax/postgres/backup:/backup
+    networks:
+      - network_public
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pesquisax -d pesquisax"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+      labels:
+        - "traefik.enable=false"
+
+  # PesquisaX API
+  api:
+    image: rodrigoeajt/pesquisax-api:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - "ConnectionStrings__DefaultConnection=Host=database;Database=pesquisax;Username=pesquisax;Password=${POSTGRES_PASSWORD};Port=5432;Include Error Detail=true"
+      - JWT__SecretKey=Nqt5wbuZdF8ODX68h1tQGRe7GhdOGPDdatTdsxg9n16PSjKL3nSgqvLBAFd2MmF5qyHap8MpEgYaxrkpAxg
+      - JWT__Issuer=PesquisaX
+      - JWT__Audience=PesquisaX.Users
+      - JWT__ExpirationHours=24
+      - Logging__LogLevel__Default=Information
+      - Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - BUILD_NUMBER=${BUILD_NUMBER:-swarm}
+      - GIT_COMMIT_HASH=${GIT_COMMIT_HASH:-swarm-deploy}
+#    secrets:
+#      - postgres_password
+#      - jwt_secret
+    networks:
+      - network_public
+    depends_on:
+      - database
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+      labels:
+        # Traefik Configuration
+        - "traefik.enable=true"
+        - "traefik.docker.network=network_public"
+        
+        # HTTP Router
+        - "traefik.http.routers.pesquisax-api.rule=Host(`api-pesquisax.thaishiroki.com.br`)"
+        - "traefik.http.routers.pesquisax-api.entrypoints=websecure"
+        - "traefik.http.routers.pesquisax-api.tls=true"
+        - "traefik.http.routers.pesquisax-api.tls.certresolver=letsencryptresolver"
+        
+        # Load Balancer
+        - "traefik.http.services.pesquisax-api.loadbalancer.server.port=8080"
+        - "traefik.http.services.pesquisax-api.loadbalancer.healthcheck.path=/health"
+        - "traefik.http.services.pesquisax-api.loadbalancer.healthcheck.interval=10s"
+        
+        # Middleware
+        - "traefik.http.routers.pesquisax-api.middlewares=api-cors,api-headers"
+        - "traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=https://pesquisax.thaishiroki.com.br,https://www.pesquisax.thaishiroki.com.br"
+        - "traefik.http.middlewares.api-cors.headers.accesscontrolallowheaders=*"
+        - "traefik.http.middlewares.api-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+        - "traefik.http.middlewares.api-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+
+  # PesquisaX Web Frontend
+  web:
+    image: rodrigoeajt/pesquisax-web:latest
+    environment:
+      - API_BASE_URL=https://api-pesquisax.thaishiroki.com.br
+      - BUILD_NUMBER=${BUILD_NUMBER:-swarm}
+      - GIT_COMMIT_HASH=${GIT_COMMIT_HASH:-swarm-deploy}
+    networks:
+      - network_public
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.15'
+      labels:
+        # Traefik Configuration
+        - "traefik.enable=true"
+        - "traefik.docker.network=network_public"
+        
+        # HTTP Router
+        - "traefik.http.routers.pesquisax-web.rule=Host(`pesquisax.thaishiroki.com.br`)"
+        - "traefik.http.routers.pesquisax-web.entrypoints=websecure"
+        - "traefik.http.routers.pesquisax-web.tls=true"
+        - "traefik.http.routers.pesquisax-web.tls.certresolver=letsencryptresolver"
+        
+        # Load Balancer
+        - "traefik.http.services.pesquisax-web.loadbalancer.server.port=8081"
+        
+        # Middleware para SPA
+        - "traefik.http.routers.pesquisax-web.middlewares=web-headers,spa-redirect"
+        - "traefik.http.middlewares.web-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+        - "traefik.http.middlewares.spa-redirect.redirectregex.regex=^https://www.pesquisax.thaishiroki.com.br/(.*)"
+        - "traefik.http.middlewares.spa-redirect.redirectregex.replacement=https://pesquisax.thaishiroki.com.br/$${1}"
+        - "traefik.http.middlewares.spa-redirect.redirectregex.permanent=true"
+
+  # PostgreSQL Backup Service (opcional)
+  db-backup:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=pesquisax
+      - POSTGRES_USER=pesquisax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGPASSFILE=/tmp/.pgpass
+#    secrets:
+#      - postgres_password
+    volumes:
+      - /data/services/pesquisax/postgres/backup:/backup
+    networks:
+      - network_public
+    depends_on:
+      - database
+    command: |
+      sh -c '
+        echo "database:5432:pesquisax:pesquisax:$$(cat /run/secrets/postgres_password)" > /tmp/.pgpass &&
+        chmod 600 /tmp/.pgpass &&
+        while true; do
+          echo "$$(date): Starting backup..."
+          pg_dump -h database -U pesquisax -d pesquisax > /backup/pesquisax_$$(date +%Y%m%d_%H%M%S).sql
+          find /backup -name "*.sql" -mtime +7 -delete
+          echo "$$(date): Backup completed. Sleeping for 6 hours..."
+          sleep 21600
+        done
+      '
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 60s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.1'
+        reservations:
+          memory: 64M
+          cpus: '0.05'
+      labels:
+        - "traefik.enable=false"
+
+  # Adminer para administração do banco (opcional, remover em produção)
+  adminer:
+    image: adminer:4-standalone
+    environment:
+      - ADMINER_DEFAULT_SERVER=database
+      - ADMINER_DESIGN=dracula
+    networks:
+      - network_public
+    depends_on:
+      - database
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.1'
+        reservations:
+          memory: 64M
+          cpus: '0.05'
+      labels:
+        # Traefik Configuration
+        - "traefik.enable=true"
+        - "traefik.docker.network=network_public"
+        - "traefik.http.routers.pesquisax-adminer.rule=Host(`db-pesquisax.thaishiroki.com.br`)"
+        - "traefik.http.routers.pesquisax-adminer.entrypoints=websecure"
+        - "traefik.http.routers.pesquisax-adminer.tls=true"
+        - "traefik.http.routers.pesquisax-adminer.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.pesquisax-adminer.loadbalancer.server.port=8080"
+        
+        
+networks:
+  network_public:
+    name: network_public
+    external: true        

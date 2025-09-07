@@ -1,0 +1,237 @@
+@page "/changelog"
+@using PesquisaX.Shared.Version
+@inject ISnackbar Snackbar
+
+<PageTitle>Histórico de Mudanças - PesquisaX</PageTitle>
+
+<AuthGuard>
+<MudContainer MaxWidth="MaxWidth.Large">
+    <!-- Header -->
+    <MudPaper Elevation="2" Class="pa-4 mb-4">
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudStack>
+                <MudText Typo="Typo.h4" GutterBottom="true">
+                    <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2" />
+                    Histórico de Mudanças
+                </MudText>
+                <MudText Typo="Typo.body1" Color="Color.Secondary">
+                    Acompanhe todas as novidades e melhorias do PesquisaX
+                </MudText>
+            </MudStack>
+            <MudChip T="string" 
+                    Icon="@Icons.Material.Filled.NewReleases" 
+                    Color="Color.Primary" 
+                    Variant="Variant.Filled">
+                v@(AppVersion.Current)
+            </MudChip>
+        </MudStack>
+    </MudPaper>
+
+    <!-- Estatísticas -->
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" md="3">
+            <MudCard Elevation="1">
+                <MudCardContent Class="text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Layers" 
+                            Style="font-size: 2.5rem;" 
+                            Color="Color.Primary" />
+                    <MudText Typo="Typo.h6" Class="mt-2">@stats.TotalVersions</MudText>
+                    <MudText Typo="Typo.caption">Versões Total</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        
+        <MudItem xs="12" md="3">
+            <MudCard Elevation="1">
+                <MudCardContent Class="text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" 
+                            Style="font-size: 2.5rem;" 
+                            Color="Color.Success" />
+                    <MudText Typo="Typo.h6" Class="mt-2">@stats.Features</MudText>
+                    <MudText Typo="Typo.caption">Novas Funcionalidades</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        
+        <MudItem xs="12" md="3">
+            <MudCard Elevation="1">
+                <MudCardContent Class="text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.BugReport" 
+                            Style="font-size: 2.5rem;" 
+                            Color="Color.Warning" />
+                    <MudText Typo="Typo.h6" Class="mt-2">@stats.Fixes</MudText>
+                    <MudText Typo="Typo.caption">Correções</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        
+        <MudItem xs="12" md="3">
+            <MudCard Elevation="1">
+                <MudCardContent Class="text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" 
+                            Style="font-size: 2.5rem;" 
+                            Color="Color.Info" />
+                    <MudText Typo="Typo.h6" Class="mt-2">@stats.Enhancements</MudText>
+                    <MudText Typo="Typo.caption">Melhorias</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Timeline das versões -->
+    <MudTimeline TimelineOrientation="TimelineOrientation.Vertical">
+        @foreach (var version in changelog)
+        {
+            <MudTimelineItem Color="@(version.IsUnreleased ? Color.Warning : Color.Primary)" 
+                           Variant="@(version.IsUnreleased ? Variant.Outlined : Variant.Filled)"
+                           Size="Size.Large">
+                <ItemOpposite>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        @(version.IsUnreleased ? "Em desenvolvimento" : version.ReleaseDate.ToString("dd/MM/yyyy"))
+                    </MudText>
+                </ItemOpposite>
+                <ItemContent>
+                    <MudCard Elevation="2" Class="mb-4">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.h6">
+                                        Versão @version.Version
+                                        @if (version.IsUnreleased)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Class="ml-2">
+                                                Em Dev
+                                            </MudChip>
+                                        }
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @version.Changes.Count mudança(s)
+                                    </MudText>
+                                </MudStack>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        
+                        <MudCardContent>
+                            @foreach (var change in version.Changes.GroupBy(c => c.Type))
+                            {
+                                <MudExpansionPanels Elevation="0" Class="mb-3">
+                                    <MudExpansionPanel>
+                                        <TitleContent>
+                                            <div style="display: flex; align-items: center">
+                                                <MudIcon Icon="@GetChangeTypeIcon(change.Key)" 
+                                                       Color="@GetChangeTypeColor(change.Key)" 
+                                                       Class="mr-3" />
+                                                <MudText Typo="Typo.subtitle2">
+                                                    @GetChangeTypeName(change.Key) (@change.Count())
+                                                </MudText>
+                                            </div>
+                                        </TitleContent>
+                                        <ChildContent>
+                                            <div class="pl-6">
+                                                @foreach (var item in change)
+                                                {
+                                                    <MudStack Row AlignItems="AlignItems.Center" Class="mb-2">
+                                                        <MudIcon Icon="@Icons.Material.Filled.ChevronRight" 
+                                                               Size="Size.Small" 
+                                                               Color="Color.Secondary" />
+                                                        <MudText Typo="Typo.body2">
+                                                            @item.Description
+                                                        </MudText>
+                                                        @if (!string.IsNullOrEmpty(item.Author))
+                                                        {
+                                                            <MudChip T="string" 
+                                                                   Size="Size.Small" 
+                                                                   Color="Color.Default" 
+                                                                   Variant="Variant.Text">
+                                                                @item.Author
+                                                            </MudChip>
+                                                        }
+                                                    </MudStack>
+                                                }
+                                            </div>
+                                        </ChildContent>
+                                    </MudExpansionPanel>
+                                </MudExpansionPanels>
+                            }
+                        </MudCardContent>
+                    </MudCard>
+                </ItemContent>
+            </MudTimelineItem>
+        }
+    </MudTimeline>
+
+    <!-- Footer informativo -->
+    <MudPaper Elevation="1" Class="pa-4 mt-4">
+        <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-1" />
+                Este changelog segue o padrão <MudLink Href="https://semver.org/" Target="_blank">Semantic Versioning</MudLink>
+            </MudText>
+            <MudButton StartIcon="@Icons.Material.Filled.Refresh" 
+                      Color="Color.Primary" 
+                      Variant="Variant.Text" 
+                      OnClick="RefreshChangelog">
+                Atualizar
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+</MudContainer>
+</AuthGuard>
+
+@code {
+    private List<VersionChanges> changelog = new();
+    private ChangeLogStats stats = new();
+
+    protected override void OnInitialized()
+    {
+        LoadChangelog();
+    }
+
+    private void LoadChangelog()
+    {
+        changelog = ChangeLogService.GetChangeLog();
+        stats = ChangeLogService.GetStats();
+    }
+
+    private void RefreshChangelog()
+    {
+        LoadChangelog();
+        Snackbar.Add("Changelog atualizado!", Severity.Success);
+    }
+
+    private string GetChangeTypeIcon(ChangeType type) => type switch
+    {
+        ChangeType.Feature => Icons.Material.Filled.AutoAwesome,
+        ChangeType.Enhancement => Icons.Material.Filled.TrendingUp,
+        ChangeType.Fix => Icons.Material.Filled.BugReport,
+        ChangeType.Breaking => Icons.Material.Filled.Warning,
+        ChangeType.Internal => Icons.Material.Filled.Build,
+        ChangeType.Removed => Icons.Material.Filled.Remove,
+        ChangeType.Security => Icons.Material.Filled.Security,
+        _ => Icons.Material.Filled.Circle
+    };
+
+    private Color GetChangeTypeColor(ChangeType type) => type switch
+    {
+        ChangeType.Feature => Color.Success,
+        ChangeType.Enhancement => Color.Info,
+        ChangeType.Fix => Color.Warning,
+        ChangeType.Breaking => Color.Error,
+        ChangeType.Internal => Color.Default,
+        ChangeType.Removed => Color.Secondary,
+        ChangeType.Security => Color.Error,
+        _ => Color.Default
+    };
+
+    private string GetChangeTypeName(ChangeType type) => type switch
+    {
+        ChangeType.Feature => "Novas Funcionalidades",
+        ChangeType.Enhancement => "Melhorias",
+        ChangeType.Fix => "Correções",
+        ChangeType.Breaking => "Mudanças Importantes",
+        ChangeType.Internal => "Mudanças Internas",
+        ChangeType.Removed => "Removido",
+        ChangeType.Security => "Segurança",
+        _ => "Outros"
+    };
+}

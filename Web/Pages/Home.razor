@@ -1,6 +1,8 @@
-﻿@page "/"
+﻿@page "/home"
 @inject IServicoPesquisa ServicoPesquisa
 @inject ISnackbar Snackbar
+
+@inject IDialogService DialogService
 
 <PageTitle>Sistema de Pesquisas</PageTitle>
 
@@ -18,11 +20,11 @@
             <MudPaper Elevation="1" Class="pa-4 ma-2">
                 <MudStack Spacing="3">
                     <MudText Typo="Typo.h6">
-                        <MudIcon Icon="Icons.Material.Filled.List" Class="mr-2" />
+                        <MudIcon Icon="@Icons.Material.Filled.List" Class="mr-2" />
                         Minhas Pesquisas
                     </MudText>
                     <MudText Typo="Typo.body2">Total de pesquisas: @totalPesquisas</MudText>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/pesquisas" StartIcon="Icons.Material.Filled.Visibility">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/pesquisas" StartIcon="@Icons.Material.Filled.Visibility">
                         Ver Todas as Pesquisas
                     </MudButton>
                 </MudStack>
@@ -33,11 +35,11 @@
             <MudPaper Elevation="1" Class="pa-4 ma-2">
                 <MudStack Spacing="3">
                     <MudText Typo="Typo.h6">
-                        <MudIcon Icon="Icons.Material.Filled.Add" Class="mr-2" />
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" />
                         Nova Pesquisa
                     </MudText>
                     <MudText Typo="Typo.body2">Crie uma nova pesquisa personalizada</MudText>
-                    <MudButton Variant="Variant.Filled" Color="Color.Success" Href="/criar-pesquisa" StartIcon="Icons.Material.Filled.Add">
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" Href="/criar-pesquisa" StartIcon="@Icons.Material.Filled.Add">
                         Criar Nova Pesquisa
                     </MudButton>
                 </MudStack>
@@ -48,13 +50,13 @@
     <MudPaper Elevation="1" Class="pa-4 ma-2 mt-4">
         <MudText Typo="Typo.h6" Class="mb-2">Como Funciona:</MudText>
         <MudList T="string">
-            <MudListItem T="string" Icon="Icons.Material.Filled.Create">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Create">
                 <MudText><strong>1. Criar:</strong> Monte sua pesquisa com grupos de perguntas</MudText>
             </MudListItem>
-            <MudListItem T="string" Icon="Icons.Material.Filled.Assignment">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Assignment">
                 <MudText><strong>2. Aplicar:</strong> Use durante meetings para avaliar pessoas</MudText>
             </MudListItem>
-            <MudListItem T="string" Icon="Icons.Material.Filled.Assessment">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Assessment">
                 <MudText><strong>3. Visualizar:</strong> Compare resultados com gráficos radar</MudText>
             </MudListItem>
         </MudList>
@@ -69,12 +71,16 @@
             </MudText>
             <MudButton Variant="Variant.Outlined" 
                      Color="Color.Info" 
-                     StartIcon="Icons.Material.Filled.AutoAwesome"
+                     StartIcon="@Icons.Material.Filled.AutoAwesome"
                      OnClick="CreateSamplePesquisa">
                 Criar Pesquisa de Exemplo
             </MudButton>
         </MudPaper>
     }
+    
+    <MudButton @onclick="OpenDialogAsync" Variant="Variant.Filled" Color="Color.Primary">
+        Open Dialog
+    </MudButton>
 </MudContainer>
 
 @code {
@@ -91,7 +97,7 @@
         try
         {
             var samplePesquisa = SampleDataService.CreateTennisEvaluationPesquisa();
-            await ServicoPesquisa.SalvarPesquisaAsync(samplePesquisa);
+            await ServicoPesquisa.CriarPesquisaAsync(samplePesquisa);
             
             Snackbar.Add("Pesquisa de exemplo criada com sucesso!", Severity.Success);
             
@@ -104,6 +110,12 @@
         {
             Snackbar.Add($"Erro ao criar pesquisa de exemplo: {ex.Message}", Severity.Error);
         }
+    }
+
+    private Task OpenDialogAsync()
+    {
+        var options = new DialogOptions() { CloseOnEscapeKey = true };
+        return DialogService.ShowAsync<DialogUsageExample_Dialog>("Simple Dialog", options);
     }
 }
 </AuthGuard>

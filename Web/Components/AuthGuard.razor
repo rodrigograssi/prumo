@@ -38,8 +38,8 @@ else if (_estaAutenticado)
                 
                 if (existemUsuarios)
                 {
-                    // Redirecionar para login se existem usuários
-                    Navigation.NavigateTo("/login", true);
+                    // Redirecionar para login (página inicial) se existem usuários
+                    Navigation.NavigateTo("/", true);
                 }
                 else
                 {
@@ -52,7 +52,7 @@ else if (_estaAutenticado)
         catch (Exception ex)
         {
             Console.WriteLine($"Erro na verificação de autenticação: {ex.Message}");
-            Navigation.NavigateTo("/login", true);
+            Navigation.NavigateTo("/", true);
             return;
         }
         finally

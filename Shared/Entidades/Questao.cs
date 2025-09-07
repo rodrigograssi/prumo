@@ -1,10 +1,11 @@
 namespace PesquisaX.Shared.Modelos;
 
-public class Questao
+public class Questao:Entidade
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
     public string Texto { get; set; } = string.Empty;
     public bool EInvertida { get; set; } = false;
+    
+    public Guid GrupoDeQuestaoId { get; set; }
     
     public int ProcessarResposta(int respostaBruta)
     {

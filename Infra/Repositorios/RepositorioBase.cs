@@ -44,6 +44,8 @@ public abstract class RepositorioBase<T> : IRepositorioBase<T> where T : class
 
     public virtual async Task AtualizarAsync(T entidade)
     {
+        // Desacoplar todas as entidades rastreadas para evitar conflitos
+        // _contexto.ChangeTracker.Clear();
         _dbSet.Update(entidade);
         await _contexto.SaveChangesAsync();
     }

@@ -41,14 +41,17 @@ public class AuthService : IAuthService
 
             if (loginResponse?.Sucesso == true && !string.IsNullOrEmpty(loginResponse.Token))
             {
-                await SalvarTokenAsync(loginResponse.Token);
-                await SalvarUsuarioAsync(loginResponse.Usuario!);
+                // Usar localStorage para manter conectado, sessionStorage para sessão única
+                var storage = request.ManterConectado ? "localStorage" : "sessionStorage";
+                await SalvarTokenAsync(loginResponse.Token, storage);
+                await SalvarUsuarioAsync(loginResponse.Usuario!, storage);
                 ConfigurarHttpClientHeaders(loginResponse.Token);
                 
                 _token = loginResponse.Token;
                 _usuarioAtual = loginResponse.Usuario;
                 
-                _logger.LogInformation("Login realizado com sucesso para: {Email}", request.Email);
+                _logger.LogInformation("Login realizado com sucesso para: {Email} (Manter conectado: {ManterConectado})", 
+                    request.Email, request.ManterConectado);
             }
 
             return loginResponse ?? new LoginResponse { Sucesso = false, Mensagem = "Erro na comunicação com o servidor" };
@@ -111,8 +114,11 @@ public class AuthService : IAuthService
         {
             _logger.LogInformation("Realizando logout");
             
+            // Remover de ambos os storages
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", TOKEN_KEY);
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", USER_KEY);
+            await _jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", TOKEN_KEY);
+            await _jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", USER_KEY);
             
             _token = null;
             _usuarioAtual = null;
@@ -130,7 +136,7 @@ public class AuthService : IAuthService
     {
         try
         {
-            var token = await ObterTokenDoLocalStorageAsync();
+            var token = await ObterTokenDoStorageAsync();
             
             if (string.IsNullOrEmpty(token))
                 return false;
@@ -157,7 +163,10 @@ public class AuthService : IAuthService
 
         try
         {
+            // Tenta localStorage primeiro, depois sessionStorage
             var usuarioJson = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", USER_KEY);
+            if (string.IsNullOrEmpty(usuarioJson))
+                usuarioJson = await _jsRuntime.InvokeAsync<string>("sessionStorage.getItem", USER_KEY);
             
             if (string.IsNullOrEmpty(usuarioJson))
                 return null;
@@ -171,7 +180,7 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter usuário do localStorage");
+            _logger.LogError(ex, "Erro ao obter usuário do storage");
             return null;
         }
     }
@@ -181,25 +190,30 @@ public class AuthService : IAuthService
         return _token;
     }
 
-    private async Task SalvarTokenAsync(string token)
+    private async Task SalvarTokenAsync(string token, string storage = "localStorage")
     {
-        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", TOKEN_KEY, token);
+        await _jsRuntime.InvokeVoidAsync($"{storage}.setItem", TOKEN_KEY, token);
     }
 
-    private async Task SalvarUsuarioAsync(Usuario usuario)
+    private async Task SalvarUsuarioAsync(Usuario usuario, string storage = "localStorage")
     {
         var usuarioJson = JsonSerializer.Serialize(usuario, new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         });
-        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", USER_KEY, usuarioJson);
+        await _jsRuntime.InvokeVoidAsync($"{storage}.setItem", USER_KEY, usuarioJson);
     }
 
-    private async Task<string?> ObterTokenDoLocalStorageAsync()
+    private async Task<string?> ObterTokenDoStorageAsync()
     {
         try
         {
-            return await _jsRuntime.InvokeAsync<string>("localStorage.getItem", TOKEN_KEY);
+            // Tenta localStorage primeiro, depois sessionStorage
+            var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", TOKEN_KEY);
+            if (!string.IsNullOrEmpty(token))
+                return token;
+                
+            return await _jsRuntime.InvokeAsync<string>("sessionStorage.getItem", TOKEN_KEY);
         }
         catch
         {
@@ -254,7 +268,7 @@ public class AuthService : IAuthService
     {
         try
         {
-            var token = await ObterTokenDoLocalStorageAsync();
+            var token = await ObterTokenDoStorageAsync();
             
             if (!string.IsNullOrEmpty(token) && !TokenEstaExpirado(token))
             {

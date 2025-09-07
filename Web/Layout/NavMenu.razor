@@ -1,17 +1,21 @@
 ﻿<MudNavMenu>
-    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="Icons.Material.Filled.Home">
+    <MudNavLink Href="/home" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
         Início
     </MudNavLink>
-    <MudNavLink Href="/pesquisas" Icon="Icons.Material.Filled.List">
+    <MudNavLink Href="/pesquisas" Icon="@Icons.Material.Filled.List">
         Pesquisas
     </MudNavLink>
-    <MudNavLink Href="/criar-pesquisa" Icon="Icons.Material.Filled.Add">
+    <MudNavLink Href="/criar-pesquisa" Icon="@Icons.Material.Filled.Add">
         Criar Pesquisa
     </MudNavLink>
     <MudDivider Class="my-2" />
-    <MudNavGroup Text="Administração" Icon="Icons.Material.Filled.AdminPanelSettings" Expanded="false">
-        <MudNavLink Href="/usuarios" Icon="Icons.Material.Filled.People">
+  
+    <MudNavGroup Title="Administração" Icon="@Icons.Material.Filled.AdminPanelSettings" Expanded="false">
+        <MudNavLink Href="/usuarios" Icon="@Icons.Material.Filled.People">
             Gerenciar Usuários
+        </MudNavLink>
+        <MudNavLink Href="/changelog" Icon="@Icons.Material.Filled.Timeline">
+            Histórico de Mudanças
         </MudNavLink>
     </MudNavGroup>
 </MudNavMenu>

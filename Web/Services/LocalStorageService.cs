@@ -36,7 +36,7 @@ public class LocalStorageService : IServicoPesquisa
         return pesquisas.FirstOrDefault(s => s.Id == id);
     }
     
-    public async Task SalvarPesquisaAsync(Pesquisa pesquisa)
+    public async Task CriarPesquisaAsync(Pesquisa pesquisa)
     {
         var pesquisas = await ObterTodasPesquisasAsync();
         var existingIndex = pesquisas.FindIndex(s => s.Id == pesquisa.Id);
@@ -48,7 +48,12 @@ public class LocalStorageService : IServicoPesquisa
             
         await SalvarPesquisasAsync(pesquisas);
     }
-    
+
+    public Task AlterarPesquisaAsync(Pesquisa pesquisa)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task ExcluirPesquisaAsync(Guid id)
     {
         var pesquisas = await ObterTodasPesquisasAsync();
@@ -62,26 +67,26 @@ public class LocalStorageService : IServicoPesquisa
         if (pesquisa == null)
             throw new ArgumentException("Pesquisa não encontrada");
             
-        var existingIndex = pesquisa.Resultados.FindIndex(r => r.Id == resultado.Id);
+        var existingIndex = pesquisa.ResultadosPessoas.FindIndex(r => r.Id == resultado.Id);
         if (existingIndex >= 0)
-            pesquisa.Resultados[existingIndex] = resultado;
+            pesquisa.ResultadosPessoas[existingIndex] = resultado;
         else
-            pesquisa.Resultados.Add(resultado);
+            pesquisa.ResultadosPessoas.Add(resultado);
             
-        await SalvarPesquisaAsync(pesquisa);
+        await CriarPesquisaAsync(pesquisa);
         return resultado;
     }
     
     public async Task<List<ResultadoPessoa>> ObterResultadosPesquisaAsync(Guid pesquisaId)
     {
         var pesquisa = await ObterPesquisaPorIdAsync(pesquisaId);
-        return pesquisa?.Resultados ?? new List<ResultadoPessoa>();
+        return pesquisa?.ResultadosPessoas ?? new List<ResultadoPessoa>();
     }
     
     public async Task<ResultadoPessoa?> ObterResultadoPessoaAsync(Guid pesquisaId, Guid pessoaId)
     {
         var pesquisa = await ObterPesquisaPorIdAsync(pesquisaId);
-        return pesquisa?.Resultados.FirstOrDefault(r => r.Id == pessoaId);
+        return pesquisa?.ResultadosPessoas.FirstOrDefault(r => r.Id == pessoaId);
     }
     
     public async Task<string> ExportarDadosAsync()

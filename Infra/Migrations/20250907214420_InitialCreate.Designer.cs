@@ -12,8 +12,8 @@ using PesquisaX.Infra.Contexto;
 namespace PesquisaX.Infra.Migrations
 {
     [DbContext(typeof(PesquisaXContexto))]
-    [Migration("20250904225028_InicialCreate")]
-    partial class InicialCreate
+    [Migration("20250907214420_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,13 +52,13 @@ namespace PesquisaX.Infra.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("nome");
 
-                    b.Property<Guid?>("pesquisa_id")
+                    b.Property<Guid>("PesquisaId")
                         .HasColumnType("uuid")
                         .HasColumnName("pesquisa_id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("pesquisa_id");
+                    b.HasIndex("PesquisaId");
 
                     b.ToTable("grupos_questoes", (string)null);
                 });
@@ -98,25 +98,30 @@ namespace PesquisaX.Infra.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("e_invertida");
 
+                    b.Property<Guid>("GrupoDeQuestaoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("grupo_questao_id");
+
                     b.Property<string>("Texto")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("texto");
 
-                    b.Property<Guid?>("grupo_questao_id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("grupo_questao_id");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("grupo_questao_id");
+                    b.HasIndex("GrupoDeQuestaoId");
 
                     b.ToTable("questoes", (string)null);
                 });
 
             modelBuilder.Entity("PesquisaX.Shared.Modelos.Resposta", b =>
                 {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
                     b.Property<Guid>("QuestaoId")
                         .HasColumnType("uuid")
                         .HasColumnName("questao_id");
@@ -133,18 +138,13 @@ namespace PesquisaX.Infra.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("valor_processado");
 
-                    b.Property<Guid?>("resultado_pessoa_id")
-                        .HasColumnType("uuid");
+                    b.HasKey("Id");
 
-                    b.HasKey("QuestaoId", "ResultadoPessoaId");
+                    b.HasIndex("QuestaoId");
 
-                    b.HasIndex("resultado_pessoa_id");
+                    b.HasIndex("ResultadoPessoaId");
 
-                    b.ToTable("respostas", null, t =>
-                        {
-                            t.Property("resultado_pessoa_id")
-                                .HasColumnName("resultado_pessoa_id1");
-                        });
+                    b.ToTable("respostas", (string)null);
                 });
 
             modelBuilder.Entity("PesquisaX.Shared.Modelos.ResultadoPessoa", b =>
@@ -170,31 +170,72 @@ namespace PesquisaX.Infra.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("nome_pessoa");
 
-                    b.Property<Guid?>("pesquisa_id")
+                    b.Property<Guid>("PesquisaId")
                         .HasColumnType("uuid")
                         .HasColumnName("pesquisa_id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("pesquisa_id");
+                    b.HasIndex("PesquisaId");
 
                     b.ToTable("resultados_pessoas", (string)null);
+                });
+
+            modelBuilder.Entity("PesquisaX.Shared.Usuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("data_criacao");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("nome");
+
+                    b.Property<string>("Senha")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("senha");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("ix_usuarios_email");
+
+                    b.ToTable("usuarios", (string)null);
                 });
 
             modelBuilder.Entity("PesquisaX.Shared.Modelos.GrupoQuestao", b =>
                 {
                     b.HasOne("PesquisaX.Shared.Modelos.Pesquisa", null)
                         .WithMany("GruposQuestoes")
-                        .HasForeignKey("pesquisa_id")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("PesquisaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("PesquisaX.Shared.Modelos.Questao", b =>
                 {
                     b.HasOne("PesquisaX.Shared.Modelos.GrupoQuestao", null)
                         .WithMany("Questoes")
-                        .HasForeignKey("grupo_questao_id")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("GrupoDeQuestaoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("PesquisaX.Shared.Modelos.Resposta", b =>
@@ -207,16 +248,18 @@ namespace PesquisaX.Infra.Migrations
 
                     b.HasOne("PesquisaX.Shared.Modelos.ResultadoPessoa", null)
                         .WithMany("Respostas")
-                        .HasForeignKey("resultado_pessoa_id")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("ResultadoPessoaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("PesquisaX.Shared.Modelos.ResultadoPessoa", b =>
                 {
                     b.HasOne("PesquisaX.Shared.Modelos.Pesquisa", null)
-                        .WithMany("Resultados")
-                        .HasForeignKey("pesquisa_id")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .WithMany("ResultadosPessoas")
+                        .HasForeignKey("PesquisaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("PesquisaX.Shared.Modelos.GrupoQuestao", b =>
@@ -228,7 +271,7 @@ namespace PesquisaX.Infra.Migrations
                 {
                     b.Navigation("GruposQuestoes");
 
-                    b.Navigation("Resultados");
+                    b.Navigation("ResultadosPessoas");
                 });
 
             modelBuilder.Entity("PesquisaX.Shared.Modelos.ResultadoPessoa", b =>

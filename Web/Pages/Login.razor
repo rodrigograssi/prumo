@@ -1,4 +1,6 @@
+@page "/"
 @page "/login"
+@layout AuthLayout
 @using PesquisaX.Shared
 @using MudBlazor
 @inject ISnackbar Snackbar
@@ -7,14 +9,13 @@
 
 <PageTitle>Login - PesquisaX</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
-    <MudCard>
-        <MudCardHeader>
-            <CardHeaderContent>
-                <MudIcon Icon="@Icons.Material.Filled.Login" Class="mr-3" />
-                <MudText Typo="Typo.h5">Entrar no Sistema</MudText>
-            </CardHeaderContent>
-        </MudCardHeader>
+<MudCard Elevation="2">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudIcon Icon="@Icons.Material.Filled.Login" Class="mr-3" />
+            <MudText Typo="Typo.h5">Entrar no Sistema</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
         
         <MudForm @ref="form">
             <MudCardContent>
@@ -33,6 +34,19 @@
                              Required="true"
                              RequiredError="Senha é obrigatória"
                              Class="mb-4" />
+                
+                <MudCheckBox @bind-Value="loginRequest.ManterConectado"
+                           Label="Manter-me conectado"
+                           Color="Color.Primary"
+                           Class="mb-3" />
+                
+                @if (loginRequest.ManterConectado)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Info" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-1" />
+                        Sua sessão será mantida mesmo após fechar o navegador
+                    </MudText>
+                }
             </MudCardContent>
             
             <MudCardActions Class="pa-4">
@@ -71,7 +85,6 @@
             </MudCardContent>
         }
     </MudCard>
-</MudContainer>
 
 @code {
     private MudForm form = new();
@@ -81,6 +94,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Verificar se já está autenticado
+        if (await AuthService.EstaAutenticadoAsync())
+        {
+            Navigation.NavigateTo("/home", replace: true);
+            return;
+        }
+
         // Verificar se pode registrar (só se não há usuários)
         _podeRegistrar = !(await AuthService.ExistemUsuariosAsync());
     }
@@ -100,7 +120,7 @@
             if (response.Sucesso)
             {
                 Snackbar.Add(response.Mensagem, Severity.Success);
-                Navigation.NavigateTo("/");
+                Navigation.NavigateTo("/home", replace: true);
             }
             else
             {

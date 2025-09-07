@@ -42,13 +42,13 @@ public class PesquisaXContexto : DbContext
             // Relacionamento um-para-muitos com GrupoQuestao
             entity.HasMany(p => p.GruposQuestoes)
                 .WithOne()
-                .HasForeignKey("pesquisa_id")
+                .HasForeignKey( g=> g.PesquisaId )
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Relacionamento um-para-muitos com ResultadoPessoa
-            entity.HasMany(p => p.Resultados)
+            entity.HasMany(p => p.ResultadosPessoas)
                 .WithOne()
-                .HasForeignKey("pesquisa_id")
+                .HasForeignKey(r => r.PesquisaId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -76,13 +76,13 @@ public class PesquisaXContexto : DbContext
                 .HasMaxLength(7)
                 .HasDefaultValue("#FF6B6B");
 
-            entity.Property("pesquisa_id")
+            entity.Property(g => g.PesquisaId)
                 .HasColumnName("pesquisa_id");
 
             // Relacionamento um-para-muitos com Questao
             entity.HasMany(g => g.Questoes)
                 .WithOne()
-                .HasForeignKey("grupo_questao_id")
+                .HasForeignKey(q => q.GrupoDeQuestaoId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -104,7 +104,7 @@ public class PesquisaXContexto : DbContext
                 .HasColumnName("e_invertida")
                 .HasDefaultValue(false);
 
-            entity.Property("grupo_questao_id")
+            entity.Property(e => e.GrupoDeQuestaoId)
                 .HasColumnName("grupo_questao_id");
         });
 
@@ -130,26 +130,25 @@ public class PesquisaXContexto : DbContext
                 .HasColumnName("data_avaliacao")
                 .IsRequired();
 
-            entity.Property("pesquisa_id")
+            entity.Property(e => e.PesquisaId)
                 .HasColumnName("pesquisa_id");
 
-            // Relacionamento um-para-muitos com Resposta
-            entity.HasMany(r => r.Respostas)
-                .WithOne()
-                .HasForeignKey("resultado_pessoa_id")
-                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Configuração da entidade Resposta
         modelBuilder.Entity<Resposta>(entity =>
         {
             entity.ToTable("respostas");
+            entity.HasKey(e => e.Id);
             
-            // Chave composta: QuestaoId + ResultadoPessoaId
-            entity.HasKey("QuestaoId", "resultado_pessoa_id");
+            entity.Property(e => e.Id)
+                .HasColumnName("id");
             
             entity.Property(e => e.QuestaoId)
                 .HasColumnName("questao_id");
+                
+            entity.Property(e => e.ResultadoPessoaId)
+                .HasColumnName("resultado_pessoa_id");
                 
             entity.Property(e => e.ValorBruto)
                 .HasColumnName("valor_bruto")
@@ -163,6 +162,12 @@ public class PesquisaXContexto : DbContext
             entity.HasOne<Questao>()
                 .WithMany()
                 .HasForeignKey(r => r.QuestaoId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            // Relacionamento com ResultadoPessoa
+            entity.HasOne<ResultadoPessoa>()
+                .WithMany(rp => rp.Respostas)
+                .HasForeignKey(r => r.ResultadoPessoaId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

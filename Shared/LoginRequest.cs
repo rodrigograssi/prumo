@@ -10,4 +10,6 @@ public class LoginRequest
     
     [Required(ErrorMessage = "Senha é obrigatória")]
     public string Senha { get; set; } = string.Empty;
+    
+    public bool ManterConectado { get; set; } = false;
 }

@@ -1,5 +1,6 @@
 @page "/criar-pesquisa"
 @page "/editar-pesquisa/{PesquisaId:guid}"
+@using System.Text.RegularExpressions
 @inject IServicoPesquisa ServicoPesquisa
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
@@ -26,7 +27,7 @@
                 <MudStack>
                     <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                         <MudText Typo="Typo.h6">Grupo de Perguntas</MudText>
-                        <MudIconButton Icon="Icons.Material.Filled.Delete" 
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
                                      Color="Color.Error" 
                                      Size="Size.Small"
                                      OnClick="() => RemoveGroup(group)" />
@@ -46,10 +47,18 @@
                                         Variant="Variant.Outlined" />
                         </MudItem>
                         <MudItem xs="12" md="4">
-                            <MudTextField T="string" Label="Cor (Hex)" 
-                                        @bind-Value="group.Cor" 
-                                        Variant="Variant.Outlined"
-                                        Placeholder="#FF6B6B" />
+                            @* <MudTextField T="string" Label="Cor (Hex)"  *@
+                            @*             @bind-Value="group.Cor"  *@
+                            @*             Variant="Variant.Outlined" *@
+                            @*             Placeholder="#FF6B6B" /> *@
+                            <MudColorPicker
+                                Label="Cor do grupo"
+                                @bind-Text="group.Cor"
+                                Placeholder="Selecione uma cor"
+                                ShowInputs="false"
+                                ShowToolbar="true"
+                                ShowAlpha="false"
+                                />
                         </MudItem>
                     </MudGrid>
 
@@ -71,7 +80,7 @@
                                            @bind-Value="question.EInvertida" 
                                            Color="Color.Primary" />
                                            
-                                <MudIconButton Icon="Icons.Material.Filled.Delete" 
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
                                              Color="Color.Error" 
                                              Size="Size.Small"
                                              OnClick="() => RemoveQuestao(group, question)" />
@@ -81,7 +90,7 @@
                     
                     <MudButton Variant="Variant.Text" 
                              Color="Color.Primary" 
-                             StartIcon="Icons.Material.Filled.Add"
+                             StartIcon="@Icons.Material.Filled.Add"
                              OnClick="() => AddQuestao(group)">
                         Adicionar Pergunta
                     </MudButton>
@@ -92,7 +101,7 @@
         <MudPaper Elevation="1" Class="pa-4 mb-4 text-center">
             <MudButton Variant="Variant.Outlined" 
                      Color="Color.Success" 
-                     StartIcon="Icons.Material.Filled.Add" 
+                     StartIcon="@Icons.Material.Filled.Add" 
                      OnClick="AddGroup">
                 Adicionar Grupo de Perguntas
             </MudButton>
@@ -101,7 +110,7 @@
         <MudPaper Elevation="1" Class="pa-4">
             <MudStack Row Justify="Justify.SpaceBetween">
                 <MudButton Variant="Variant.Text" 
-                         StartIcon="Icons.Material.Filled.ArrowBack"
+                         StartIcon="@Icons.Material.Filled.ArrowBack"
                          OnClick="GoBack">
                     Voltar
                 </MudButton>
@@ -186,7 +195,11 @@
 
         try
         {
-            await ServicoPesquisa.SalvarPesquisaAsync(survey);
+            if(PesquisaId == null)
+                await ServicoPesquisa.CriarPesquisaAsync(survey);
+            else
+                await ServicoPesquisa.AlterarPesquisaAsync(survey); 
+            
             Snackbar.Add(IsEditing ? "Pesquisa atualizada com sucesso" : "Pesquisa criada com sucesso", Severity.Success);
             Navigation.NavigateTo("/pesquisas");
         }

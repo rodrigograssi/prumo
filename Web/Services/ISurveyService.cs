@@ -6,7 +6,8 @@ public interface IServicoPesquisa
 {
     Task<List<Pesquisa>> ObterTodasPesquisasAsync();
     Task<Pesquisa?> ObterPesquisaPorIdAsync(Guid id);
-    Task SalvarPesquisaAsync(Pesquisa pesquisa);
+    Task CriarPesquisaAsync(Pesquisa pesquisa);
+    Task AlterarPesquisaAsync(Pesquisa pesquisa);
     Task ExcluirPesquisaAsync(Guid id);
     Task<ResultadoPessoa> SalvarResultadoPessoaAsync(Guid pesquisaId, ResultadoPessoa resultado);
     Task<List<ResultadoPessoa>> ObterResultadosPesquisaAsync(Guid pesquisaId);

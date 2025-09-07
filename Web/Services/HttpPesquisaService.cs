@@ -40,11 +40,28 @@ public class HttpPesquisaService : IServicoPesquisa
         }
     }
 
-    public async Task SalvarPesquisaAsync(Pesquisa pesquisa)
+
+    public async Task CriarPesquisaAsync(Pesquisa pesquisa)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync(API_BASE_URL, pesquisa);
+            HttpResponseMessage response;
+            response = await _httpClient.PostAsJsonAsync(API_BASE_URL, pesquisa);
+           
+            response.EnsureSuccessStatusCode();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Erro ao salvar pesquisa: {ex.Message}", ex);
+        }
+    }
+    
+    public async Task AlterarPesquisaAsync(Pesquisa pesquisa)
+    {
+        try
+        {
+            HttpResponseMessage response;
+            response = await _httpClient.PutAsJsonAsync($"{API_BASE_URL}/{pesquisa.Id}", pesquisa);
             response.EnsureSuccessStatusCode();
         }
         catch (Exception ex)
@@ -132,7 +149,7 @@ public class HttpPesquisaService : IServicoPesquisa
             {
                 foreach (var pesquisa in pesquisas)
                 {
-                    await SalvarPesquisaAsync(pesquisa);
+                    await CriarPesquisaAsync(pesquisa);
                 }
             }
         }

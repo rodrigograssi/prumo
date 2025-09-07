@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace PesquisaX.Infra.Migrations
 {
     /// <inheritdoc />
-    public partial class InicialCreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,6 +26,22 @@ namespace PesquisaX.Infra.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "usuarios",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    nome = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    senha = table.Column<string>(type: "text", nullable: false),
+                    data_criacao = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_usuarios", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "grupos_questoes",
                 columns: table => new
                 {
@@ -32,7 +49,7 @@ namespace PesquisaX.Infra.Migrations
                     nome = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     categoria = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     cor = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false, defaultValue: "#FF6B6B"),
-                    pesquisa_id = table.Column<Guid>(type: "uuid", nullable: true)
+                    pesquisa_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -53,7 +70,7 @@ namespace PesquisaX.Infra.Migrations
                     nome_pessoa = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     email = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
                     data_avaliacao = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    pesquisa_id = table.Column<Guid>(type: "uuid", nullable: true)
+                    pesquisa_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -73,7 +90,7 @@ namespace PesquisaX.Infra.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     texto = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     e_invertida = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    grupo_questao_id = table.Column<Guid>(type: "uuid", nullable: true)
+                    grupo_questao_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -90,15 +107,15 @@ namespace PesquisaX.Infra.Migrations
                 name: "respostas",
                 columns: table => new
                 {
-                    questao_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
                     resultado_pessoa_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    questao_id = table.Column<Guid>(type: "uuid", nullable: false),
                     valor_bruto = table.Column<int>(type: "integer", nullable: false),
-                    valor_processado = table.Column<int>(type: "integer", nullable: false),
-                    resultado_pessoa_id1 = table.Column<Guid>(type: "uuid", nullable: true)
+                    valor_processado = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_respostas", x => new { x.questao_id, x.resultado_pessoa_id });
+                    table.PrimaryKey("PK_respostas", x => x.id);
                     table.ForeignKey(
                         name: "FK_respostas_questoes_questao_id",
                         column: x => x.questao_id,
@@ -106,8 +123,8 @@ namespace PesquisaX.Infra.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_respostas_resultados_pessoas_resultado_pessoa_id1",
-                        column: x => x.resultado_pessoa_id1,
+                        name: "FK_respostas_resultados_pessoas_resultado_pessoa_id",
+                        column: x => x.resultado_pessoa_id,
                         principalTable: "resultados_pessoas",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -124,14 +141,25 @@ namespace PesquisaX.Infra.Migrations
                 column: "grupo_questao_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_respostas_resultado_pessoa_id1",
+                name: "IX_respostas_questao_id",
                 table: "respostas",
-                column: "resultado_pessoa_id1");
+                column: "questao_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_respostas_resultado_pessoa_id",
+                table: "respostas",
+                column: "resultado_pessoa_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_resultados_pessoas_pesquisa_id",
                 table: "resultados_pessoas",
                 column: "pesquisa_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_usuarios_email",
+                table: "usuarios",
+                column: "email",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -139,6 +167,9 @@ namespace PesquisaX.Infra.Migrations
         {
             migrationBuilder.DropTable(
                 name: "respostas");
+
+            migrationBuilder.DropTable(
+                name: "usuarios");
 
             migrationBuilder.DropTable(
                 name: "questoes");

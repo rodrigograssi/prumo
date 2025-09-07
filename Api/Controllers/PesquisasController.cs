@@ -1,11 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PesquisaX.Infra.Repositorios;
 using PesquisaX.Shared.Modelos;
+using System.Security.Claims;
 
 namespace PesquisaX.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class PesquisasController : ControllerBase
 {
     private readonly IRepositorioPesquisa _repositorioPesquisa;
@@ -18,6 +21,23 @@ public class PesquisasController : ControllerBase
     }
 
     /// <summary>
+    /// Obtém o ID do usuário atual autenticado
+    /// </summary>
+    private Guid ObterUsuarioIdAtual()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return Guid.TryParse(userId, out var id) ? id : Guid.Empty;
+    }
+
+    /// <summary>
+    /// Obtém o nome do usuário atual autenticado
+    /// </summary>
+    private string ObterNomeUsuarioAtual()
+    {
+        return User.FindFirst(ClaimTypes.Name)?.Value ?? "Usuário";
+    }
+
+    /// <summary>
     /// Obtém todas as pesquisas
     /// </summary>
     [HttpGet]
@@ -25,12 +45,17 @@ public class PesquisasController : ControllerBase
     {
         try
         {
+            var usuarioId = ObterUsuarioIdAtual();
+            var nomeUsuario = ObterNomeUsuarioAtual();
+            
+            _logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) solicitou todas as pesquisas", nomeUsuario, usuarioId);
+            
             var pesquisas = await _repositorioPesquisa.ObterTodosAsync();
             return Ok(pesquisas);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter todas as pesquisas");
+            _logger.LogError(ex, "Erro ao obter todas as pesquisas para usuário {UsuarioId}", ObterUsuarioIdAtual());
             return StatusCode(500, "Erro interno do servidor");
         }
     }
@@ -67,12 +92,22 @@ public class PesquisasController : ControllerBase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            var usuarioId = ObterUsuarioIdAtual();
+            var nomeUsuario = ObterNomeUsuarioAtual();
+            
+            _logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) está criando nova pesquisa: {NomePesquisa}", 
+                nomeUsuario, usuarioId, pesquisa.Nome);
+
             var pesquisaCriada = await _repositorioPesquisa.AdicionarAsync(pesquisa);
+            
+            _logger.LogInformation("Pesquisa {PesquisaId} criada com sucesso por {NomeUsuario} ({UsuarioId})", 
+                pesquisaCriada.Id, nomeUsuario, usuarioId);
+                
             return CreatedAtAction(nameof(ObterPesquisaPorId), new { id = pesquisaCriada.Id }, pesquisaCriada);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao criar pesquisa");
+            _logger.LogError(ex, "Erro ao criar pesquisa para usuário {UsuarioId}", ObterUsuarioIdAtual());
             return StatusCode(500, "Erro interno do servidor");
         }
     }
@@ -91,11 +126,13 @@ public class PesquisasController : ControllerBase
             if (id != pesquisa.Id)
                 return BadRequest("ID da URL não confere com ID da pesquisa");
 
-            var pesquisaExistente = await _repositorioPesquisa.ExisteAsync(id);
-            if (!pesquisaExistente)
+            // Verificação de existência sem carregar a entidade para não criar conflito de tracking
+            var pesquisaExistente = await _repositorioPesquisa.ObterPorIdAsync(id); 
+            if (pesquisaExistente == null)
                 return NotFound($"Pesquisa com ID {id} não encontrada");
 
-            await _repositorioPesquisa.AtualizarAsync(pesquisa);
+            await _repositorioPesquisa.ExcluirAsync(pesquisa.Id);
+            await _repositorioPesquisa.AdicionarAsync(pesquisa);
             return NoContent();
         }
         catch (Exception ex)
@@ -137,8 +174,11 @@ public class PesquisasController : ControllerBase
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+            
+            if(resultado.PesquisaId != pesquisaId)
+                resultado.PesquisaId = pesquisaId;
 
-            var resultadoSalvo = await _repositorioPesquisa.AdicionarResultadoAsync(pesquisaId, resultado);
+            var resultadoSalvo = await _repositorioPesquisa.AdicionarResultadoAsync(resultado);
             return Ok(resultadoSalvo);
         }
         catch (ArgumentException ex)

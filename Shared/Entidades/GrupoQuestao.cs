@@ -1,12 +1,13 @@
 namespace PesquisaX.Shared.Modelos;
 
-public class GrupoQuestao
+public class GrupoQuestao: Entidade
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
     public string Nome { get; set; } = string.Empty;
     public string Categoria { get; set; } = string.Empty;
     public string Cor { get; set; } = "#FF6B6B";
-    public List<Questao> Questoes { get; set; } = new();
+    public List<Questao> Questoes { get; set; } = [];
+    
+    public Guid PesquisaId { get; set; }
     
     public double ObterPesoQuestao()
     {

@@ -5,7 +5,7 @@
 
 <PageTitle>Aplicar Pesquisa</PageTitle>
 
-@if (survey == null)
+@if (_pesquisa == null)
 {
     <MudContainer>
         <MudProgressLinear Indeterminate="true" />
@@ -17,32 +17,32 @@ else
     <MudContainer MaxWidth="MaxWidth.Large">
         <MudPaper Elevation="2" Class="pa-4 mb-4">
             <MudStack>
-                <MudText Typo="Typo.h4">@survey.Nome</MudText>
+                <MudText Typo="Typo.h4">@_pesquisa.Nome</MudText>
                 <MudText Typo="Typo.body1" Color="Color.Secondary">
                     Interface otimizada para aplicação durante meetings
                 </MudText>
             </MudStack>
         </MudPaper>
 
-        <MudForm @ref="form" Model="personResult" @bind-IsValid="formIsValid">
+        <MudForm @ref="form" Model="_resultadoPessoa" @bind-IsValid="formIsValid">
             <MudPaper Elevation="1" Class="pa-4 mb-4">
                 <MudGrid>
                     <MudItem xs="12" md="6">
                         <MudTextField T="string" Label="Nome da Pessoa Avaliada" 
-                                    @bind-Value="personResult.NomePessoa" 
+                                    @bind-Value="_resultadoPessoa.NomePessoa" 
                                     Required="true"
                                     Variant="Variant.Outlined" 
                                     Immediate="true" />
                     </MudItem>
                     <MudItem xs="12" md="6">
                         <MudTextField T="string" Label="Email (Opcional)" 
-                                    @bind-Value="personResult.Email" 
+                                    @bind-Value="_resultadoPessoa.Email" 
                                     Variant="Variant.Outlined" />
                     </MudItem>
                 </MudGrid>
             </MudPaper>
 
-            @foreach (var group in survey.GruposQuestoes)
+            @foreach (var group in _pesquisa.GruposQuestoes)
             {
                 <MudPaper Elevation="2" Class="pa-4 mb-4" Style="@($"background: linear-gradient(135deg, #f8f9ff 0%, #e8f5e8 100%); border-left: 4px solid {group.Cor}; box-shadow: 0 2px 8px rgba(0,0,0,0.1);")">
                     <MudStack>
@@ -126,7 +126,7 @@ else
                         <MudButton Variant="Variant.Filled" 
                                  Color="Color.Success" 
                                  Size="Size.Large"
-                                 Disabled="@(!formIsValid || string.IsNullOrWhiteSpace(personResult.NomePessoa))"
+                                 Disabled="@(!formIsValid || string.IsNullOrWhiteSpace(_resultadoPessoa.NomePessoa))"
                                  OnClick="FinishAndShowResult">
                             Finalizar e Ver Resultado
                         </MudButton>
@@ -142,16 +142,16 @@ else
     
     private MudForm form = new();
     private bool formIsValid = true;
-    private Pesquisa? survey;
-    private ResultadoPessoa personResult = new();
-    private Dictionary<Guid, int> answers = new();
+    private Pesquisa? _pesquisa;
+    private ResultadoPessoa _resultadoPessoa = new();
+    private Dictionary<Guid, int> _respostas = new();
 
     readonly string[] _labels = new[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" };
     
     protected override async Task OnInitializedAsync()
     {
-        survey = await ServicoPesquisa.ObterPesquisaPorIdAsync(PesquisaId);
-        if (survey == null)
+        _pesquisa = await ServicoPesquisa.ObterPesquisaPorIdAsync(PesquisaId);
+        if (_pesquisa == null)
         {
             Snackbar.Add("Pesquisa não encontrada", Severity.Error);
             Navigation.NavigateTo("/pesquisas");
@@ -164,17 +164,17 @@ else
 
     private void InitializeRespostas()
     {
-        if (survey == null) return;
+        if (_pesquisa == null) return;
         
-        answers.Clear();
-        personResult.Respostas.Clear();
+        _respostas.Clear();
+        _resultadoPessoa.Respostas.Clear();
         
-        foreach (var group in survey.GruposQuestoes)
+        foreach (var group in _pesquisa.GruposQuestoes)
         {
             foreach (var question in group.Questoes)
             {
-                answers[question.Id] = 0;
-                personResult.Respostas.Add(new Resposta 
+                _respostas[question.Id] = 0;
+                _resultadoPessoa.Respostas.Add(new Resposta 
                 { 
                     QuestaoId = question.Id, 
                     ValorBruto = 0, 
@@ -186,20 +186,20 @@ else
 
     private int GetRespostaValue(Guid questionId)
     {
-        return answers.TryGetValue(questionId, out int value) ? value : 0;
+        return _respostas.TryGetValue(questionId, out int value) ? value : 0;
     }
 
     private void SetRespostaValue(Guid questionId, int value)
     {
-        answers[questionId] = value;
+        _respostas[questionId] = value;
         
-        var answer = personResult.Respostas.FirstOrDefault(a => a.QuestaoId == questionId);
+        var answer = _resultadoPessoa.Respostas.FirstOrDefault(a => a.QuestaoId == questionId);
         if (answer != null)
         {
             answer.ValorBruto = value;
             
             // Encontrar a pergunta para processar o valor
-            var question = survey?.GruposQuestoes
+            var question = _pesquisa?.GruposQuestoes
                 .SelectMany(g => g.Questoes)
                 .FirstOrDefault(q => q.Id == questionId);
                 
@@ -213,24 +213,24 @@ else
     private void ClearAll()
     {
         InitializeRespostas();
-        personResult.NomePessoa = "";
-        personResult.Email = "";
+        _resultadoPessoa.NomePessoa = "";
+        _resultadoPessoa.Email = "";
         StateHasChanged();
     }
 
     private async Task FinishAndShowResult()
     {
-        if (survey == null || string.IsNullOrWhiteSpace(personResult.NomePessoa))
+        if (_pesquisa == null || string.IsNullOrWhiteSpace(_resultadoPessoa.NomePessoa))
             return;
 
         try
         {
-            personResult.DataAvaliacao = DateTime.UtcNow;
+            _resultadoPessoa.DataAvaliacao = DateTime.UtcNow;
             
-            var savedResult = await ServicoPesquisa.SalvarResultadoPessoaAsync(survey.Id, personResult);
+            var savedResult = await ServicoPesquisa.SalvarResultadoPessoaAsync(_pesquisa.Id, _resultadoPessoa);
             
-            Snackbar.Add($"Avaliação de {personResult.NomePessoa} salva com sucesso!", Severity.Success);
-            Navigation.NavigateTo($"/resultado/{survey.Id}/{savedResult.Id}");
+            Snackbar.Add($"Avaliação de {_resultadoPessoa.NomePessoa} salva com sucesso!", Severity.Success);
+            Navigation.NavigateTo($"/resultado/{_pesquisa.Id}/{savedResult.Id}");
         }
         catch (Exception ex)
         {
