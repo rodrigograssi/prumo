@@ -1,24 +1,23 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PesquisaX.Infra.Repositorios;
-using PesquisaX.Shared.Modelos;
+using PesquisaX.Core.Repositorios;
+using PesquisaX.Core.Modelos;
 using System.Security.Claims;
+using PesquisaX.Core.Extension;
+using PesquisaX.Core.Interfaces;
+using PesquisaX.Shared.Comandos;
+using PesquisaX.Shared.DTO;
+using PesquisaX.Shared.Views;
 
 namespace PesquisaX.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
-public class PesquisasController : ControllerBase
+// [Authorize]
+public class PesquisasController(IPesquisaRepositorio repo,
+    ILogger<PesquisasController> logger, 
+    IPesquisaHandler handler) : ControllerBase
 {
-    private readonly IRepositorioPesquisa _repositorioPesquisa;
-    private readonly ILogger<PesquisasController> _logger;
-
-    public PesquisasController(IRepositorioPesquisa repositorioPesquisa, ILogger<PesquisasController> logger)
-    {
-        _repositorioPesquisa = repositorioPesquisa;
-        _logger = logger;
-    }
 
     /// <summary>
     /// Obtém o ID do usuário atual autenticado
@@ -48,15 +47,15 @@ public class PesquisasController : ControllerBase
             var usuarioId = ObterUsuarioIdAtual();
             var nomeUsuario = ObterNomeUsuarioAtual();
             
-            _logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) solicitou todas as pesquisas", nomeUsuario, usuarioId);
+            logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) solicitou todas as pesquisas", nomeUsuario, usuarioId);
             
-            var pesquisas = await _repositorioPesquisa.ObterTodosAsync();
-            return Ok(pesquisas);
+            var pesquisas = await repo.ObterPequisaListView();
+            return Ok(new RetornoPadrao<List<PesquisaListaView>>(true, "", pesquisas));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter todas as pesquisas para usuário {UsuarioId}", ObterUsuarioIdAtual());
-            return StatusCode(500, "Erro interno do servidor");
+            logger.LogError(ex, "Erro ao obter todas as pesquisas para usuário {UsuarioId}", ObterUsuarioIdAtual());
+            return StatusCode(500,new RetornoPadrao<List<PesquisaListaView>>("Erro interno no sistema", ex.Message));
         }
     }
 
@@ -68,15 +67,15 @@ public class PesquisasController : ControllerBase
     {
         try
         {
-            var pesquisa = await _repositorioPesquisa.ObterPorIdAsync(id);
+            var pesquisa = await repo.SelecionaAsync(id);
             if (pesquisa == null)
                 return NotFound($"Pesquisa com ID {id} não encontrada");
 
-            return Ok(pesquisa);
+            return Ok(new RetornoPadrao<PesquisaCrud>(true, "", pesquisa.ConverteParaCrud()));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter pesquisa com ID {Id}", id);
+            logger.LogError(ex, "Erro ao obter pesquisa com ID {Id}", id);
             return StatusCode(500, "Erro interno do servidor");
         }
     }
@@ -85,7 +84,7 @@ public class PesquisasController : ControllerBase
     /// Cria uma nova pesquisa
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<Pesquisa>> CriarPesquisa([FromBody] Pesquisa pesquisa)
+    public async Task<ActionResult<Pesquisa>> CriarPesquisa([FromBody] PesquisaCrud comando)
     {
         try
         {
@@ -94,20 +93,17 @@ public class PesquisasController : ControllerBase
 
             var usuarioId = ObterUsuarioIdAtual();
             var nomeUsuario = ObterNomeUsuarioAtual();
-            
-            _logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) está criando nova pesquisa: {NomePesquisa}", 
-                nomeUsuario, usuarioId, pesquisa.Nome);
 
-            var pesquisaCriada = await _repositorioPesquisa.AdicionarAsync(pesquisa);
-            
-            _logger.LogInformation("Pesquisa {PesquisaId} criada com sucesso por {NomeUsuario} ({UsuarioId})", 
-                pesquisaCriada.Id, nomeUsuario, usuarioId);
-                
-            return CreatedAtAction(nameof(ObterPesquisaPorId), new { id = pesquisaCriada.Id }, pesquisaCriada);
+            var retorno = await handler.Criar(comando);
+            if (!retorno.Sucesso)
+                logger.LogWarning("Não foi possível criar a pesquisa: {Erro} - {Mensagem}", retorno.Mensagem, retorno.Notificacoes);
+                    
+            logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) está criando nova pesquisa: {NomePesquisa}",nomeUsuario, usuarioId, comando.Nome);
+            return CreatedAtAction(nameof(ObterPesquisaPorId), retorno);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao criar pesquisa para usuário {UsuarioId}", ObterUsuarioIdAtual());
+            logger.LogError(ex, "Erro ao criar pesquisa para usuário {UsuarioId}", ObterUsuarioIdAtual());
             return StatusCode(500, "Erro interno do servidor");
         }
     }
@@ -116,28 +112,26 @@ public class PesquisasController : ControllerBase
     /// Atualiza uma pesquisa existente
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> AtualizarPesquisa(Guid id, [FromBody] Pesquisa pesquisa)
+    public async Task<IActionResult> AtualizarPesquisa(Guid id, [FromBody] PesquisaCrud comando)
     {
         try
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (id != pesquisa.Id)
-                return BadRequest("ID da URL não confere com ID da pesquisa");
+            var usuarioId = ObterUsuarioIdAtual();
+            var nomeUsuario = ObterNomeUsuarioAtual();
 
-            // Verificação de existência sem carregar a entidade para não criar conflito de tracking
-            var pesquisaExistente = await _repositorioPesquisa.ObterPorIdAsync(id); 
-            if (pesquisaExistente == null)
-                return NotFound($"Pesquisa com ID {id} não encontrada");
-
-            await _repositorioPesquisa.ExcluirAsync(pesquisa.Id);
-            await _repositorioPesquisa.AdicionarAsync(pesquisa);
+            var retorno = await handler.Alterar(comando);
+            if (!retorno.Sucesso)
+                logger.LogWarning("Não foi possível alterar a pesquisa: {Erro} - {Mensagem}", retorno.Mensagem, retorno.Notificacoes);
+                    
+            logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) está alteranod pesquisa: {NomePesquisa}",nomeUsuario, usuarioId, comando.Nome);
             return NoContent();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao atualizar pesquisa com ID {Id}", id);
+            logger.LogError(ex, "Erro ao criar pesquisa para usuário {UsuarioId}", ObterUsuarioIdAtual());
             return StatusCode(500, "Erro interno do servidor");
         }
     }
@@ -150,16 +144,15 @@ public class PesquisasController : ControllerBase
     {
         try
         {
-            var pesquisaExistente = await _repositorioPesquisa.ExisteAsync(id);
-            if (!pesquisaExistente)
-                return NotFound($"Pesquisa com ID {id} não encontrada");
 
-            await _repositorioPesquisa.ExcluirAsync(id);
-            return NoContent();
+            var retorno = await handler.Excluir(id);
+            return retorno.Sucesso
+                ? NoContent()
+                : BadRequest(retorno);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao excluir pesquisa com ID {Id}", id);
+            logger.LogError(ex, "Erro ao excluir pesquisa com ID {Id}", id);
             return StatusCode(500, "Erro interno do servidor");
         }
     }
@@ -168,27 +161,26 @@ public class PesquisasController : ControllerBase
     /// Salva resultado de uma pessoa na pesquisa
     /// </summary>
     [HttpPost("{pesquisaId}/resultados")]
-    public async Task<ActionResult<ResultadoPessoa>> SalvarResultadoPessoa(Guid pesquisaId, [FromBody] ResultadoPessoa resultado)
+    public async Task<ActionResult<RespostaPessoa>> SalvarResultadoPessoa(Guid pesquisaId, [FromBody] RespostaPessoaCrud comando)
     {
         try
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
-            if(resultado.PesquisaId != pesquisaId)
-                resultado.PesquisaId = pesquisaId;
 
-            var resultadoSalvo = await _repositorioPesquisa.AdicionarResultadoAsync(resultado);
-            return Ok(resultadoSalvo);
+            var resultado = await handler.CriarResposta(comando);
+            return resultado.Sucesso
+                ? Ok(resultado)
+                : BadRequest(resultado);
         }
         catch (ArgumentException ex)
         {
-            _logger.LogWarning(ex, "Pesquisa não encontrada: {PesquisaId}", pesquisaId);
+            logger.LogWarning(ex, "Pesquisa não encontrada: {PesquisaId}", pesquisaId);
             return NotFound(ex.Message);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao salvar resultado para pesquisa {PesquisaId}", pesquisaId);
+            logger.LogError(ex, "Erro ao salvar resultado para pesquisa {PesquisaId}", pesquisaId);
             return StatusCode(500, "Erro interno do servidor");
         }
     }
@@ -197,16 +189,16 @@ public class PesquisasController : ControllerBase
     /// Obtém todos os resultados de uma pesquisa
     /// </summary>
     [HttpGet("{pesquisaId}/resultados")]
-    public async Task<ActionResult<IEnumerable<ResultadoPessoa>>> ObterResultadosPesquisa(Guid pesquisaId)
+    public async Task<ActionResult<IEnumerable<RespostaPessoa>>> ObterResultadosPesquisa(Guid pesquisaId)
     {
         try
         {
-            var resultados = await _repositorioPesquisa.ObterResultadosPesquisaAsync(pesquisaId);
+            var resultados = await repo.ObterResultadosPesquisaAsync(pesquisaId);
             return Ok(resultados);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter resultados da pesquisa {PesquisaId}", pesquisaId);
+            logger.LogError(ex, "Erro ao obter resultados da pesquisa {PesquisaId}", pesquisaId);
             return StatusCode(500, "Erro interno do servidor");
         }
     }
@@ -215,11 +207,11 @@ public class PesquisasController : ControllerBase
     /// Obtém resultado específico de uma pessoa na pesquisa
     /// </summary>
     [HttpGet("{pesquisaId}/resultados/{pessoaId}")]
-    public async Task<ActionResult<ResultadoPessoa>> ObterResultadoPessoa(Guid pesquisaId, Guid pessoaId)
+    public async Task<ActionResult<RespostaPessoa>> ObterResultadoPessoa(Guid pesquisaId, Guid pessoaId)
     {
         try
         {
-            var resultado = await _repositorioPesquisa.ObterResultadoPessoaAsync(pesquisaId, pessoaId);
+            var resultado = await repo.ObterResultadoPessoaAsync(pesquisaId, pessoaId);
             if (resultado == null)
                 return NotFound($"Resultado não encontrado para pessoa {pessoaId} na pesquisa {pesquisaId}");
 
@@ -227,7 +219,7 @@ public class PesquisasController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao obter resultado da pessoa {PessoaId} na pesquisa {PesquisaId}", pessoaId, pesquisaId);
+            logger.LogError(ex, "Erro ao obter resultado da pessoa {PessoaId} na pesquisa {PesquisaId}", pessoaId, pesquisaId);
             return StatusCode(500, "Erro interno do servidor");
         }
     }

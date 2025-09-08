@@ -1,4 +1,6 @@
-using PesquisaX.Shared;
+using PesquisaX.Core;
+using PesquisaX.Shared.DTO.Requestes;
+using PesquisaX.Shared.DTO.Responses;
 
 namespace PesquisaX.Web.Services;
 

@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
 using System.Text.Json;
-using PesquisaX.Shared.Modelos;
+using PesquisaX.Core.Modelos;
 
 namespace PesquisaX.Web.Servicos;
 
@@ -61,29 +61,29 @@ public class LocalStorageService : IServicoPesquisa
         await SalvarPesquisasAsync(pesquisas);
     }
     
-    public async Task<ResultadoPessoa> SalvarResultadoPessoaAsync(Guid pesquisaId, ResultadoPessoa resultado)
+    public async Task<RespostaPessoa> SalvarResultadoPessoaAsync(Guid pesquisaId, RespostaPessoa resposta)
     {
         var pesquisa = await ObterPesquisaPorIdAsync(pesquisaId);
         if (pesquisa == null)
             throw new ArgumentException("Pesquisa não encontrada");
             
-        var existingIndex = pesquisa.ResultadosPessoas.FindIndex(r => r.Id == resultado.Id);
+        var existingIndex = pesquisa.ResultadosPessoas.FindIndex(r => r.Id == resposta.Id);
         if (existingIndex >= 0)
-            pesquisa.ResultadosPessoas[existingIndex] = resultado;
+            pesquisa.ResultadosPessoas[existingIndex] = resposta;
         else
-            pesquisa.ResultadosPessoas.Add(resultado);
+            pesquisa.ResultadosPessoas.Add(resposta);
             
         await CriarPesquisaAsync(pesquisa);
-        return resultado;
+        return resposta;
     }
     
-    public async Task<List<ResultadoPessoa>> ObterResultadosPesquisaAsync(Guid pesquisaId)
+    public async Task<List<RespostaPessoa>> ObterResultadosPesquisaAsync(Guid pesquisaId)
     {
         var pesquisa = await ObterPesquisaPorIdAsync(pesquisaId);
-        return pesquisa?.ResultadosPessoas ?? new List<ResultadoPessoa>();
+        return pesquisa?.ResultadosPessoas ?? new List<RespostaPessoa>();
     }
     
-    public async Task<ResultadoPessoa?> ObterResultadoPessoaAsync(Guid pesquisaId, Guid pessoaId)
+    public async Task<RespostaPessoa?> ObterResultadoPessoaAsync(Guid pesquisaId, Guid pessoaId)
     {
         var pesquisa = await ObterPesquisaPorIdAsync(pesquisaId);
         return pesquisa?.ResultadosPessoas.FirstOrDefault(r => r.Id == pessoaId);

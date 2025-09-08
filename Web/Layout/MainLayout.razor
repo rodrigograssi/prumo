@@ -1,5 +1,5 @@
-﻿@using PesquisaX.Shared
-@using PesquisaX.Shared.Version
+﻿@using PesquisaX.Shared.Version
+@using PesquisaX.Shared.Views
 @using PesquisaX.Web.Services
 @inherits LayoutComponentBase
 @inject IServicoTema ServicoTema
@@ -90,7 +90,7 @@
 @code {
     bool _drawerOpen = false;
     bool _isLoading = true;
-    Usuario? _usuarioAtual = null;
+    UsuarioView? _usuarioAtual = null;
 
     protected override async Task OnInitializedAsync()
     {

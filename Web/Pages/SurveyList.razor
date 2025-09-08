@@ -1,4 +1,5 @@
 @page "/pesquisas"
+@using PesquisaX.Shared.Views
 @inject IServicoPesquisa ServicoPesquisa
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -17,11 +18,11 @@
         </MudStack>
     </MudPaper>
 
-    @if (surveys == null)
+    @if (_pesquisas == null)
     {
         <MudProgressLinear Indeterminate="true" />
     }
-    else if (surveys.Count == 0)
+    else if (_pesquisas.Count == 0)
     {
         <MudPaper Elevation="1" Class="pa-8 text-center">
             <MudIcon Icon="Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
@@ -38,7 +39,7 @@
     else
     {
         <MudGrid>
-            @foreach (var survey in surveys)
+            @foreach (var survey in _pesquisas)
             {
                 <MudItem xs="12" md="6" lg="4">
                     <MudCard Elevation="2" Class="h-100">
@@ -96,7 +97,7 @@
 </MudContainer>
 
 @code {
-    private List<Pesquisa>? surveys;
+    private List<PesquisaListaView>? _pesquisas;
 
     protected override async Task OnInitializedAsync()
     {
@@ -105,7 +106,7 @@
 
     private async Task LoadPesquisas()
     {
-        surveys = await ServicoPesquisa.ObterTodasPesquisasAsync();
+        _pesquisas = await ServicoPesquisa.ObterTodasPesquisasAsync();
     }
 
     private void ApplyPesquisa(Guid surveyId)

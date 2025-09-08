@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\Core\PesquisaX.Core.csproj" />
     <ProjectReference Include="..\Shared\PesquisaX.Shared.csproj" />
   </ItemGroup>
 

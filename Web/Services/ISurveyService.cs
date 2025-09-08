@@ -1,17 +1,18 @@
-using PesquisaX.Shared.Modelos;
+using PesquisaX.Core.Modelos;
+using PesquisaX.Shared.Views;
 
 namespace PesquisaX.Web.Servicos;
 
 public interface IServicoPesquisa
 {
-    Task<List<Pesquisa>> ObterTodasPesquisasAsync();
+    Task<List<PesquisaListaView>> ObterTodasPesquisasAsync();
     Task<Pesquisa?> ObterPesquisaPorIdAsync(Guid id);
     Task CriarPesquisaAsync(Pesquisa pesquisa);
     Task AlterarPesquisaAsync(Pesquisa pesquisa);
     Task ExcluirPesquisaAsync(Guid id);
-    Task<ResultadoPessoa> SalvarResultadoPessoaAsync(Guid pesquisaId, ResultadoPessoa resultado);
-    Task<List<ResultadoPessoa>> ObterResultadosPesquisaAsync(Guid pesquisaId);
-    Task<ResultadoPessoa?> ObterResultadoPessoaAsync(Guid pesquisaId, Guid pessoaId);
+    Task<RespostaPessoa> SalvarResultadoPessoaAsync(Guid pesquisaId, RespostaPessoa resposta);
+    Task<List<RespostaPessoa>> ObterResultadosPesquisaAsync(Guid pesquisaId);
+    Task<RespostaPessoa?> ObterResultadoPessoaAsync(Guid pesquisaId, Guid pessoaId);
     Task<string> ExportarDadosAsync();
     Task ImportarDadosAsync(string dadosJson);
 }

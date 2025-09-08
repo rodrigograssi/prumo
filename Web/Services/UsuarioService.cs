@@ -1,6 +1,8 @@
-using PesquisaX.Shared;
+using PesquisaX.Core;
 using System.Net.Http.Json;
 using System.Text.Json;
+using PesquisaX.Shared.DTO.Requestes;
+using PesquisaX.Shared.DTO.Responses;
 
 namespace PesquisaX.Web.Services;
 

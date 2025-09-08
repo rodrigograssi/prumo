@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using PesquisaX.Infra.Repositorios;
-using PesquisaX.Shared;
+using PesquisaX.Core.Repositorios;
+using PesquisaX.Core;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using BCrypt.Net;
+using PesquisaX.Core.Extension;
+using PesquisaX.Shared.DTO.Requestes;
+using PesquisaX.Shared.DTO.Responses;
 
 namespace PesquisaX.Api.Controllers;
 
@@ -75,13 +78,7 @@ public class AuthController : ControllerBase
                 Sucesso = true,
                 Mensagem = "Usuário registrado com sucesso",
                 Token = token,
-                Usuario = new Usuario
-                {
-                    Id = usuario.Id,
-                    Nome = usuario.Nome,
-                    Email = usuario.Email,
-                    DataCriacao = usuario.DataCriacao
-                }
+                Usuario = usuario.ConverteParaView()
             });
         }
         catch (Exception ex)
@@ -156,13 +153,7 @@ public class AuthController : ControllerBase
                 Sucesso = true,
                 Mensagem = "Login realizado com sucesso",
                 Token = token,
-                Usuario = new Usuario
-                {
-                    Id = usuario.Id,
-                    Nome = usuario.Nome,
-                    Email = usuario.Email,
-                    DataCriacao = usuario.DataCriacao
-                }
+                Usuario = usuario.ConverteParaView()
             });
         }
         catch (Exception ex)

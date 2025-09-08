@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using PesquisaX.Shared.Modelos;
-using PesquisaX.Shared;
+using PesquisaX.Core;
+using PesquisaX.Core.Modelos;
 
 namespace PesquisaX.Infra.Contexto;
 
@@ -13,7 +13,7 @@ public class PesquisaXContexto : DbContext
     public DbSet<Pesquisa> Pesquisas { get; set; } = null!;
     public DbSet<GrupoQuestao> GruposQuestoes { get; set; } = null!;
     public DbSet<Questao> Questoes { get; set; } = null!;
-    public DbSet<ResultadoPessoa> ResultadosPessoas { get; set; } = null!;
+    public DbSet<RespostaPessoa> ResultadosPessoas { get; set; } = null!;
     public DbSet<Resposta> Respostas { get; set; } = null!;
     public DbSet<Usuario> Usuarios { get; set; } = null!;
 
@@ -46,7 +46,7 @@ public class PesquisaXContexto : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Relacionamento um-para-muitos com ResultadoPessoa
-            entity.HasMany(p => p.ResultadosPessoas)
+            entity.HasMany(p => p.RespostasPessoa)
                 .WithOne()
                 .HasForeignKey(r => r.PesquisaId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -109,7 +109,7 @@ public class PesquisaXContexto : DbContext
         });
 
         // Configuração da entidade ResultadoPessoa
-        modelBuilder.Entity<ResultadoPessoa>(entity =>
+        modelBuilder.Entity<RespostaPessoa>(entity =>
         {
             entity.ToTable("resultados_pessoas");
             entity.HasKey(e => e.Id);
@@ -165,7 +165,7 @@ public class PesquisaXContexto : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
             
             // Relacionamento com ResultadoPessoa
-            entity.HasOne<ResultadoPessoa>()
+            entity.HasOne<RespostaPessoa>()
                 .WithMany(rp => rp.Respostas)
                 .HasForeignKey(r => r.ResultadoPessoaId)
                 .OnDelete(DeleteBehavior.Cascade);

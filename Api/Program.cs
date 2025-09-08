@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using PesquisaX.Infra.Contexto;
-using PesquisaX.Infra.Repositorios;
+using PesquisaX.Core.Repositorios;
 using System.Text;
 using System.Text.Json;
+using PesquisaX.Core.Interfaces;
+using PesquisaX.Infra.Contexto;
+using PesquisaX.Infra.Handlers;
+using PesquisaX.Infra.Repositorios;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,8 +66,9 @@ builder.Services.AddDbContext<PesquisaXContexto>(options =>
     options.UseNpgsql(connectionString));
 
 // Configuração dos repositórios
-builder.Services.AddScoped<IRepositorioPesquisa, RepositorioPesquisa>();
+builder.Services.AddScoped<IPesquisaRepositorio, PesquisaRepositorio>();
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuario>();
+builder.Services.AddScoped<IPesquisaHandler, PesquisaHandler>();
 
 // Configuração da API
 builder.Services.AddControllers()

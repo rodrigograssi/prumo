@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using PesquisaX.Shared.Modelos;
+using PesquisaX.Core.Modelos;
+using PesquisaX.Shared.DTO;
+using PesquisaX.Shared.Views;
 using PesquisaX.Web.Servicos;
 
 namespace PesquisaX.Web.Servicos;
@@ -15,16 +17,16 @@ public class HttpPesquisaService : IServicoPesquisa
         _httpClient = httpClient;
     }
 
-    public async Task<List<Pesquisa>> ObterTodasPesquisasAsync()
+    public async Task<List<PesquisaListaView>> ObterTodasPesquisasAsync()
     {
         try
         {
-            var pesquisas = await _httpClient.GetFromJsonAsync<List<Pesquisa>>(API_BASE_URL);
-            return pesquisas ?? new List<Pesquisa>();
+            var retorno = await _httpClient.GetFromJsonAsync<List<PesquisaListaView>>(API_BASE_URL);
+            return retorno.Data ?? [];
         }
         catch (Exception)
         {
-            return new List<Pesquisa>();
+            return [];
         }
     }
 
@@ -83,15 +85,15 @@ public class HttpPesquisaService : IServicoPesquisa
         }
     }
 
-    public async Task<ResultadoPessoa> SalvarResultadoPessoaAsync(Guid pesquisaId, ResultadoPessoa resultado)
+    public async Task<RespostaPessoa> SalvarResultadoPessoaAsync(Guid pesquisaId, RespostaPessoa resposta)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync($"{API_BASE_URL}/{pesquisaId}/resultados", resultado);
+            var response = await _httpClient.PostAsJsonAsync($"{API_BASE_URL}/{pesquisaId}/resultados", resposta);
             response.EnsureSuccessStatusCode();
             
-            var resultadoSalvo = await response.Content.ReadFromJsonAsync<ResultadoPessoa>();
-            return resultadoSalvo ?? resultado;
+            var resultadoSalvo = await response.Content.ReadFromJsonAsync<RespostaPessoa>();
+            return resultadoSalvo ?? resposta;
         }
         catch (Exception ex)
         {
@@ -99,24 +101,24 @@ public class HttpPesquisaService : IServicoPesquisa
         }
     }
 
-    public async Task<List<ResultadoPessoa>> ObterResultadosPesquisaAsync(Guid pesquisaId)
+    public async Task<List<RespostaPessoa>> ObterResultadosPesquisaAsync(Guid pesquisaId)
     {
         try
         {
-            var resultados = await _httpClient.GetFromJsonAsync<List<ResultadoPessoa>>($"{API_BASE_URL}/{pesquisaId}/resultados");
-            return resultados ?? new List<ResultadoPessoa>();
+            var resultados = await _httpClient.GetFromJsonAsync<List<RespostaPessoa>>($"{API_BASE_URL}/{pesquisaId}/resultados");
+            return resultados ?? new List<RespostaPessoa>();
         }
         catch (Exception)
         {
-            return new List<ResultadoPessoa>();
+            return new List<RespostaPessoa>();
         }
     }
 
-    public async Task<ResultadoPessoa?> ObterResultadoPessoaAsync(Guid pesquisaId, Guid pessoaId)
+    public async Task<RespostaPessoa?> ObterResultadoPessoaAsync(Guid pesquisaId, Guid pessoaId)
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<ResultadoPessoa>($"{API_BASE_URL}/{pesquisaId}/resultados/{pessoaId}");
+            return await _httpClient.GetFromJsonAsync<RespostaPessoa>($"{API_BASE_URL}/{pesquisaId}/resultados/{pessoaId}");
         }
         catch (Exception)
         {

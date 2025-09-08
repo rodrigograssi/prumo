@@ -210,8 +210,8 @@ else
     [Parameter] public Guid? PersonId { get; set; }
 
     private Pesquisa? survey;
-    private ResultadoPessoa? personResult;
-    private List<ResultadoPessoa>? allResultados;
+    private RespostaPessoa? personResult;
+    private List<RespostaPessoa>? allResultados;
     private Dictionary<string, double> groupPercentages = new();
     private List<string> chartLabels = new();
     private List<double> actualData = new();
@@ -274,7 +274,7 @@ else
         Navigation.NavigateTo($"/resultado/{PesquisaId}/{resultId}");
     }
 
-    private async Task DeleteResult(ResultadoPessoa result)
+    private async Task DeleteResult(RespostaPessoa result)
     {
         bool? confirmed = await DialogService.ShowMessageBox(
             "Confirmar Exclusão",

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PesquisaX.Infra.Contexto;
 using System.Diagnostics;
+using PesquisaX.Infra.Contexto;
 
 namespace PesquisaX.Api.Controllers;
 

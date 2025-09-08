@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PesquisaX.Infra.Repositorios;
-using PesquisaX.Shared;
+using PesquisaX.Core.Repositorios;
+using PesquisaX.Core;
 using BCrypt.Net;
+using PesquisaX.Shared.DTO.Requestes;
+using PesquisaX.Shared.DTO.Responses;
 
 namespace PesquisaX.Api.Controllers;
 

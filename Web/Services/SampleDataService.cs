@@ -1,4 +1,4 @@
-using PesquisaX.Shared.Modelos;
+using PesquisaX.Core.Modelos;
 
 namespace PesquisaX.Web.Servicos;
 

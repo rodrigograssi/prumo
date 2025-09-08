@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using PesquisaX.Core.Repositorios;
 using PesquisaX.Infra.Contexto;
 
 namespace PesquisaX.Infra.Repositorios;

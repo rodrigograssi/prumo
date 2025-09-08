@@ -1,3 +1,4 @@
+using ControleDeIp.FrontEnd.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -31,6 +32,9 @@ builder.Services.AddScoped<IServicoPesquisa, HttpPesquisaService>();
 builder.Services.AddScoped<IServicoTema, ServicoTema>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
+builder.Services.AddTransient(typeof(ApiController<>));
+builder.Services.AddTransient(typeof(ApiUsuarioController));
 
 var app = builder.Build();
 

@@ -1,7 +1,7 @@
 @page "/"
 @page "/login"
 @layout AuthLayout
-@using PesquisaX.Shared
+@using PesquisaX.Shared.DTO.Requestes
 @using MudBlazor
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
@@ -17,9 +17,9 @@
         </CardHeaderContent>
     </MudCardHeader>
         
-        <MudForm @ref="form">
+        <MudForm @ref="_form">
             <MudCardContent>
-                <MudTextField @bind-Value="loginRequest.Email"
+                <MudTextField @bind-Value="_loginRequest.Email"
                              Label="Email"
                              Variant="Variant.Outlined"
                              InputType="InputType.Email"
@@ -27,7 +27,7 @@
                              RequiredError="Email é obrigatório"
                              Class="mb-4" />
                 
-                <MudTextField @bind-Value="loginRequest.Senha"
+                <MudTextField @bind-Value="_loginRequest.Senha"
                              Label="Senha"
                              Variant="Variant.Outlined"
                              InputType="InputType.Password"
@@ -35,12 +35,12 @@
                              RequiredError="Senha é obrigatória"
                              Class="mb-4" />
                 
-                <MudCheckBox @bind-Value="loginRequest.ManterConectado"
+                <MudCheckBox @bind-Value="_loginRequest.ManterConectado"
                            Label="Manter-me conectado"
                            Color="Color.Primary"
                            Class="mb-3" />
                 
-                @if (loginRequest.ManterConectado)
+                @if (_loginRequest.ManterConectado)
                 {
                     <MudText Typo="Typo.caption" Color="Color.Info" Class="mb-3">
                         <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Small" Class="mr-1" />
@@ -55,8 +55,8 @@
                           Color="Color.Primary"
                           Size="Size.Large"
                           FullWidth="true"
-                          Disabled="carregando">
-                    @if (carregando)
+                          Disabled="_carregando">
+                    @if (_carregando)
                     {
                         <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small" Indeterminate="true"/>
                         <span>Entrando</span>
@@ -87,9 +87,9 @@
     </MudCard>
 
 @code {
-    private MudForm form = new();
-    private LoginRequest loginRequest = new();
-    private bool carregando = false;
+    private MudForm _form = new();
+    private readonly LoginRequest _loginRequest = new();
+    private bool _carregando = false;
     private bool _podeRegistrar = false;
 
     protected override async Task OnInitializedAsync()
@@ -107,15 +107,15 @@
 
     private async Task RealizarLogin()
     {
-        await form.Validate();
-        if (!form.IsValid) return;
+        await _form.Validate();
+        if (!_form.IsValid) return;
 
-        carregando = true;
+        _carregando = true;
         StateHasChanged();
 
         try
         {
-            var response = await AuthService.LoginAsync(loginRequest);
+            var response = await AuthService.LoginAsync(_loginRequest);
             
             if (response.Sucesso)
             {
@@ -133,7 +133,7 @@
         }
         finally
         {
-            carregando = false;
+            _carregando = false;
             StateHasChanged();
         }
     }

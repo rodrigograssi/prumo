@@ -1,9 +1,10 @@
-using PesquisaX.Shared;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.JSInterop;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+using PesquisaX.Shared.DTO.Requestes;
+using PesquisaX.Shared.DTO.Responses;
+using PesquisaX.Shared.Views;
 
 namespace PesquisaX.Web.Services;
 
@@ -12,7 +13,7 @@ public class AuthService : IAuthService
     private readonly HttpClient _httpClient;
     private readonly IJSRuntime _jsRuntime;
     private readonly ILogger<AuthService> _logger;
-    private Usuario? _usuarioAtual;
+    private UsuarioView? _usuarioAtual;
     private string? _token;
 
     private const string TOKEN_KEY = "authToken";
@@ -156,7 +157,7 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<Usuario?> ObterUsuarioAtualAsync()
+    public async Task<UsuarioView?> ObterUsuarioAtualAsync()
     {
         if (_usuarioAtual != null)
             return _usuarioAtual;
@@ -171,7 +172,7 @@ public class AuthService : IAuthService
             if (string.IsNullOrEmpty(usuarioJson))
                 return null;
 
-            _usuarioAtual = JsonSerializer.Deserialize<Usuario>(usuarioJson, new JsonSerializerOptions
+            _usuarioAtual = JsonSerializer.Deserialize<UsuarioView>(usuarioJson, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
@@ -195,7 +196,7 @@ public class AuthService : IAuthService
         await _jsRuntime.InvokeVoidAsync($"{storage}.setItem", TOKEN_KEY, token);
     }
 
-    private async Task SalvarUsuarioAsync(Usuario usuario, string storage = "localStorage")
+    private async Task SalvarUsuarioAsync(UsuarioView usuario, string storage = "localStorage")
     {
         var usuarioJson = JsonSerializer.Serialize(usuario, new JsonSerializerOptions
         {

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using PesquisaX.Core;
+using PesquisaX.Core.Repositorios;
 using PesquisaX.Infra.Contexto;
-using PesquisaX.Shared;
 
 namespace PesquisaX.Infra.Repositorios;
 
