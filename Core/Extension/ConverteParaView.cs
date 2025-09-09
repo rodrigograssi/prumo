@@ -1,4 +1,5 @@
-﻿using PesquisaX.Shared.Views;
+﻿using PesquisaX.Core.Modelos;
+using PesquisaX.Shared.Views;
 
 namespace PesquisaX.Core.Extension;
 
@@ -11,9 +12,24 @@ public static class ConverteParaViewExtension
             Id = usuario.Id.ToString(),
             Nome = usuario.Nome,
             Email = usuario.Email,
-            Senha = usuario.Senha,
             DataCriacao = usuario.DataCriacao
         };
+        return view;
+    }
+
+
+    public static RespostaPessoaView ConverteParaView(this RespostaPessoa respostaPessoa, List<GrupoQuestao> questoes)
+    {
+        var view = new RespostaPessoaView()
+        {
+            Id = respostaPessoa.Id.ToString(),
+            PesquisaId = respostaPessoa.PesquisaId.ToString(),
+            NomePessoa = respostaPessoa.NomePessoa,
+            Email = respostaPessoa.Email,
+            DataAvaliacao = respostaPessoa.DataAvaliacao,
+            PercentuaisGrupos = respostaPessoa.ObterPercentuaisGrupos(questoes)
+        };
+        
         return view;
     }
 }

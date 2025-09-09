@@ -5,171 +5,115 @@ using PesquisaX.Core;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BCrypt.Net;
+using Microsoft.Net.Http.Headers;
 using PesquisaX.Core.Extension;
+using PesquisaX.Core.Interfaces;
+using PesquisaX.Shared.Comandos;
+using PesquisaX.Shared.DTO;
 using PesquisaX.Shared.DTO.Requestes;
-using PesquisaX.Shared.DTO.Responses;
+using PesquisaX.Shared.Views;
 
 namespace PesquisaX.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController(
+    IRepositorioUsuario repositorioUsuario,
+    IUsuarioHandler handler,
+    IConfiguration configuration,
+    ILogger<AuthController> logger) : ControllerBase
 {
-    private readonly IRepositorioUsuario _repositorioUsuario;
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<AuthController> _logger;
-
-    public AuthController(
-        IRepositorioUsuario repositorioUsuario, 
-        IConfiguration configuration,
-        ILogger<AuthController> logger)
-    {
-        _repositorioUsuario = repositorioUsuario;
-        _configuration = configuration;
-        _logger = logger;
-    }
 
     [HttpPost("registro")]
-    public async Task<ActionResult<LoginResponse>> Registro([FromBody] RegistroRequest request)
+    public async Task<ActionResult> Registro([FromBody] UsuarioCrud comando)
     {
-        try
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new LoginResponse
-                {
-                    Sucesso = false,
-                    Mensagem = "Dados inválidos fornecidos"
-                });
-            }
+        if (!ModelState.IsValid)
+            return BadRequest(new RetornoPadrao<UsuarioView>("Dados inválidos fornecidos"));
 
-            // Verificar se o email já existe
-            if (await _repositorioUsuario.EmailExisteAsync(request.Email))
-            {
-                return BadRequest(new LoginResponse
-                {
-                    Sucesso = false,
-                    Mensagem = "Email já está em uso"
-                });
-            }
-
-            // Criar hash da senha
-            var senhaHash = BCrypt.Net.BCrypt.HashPassword(request.Senha);
-
-            // Criar usuário
-            var usuario = new Usuario
-            {
-                Nome = request.Nome,
-                Email = request.Email,
-                Senha = senhaHash,
-                DataCriacao = DateTime.UtcNow
-            };
-
-            await _repositorioUsuario.AdicionarAsync(usuario);
-
-            _logger.LogInformation("Usuário registrado com sucesso: {Email}", request.Email);
-
-            // Gerar token JWT
-            var token = GerarTokenJwt(usuario);
-
-            return Ok(new LoginResponse
-            {
-                Sucesso = true,
-                Mensagem = "Usuário registrado com sucesso",
-                Token = token,
-                Usuario = usuario.ConverteParaView()
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao registrar usuário: {Email}", request.Email);
-            return StatusCode(500, new LoginResponse
-            {
-                Sucesso = false,
-                Mensagem = "Erro interno do servidor"
-            });
-        }
+        var retorno = await handler.CriarUsuario(comando);
+        return retorno.Sucesso
+            ? Ok(new RetornoPadrao<UsuarioView>(true, "Usuario cadastrado com sucesso",
+                retorno.Data!.ConverteParaView()))
+            : BadRequest(retorno);
     }
 
     [HttpGet("has-users")]
-    public async Task<ActionResult<bool>> HasUsers()
+    public async Task<ActionResult> HasUsers()
     {
         try
         {
-            var hasUsers = await _repositorioUsuario.ExistemUsuariosAsync();
-            return Ok(hasUsers);
+            var hasUsers = await repositorioUsuario.ExistemUsuariosAsync();
+            return Ok(new RetornoPadrao<bool>(true, "", hasUsers));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao verificar se existem usuários");
-            return StatusCode(500, false);
+            logger.LogError(ex, "Erro ao verificar se existem usuários");
+            return StatusCode(500, new RetornoPadrao<bool>("Erro ao verificar se usuarios existem", $"Erro:{ex.Message}"));
         }
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
+    public async Task<ActionResult> Login([FromBody] LoginRequest request)
     {
         try
         {
             if (!ModelState.IsValid)
-            {
-                return BadRequest(new LoginResponse
-                {
-                    Sucesso = false,
-                    Mensagem = "Email e senha são obrigatórios"
-                });
-            }
+                return BadRequest(new RetornoPadrao<UsuarioView>("Erro no login", "Email e senha são obrigatórios"));
 
             // Buscar usuário por email
-            var usuario = await _repositorioUsuario.ObterPorEmailAsync(request.Email);
+            var usuario = await repositorioUsuario.ObterPorEmailAsync(request.Email);
             if (usuario == null)
-            {
-                return Unauthorized(new LoginResponse
-                {
-                    Sucesso = false,
-                    Mensagem = "Email ou senha inválidos"
-                });
-            }
+                return Unauthorized(new RetornoPadrao<UsuarioView>("Erro ao realizar login", "Email ou senha inválidos"));
 
             // Verificar senha
             if (!BCrypt.Net.BCrypt.Verify(request.Senha, usuario.Senha))
             {
-                _logger.LogWarning("Tentativa de login com senha incorreta para: {Email}", request.Email);
-                return Unauthorized(new LoginResponse
-                {
-                    Sucesso = false,
-                    Mensagem = "Email ou senha inválidos"
-                });
+                logger.LogWarning("Tentativa de login com senha incorreta para: {Email}", request.Email);
+                return Unauthorized(new RetornoPadrao<UsuarioView>("Erro ao realizar login", "Email ou senha inválidos"));
             }
 
-            _logger.LogInformation("Login realizado com sucesso: {Email}", request.Email);
-
+            logger.LogInformation("Login realizado com sucesso: {Email}", request.Email);
             // Gerar token JWT
             var token = GerarTokenJwt(usuario);
-
-            return Ok(new LoginResponse
-            {
-                Sucesso = true,
-                Mensagem = "Login realizado com sucesso",
-                Token = token,
-                Usuario = usuario.ConverteParaView()
-            });
+            usuario.DefineAcesso(token);
+            
+            await repositorioUsuario.GravarAsync(usuario);
+            return Ok(new RetornoPadrao<UsuarioView>(true, "Logado com sucesso", usuario.ConverteParaView()));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao realizar login: {Email}", request.Email);
-            return StatusCode(500, new LoginResponse
-            {
-                Sucesso = false,
-                Mensagem = "Erro interno do servidor"
-            });
+            logger.LogError(ex, "Erro ao realizar login: {Email}", request.Email);
+            return StatusCode(500, new RetornoPadrao<bool>("Erro ao realizar login", $"Erro:{ex.Message}"));
         }
     }
+    
+    [HttpGet("login/token")]
+    public async Task<IActionResult> LoginComToken()
+    {
+        string token = Request.Headers[HeaderNames.Authorization];
+        if (string.IsNullOrEmpty(token))
+            return Unauthorized(new RetornoPadrao<UsuarioView>("Token inválido"));
+           
+        var usuario = await repositorioUsuario.ObterPeloToken(token);
+        if (usuario == null)
+            return Unauthorized(new RetornoPadrao<UsuarioView>("Token inválido"));
 
+        // Validar Token    
+        if (usuario.Ativo == false)
+            return Unauthorized(new RetornoPadrao<UsuarioView>("Usuário desativado"));
+
+        var tokenAtualido = GerarTokenJwt(usuario);
+        
+        usuario.DefineAcesso(tokenAtualido);
+        await repositorioUsuario.GravarAsync(usuario);
+        
+        return Ok(new RetornoPadrao<UsuarioView>(true, "Logado com sucesso", usuario.ConverteParaView()));
+
+    }
+    
     private string GerarTokenJwt(Usuario usuario)
     {
-        var jwtSettings = _configuration.GetSection("JwtSettings");
+        var jwtSettings = configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"] ?? "PesquisaXSecretKeyPadrao123456789!@#$%^&*()";
         var key = Encoding.ASCII.GetBytes(secretKey);
 

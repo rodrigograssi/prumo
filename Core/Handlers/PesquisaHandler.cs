@@ -1,2 +1,0 @@
-﻿namespace PesquisaX.Core.Handlers;
-

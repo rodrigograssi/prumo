@@ -1,5 +1,14 @@
-﻿@inject IServicoTema ServicoTema
-@implements IDisposable
+﻿@implements IDisposable
+@using Microsoft.AspNetCore.Components.Authorization
+@using PesquisaX.Shared.Views
+@using PesquisaX.Web.Dto
+@using PesquisaX.Web.Pages
+
+@inject IServicoTema ServicoTema
+@inject NavigationManager Navigation
+@inject IJSRuntime Js
+@inject ApiController<UsuarioView> ApiUsuarioView
+@inject AutenticacaoController Login
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="@ServicoTema.EModoEscuro" />
 <MudPopoverProvider />
@@ -8,7 +17,19 @@
 
 <Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <Authorizing>
+                
+            </Authorizing>
+            <NotAuthorized>
+                @code {
+                    protected override void OnInitialized()
+                    {
+                        Navigation.NavigateTo("/login");
+                    }
+                }
+            </NotAuthorized>
+        </AuthorizeRouteView>
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>
@@ -26,7 +47,8 @@
 @code {
     private MudTheme _theme = new();
 
-    protected override async Task OnInitializedAsync()
+
+    private async Task CarregarTema()
     {
         await ServicoTema.InicializarAsync();
         ServicoTema.AoMudarTema += StateHasChanged;
@@ -72,6 +94,32 @@
                 DrawerBackground = "#FFFFFF",
             }
         };
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarTema();
+        
+        string token = await Js.InvokeAsync<string>("localStorage.getItem", "Token");
+        if (!string.IsNullOrEmpty(token))
+        {
+            try
+            {
+                var apiUsuario = await ApiUsuarioView.CarregarDadosDoUsuario(token);
+                if (apiUsuario.Sucesso)
+                {
+                    ConfiguracoesWeb.UsuarioLogado = apiUsuario?.Data;
+                    Login.Carregar();
+                    
+                    await Js.InvokeVoidAsync("localStorage.setItem", "Token", token);
+                }
+            }
+            catch (Exception)
+            {
+                ConfiguracoesWeb.UsuarioLogado = null;
+            }
+        }
+        
     }
 
     public void Dispose()

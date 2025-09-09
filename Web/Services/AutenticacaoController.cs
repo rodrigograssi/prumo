@@ -16,10 +16,8 @@ namespace PesquisaX.Web.Services
             }
 
             List<Claim> claims = new List<Claim>();
-
             claims.Add(new Claim(ClaimTypes.Name, ConfiguracoesWeb.UsuarioLogado.Nome));
 
-        
             var usuario = new ClaimsIdentity(claims, "autenticacao");
             var claimsPrincipal = new ClaimsPrincipal(usuario);
 

@@ -17,4 +17,5 @@ public class UsuarioCrud
     [Required(ErrorMessage = "Senha é obrigatória")]
     [MinLength(6, ErrorMessage = "Senha deve ter no mínimo 6 caracteres")]
     public string Senha { get; set; } = string.Empty;
+    public bool Ativo { get; set; }
 }

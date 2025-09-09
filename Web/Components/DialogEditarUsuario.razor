@@ -1,5 +1,6 @@
 @using MudBlazor
 @using MudBlazor.Services
+@using PesquisaX.Shared.Comandos
 @inject IUsuarioService UsuarioService
 @inject ISnackbar Snackbar
 
@@ -46,20 +47,19 @@
 
 @code {
     [CascadingParameter] public IMudDialogInstance  MudDialog { get; set; } = default!;
-    [Parameter] public Usuario Usuario { get; set; } = null!;
+    [Parameter] public UsuarioCrud Usuario { get; set; } = null!;
     
     private MudForm form = new();
-    private Usuario usuarioEditado = new();
+    private UsuarioCrud usuarioEditado = new();
     private bool carregando = false;
 
     protected override void OnInitialized()
     {
-        usuarioEditado = new Usuario
+        usuarioEditado = new UsuarioCrud
         {
             Id = Usuario.Id,
             Nome = Usuario.Nome,
-            Email = Usuario.Email,
-            DataCriacao = Usuario.DataCriacao
+            Email = Usuario.Email
         };
     }
 

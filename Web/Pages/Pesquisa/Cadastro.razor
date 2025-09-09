@@ -1,6 +1,6 @@
 @page "/criar-pesquisa"
 @page "/editar-pesquisa/{PesquisaId:guid}"
-@using System.Text.RegularExpressions
+@using PesquisaX.Shared.Comandos
 @inject IServicoPesquisa ServicoPesquisa
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
@@ -12,16 +12,16 @@
         <MudText Typo="Typo.h4">@(IsEditing ? "Editar Pesquisa" : "Criar Nova Pesquisa")</MudText>
     </MudPaper>
 
-    <MudForm @ref="form" Model="survey" @bind-IsValid="formIsValid">
+    <MudForm @ref="_form" Model="_pesquisa" @bind-IsValid="_formIsValid">
         <MudPaper Elevation="1" Class="pa-4 mb-4">
             <MudTextField T="string" Label="Nome da Pesquisa" 
-                          @bind-Value="survey.Nome" 
+                          @bind-Value="_pesquisa.Nome" 
                           Required="true"
                           Variant="Variant.Outlined" 
                           Class="mb-4" />
         </MudPaper>
 
-        @foreach (var group in survey.GruposQuestoes)
+        @foreach (var group in _pesquisa.GruposQuestoes)
         {
             <MudPaper Elevation="2" Class="pa-4 mb-4" Style="background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%); border-left: 4px solid #2196f3;">
                 <MudStack>
@@ -118,7 +118,7 @@
                 <MudButtonGroup>
                     <MudButton Variant="Variant.Filled" 
                              Color="Color.Primary" 
-                             Disabled="@(!formIsValid || survey.GruposQuestoes.Count == 0)"
+                             Disabled="@(!_formIsValid || _pesquisa.GruposQuestoes.Count == 0)"
                              OnClick="SavePesquisa">
                         @(IsEditing ? "Salvar Alterações" : "Criar Pesquisa")
                     </MudButton>
@@ -131,9 +131,9 @@
 @code {
     [Parameter] public Guid? PesquisaId { get; set; }
     
-    private MudForm form = new();
-    private bool formIsValid;
-    private Pesquisa survey = new();
+    private MudForm _form = new();
+    private bool _formIsValid;
+    private PesquisaCrud _pesquisa = new();
     
     private bool IsEditing => PesquisaId.HasValue;
 
@@ -143,19 +143,19 @@
         {
             var existingPesquisa = await ServicoPesquisa.ObterPesquisaPorIdAsync(PesquisaId.Value);
             if (existingPesquisa != null)
-                survey = existingPesquisa;
+                _pesquisa = existingPesquisa;
             else
                 Navigation.NavigateTo("/pesquisas");
         }
         
         // Garantir que há pelo menos um grupo
-        if (survey.GruposQuestoes.Count == 0)
+        if (_pesquisa.GruposQuestoes.Count == 0)
             AddGroup();
     }
 
     private void AddGroup()
     {
-        survey.GruposQuestoes.Add(new GrupoQuestao 
+        _pesquisa.GruposQuestoes.Add(new GrupoQuestao 
         { 
             Nome = "",
             Categoria = "",
@@ -165,8 +165,8 @@
 
     private void RemoveGroup(GrupoQuestao group)
     {
-        if (survey.GruposQuestoes.Count > 1)
-            survey.GruposQuestoes.Remove(group);
+        if (_pesquisa.GruposQuestoes.Count > 1)
+            _pesquisa.GruposQuestoes.Remove(group);
     }
 
     private void AddQuestao(GrupoQuestao group)
@@ -186,7 +186,7 @@
     private async Task SavePesquisa()
     {
         // Validar se todos os grupos têm pelo menos uma pergunta
-        var emptyGroups = survey.GruposQuestoes.Where(g => g.Questoes.Count == 0).ToList();
+        var emptyGroups = _pesquisa.GruposQuestoes.Where(g => g.Questoes.Count == 0).ToList();
         if (emptyGroups.Any())
         {
             Snackbar.Add("Todos os grupos devem ter pelo menos uma pergunta", Severity.Warning);
@@ -196,9 +196,9 @@
         try
         {
             if(PesquisaId == null)
-                await ServicoPesquisa.CriarPesquisaAsync(survey);
+                await ServicoPesquisa.CriarPesquisaAsync(_pesquisa);
             else
-                await ServicoPesquisa.AlterarPesquisaAsync(survey); 
+                await ServicoPesquisa.AlterarPesquisaAsync(_pesquisa); 
             
             Snackbar.Add(IsEditing ? "Pesquisa atualizada com sucesso" : "Pesquisa criada com sucesso", Severity.Success);
             Navigation.NavigateTo("/pesquisas");

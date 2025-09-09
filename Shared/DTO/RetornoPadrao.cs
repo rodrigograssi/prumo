@@ -40,7 +40,7 @@ namespace PesquisaX.Shared.DTO
         public RetornoPadrao(string erro): base(erro) { }
         public RetornoPadrao(string mensagem, List<String> notificacoes) : base(mensagem, notificacoes) { }
         // public RetornoPadrao(string mensagem, List<Notification> notificacoes) : base(mensagem, notificacoes) { }
-        public RetornoPadrao(string mensagem, String erro) : base(mensagem, new List<string> { erro }) { }
+        public RetornoPadrao(string mensagem, string erro) : base(mensagem, new List<string> { erro }) { }
 
     }
 

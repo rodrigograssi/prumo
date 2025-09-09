@@ -45,7 +45,7 @@ public class GrupoQuestao: Entidade
     
     public double ObterPesoQuestao()
     {
-        return Questoes.Count > 0 ? 1.0 / Questoes.Count : 0;
+        return (Questoes.Count > 0 ? 1.0 / Questoes.Count : 0);
     }
     
     public double CalcularPercentual(List<int> respostasBrutas)

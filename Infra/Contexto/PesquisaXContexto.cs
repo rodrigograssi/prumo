@@ -202,6 +202,15 @@ public class PesquisaXContexto : DbContext
             entity.HasIndex(e => e.Email)
                 .IsUnique()
                 .HasDatabaseName("ix_usuarios_email");
+
+            entity.OwnsOne(e => e.Sistema, sist =>
+            {
+                sist.Property(x => x.DataUltimoAcesso)
+                    .HasColumnName("data_ultimo_acesso");
+                sist.Property(x => x.Token)
+                    .HasColumnName("token");
+            });
+
         });
     }
 }

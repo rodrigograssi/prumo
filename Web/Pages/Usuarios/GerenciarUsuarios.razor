@@ -1,4 +1,5 @@
 @page "/usuarios"
+@using PesquisaX.Shared.Views
 @inject IUsuarioService UsuarioService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
@@ -75,7 +76,7 @@
 </AuthGuard>
 
 @code {
-    private List<Usuario> _usuarios = new();
+    private List<UsuarioView> _usuarios = new();
     private bool _carregando = true;
 
     protected override async Task OnInitializedAsync()
@@ -102,7 +103,7 @@
 
     private async Task AbrirDialogNovoUsuario()
     {
-        var parametros = new DialogParameters { };
+        var parametros = new DialogParameters();
         var opcoes = new DialogOptions 
         { 
             MaxWidth = MaxWidth.Medium,
@@ -119,7 +120,7 @@
         }
     }
 
-    private async Task EditarUsuario(Usuario usuario)
+    private async Task EditarUsuario(UsuarioView usuario)
     {
         var parametros = new DialogParameters 
         { 
@@ -141,7 +142,7 @@
         }
     }
 
-    private async Task ResetarSenha(Usuario usuario)
+    private async Task ResetarSenha(UsuarioView usuario)
     {
         var parametros = new DialogParameters 
         { 
@@ -163,7 +164,7 @@
         }
     }
 
-    private async Task ExcluirUsuario(Usuario usuario)
+    private async Task ExcluirUsuario(UsuarioView usuario)
     {
         var confirmed = await DialogService.ShowMessageBox(
             "Confirmar Exclusão",

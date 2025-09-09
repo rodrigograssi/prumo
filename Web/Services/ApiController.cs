@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using PesquisaX.Shared.DTO;
+using PesquisaX.Shared.Views;
 using PesquisaX.Web.Dto;
 
 namespace PesquisaX.Web.Services
@@ -221,6 +222,31 @@ namespace PesquisaX.Web.Services
         {
             return await DeleteAsync(id, enderecoApi);
         }
+        
+        public async Task<RetornoPadrao<UsuarioView>> CarregarDadosDoUsuario(string token)
+        {
+            HttpResponseMessage response;
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+            string enderecoApi = $"/api/auth/userinfo";
+            response = await _httpClient.GetAsync(enderecoApi);
+            try
+            {
+                var resultado = response.Content.ReadAsStringAsync().Result;
+                var retorno = JsonSerializer.Deserialize<RetornoPadrao<UsuarioView>>(resultado, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return retorno;
+            }
+            catch (HttpRequestException ex)
+            {
+                return new RetornoPadrao<UsuarioView>($"Erro de rede: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return new RetornoPadrao<UsuarioView>($"Erro inesperado: {ex.Message}");
+            }
+
+        }
+
 
         #region Métodos Auxiliares Privados
 

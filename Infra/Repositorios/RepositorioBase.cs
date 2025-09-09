@@ -7,13 +7,13 @@ namespace PesquisaX.Infra.Repositorios;
 
 public abstract class RepositorioBase<T> : IRepositorioBase<T> where T : class
 {
-    protected readonly PesquisaXContexto _contexto;
+    protected readonly PesquisaXContexto Db;
     protected readonly DbSet<T> _dbSet;
 
-    protected RepositorioBase(PesquisaXContexto contexto)
+    protected RepositorioBase(PesquisaXContexto db)
     {
-        _contexto = contexto;
-        _dbSet = contexto.Set<T>();
+        Db = db;
+        _dbSet = db.Set<T>();
     }
 
     public virtual async Task<IEnumerable<T>> ObterTodosAsync()
@@ -39,7 +39,7 @@ public abstract class RepositorioBase<T> : IRepositorioBase<T> where T : class
     public virtual async Task<T> AdicionarAsync(T entidade)
     {
         await _dbSet.AddAsync(entidade);
-        await _contexto.SaveChangesAsync();
+        await Db.SaveChangesAsync();
         return entidade;
     }
 
@@ -48,7 +48,7 @@ public abstract class RepositorioBase<T> : IRepositorioBase<T> where T : class
         // Desacoplar todas as entidades rastreadas para evitar conflitos
         // _contexto.ChangeTracker.Clear();
         _dbSet.Update(entidade);
-        await _contexto.SaveChangesAsync();
+        await Db.SaveChangesAsync();
     }
 
     public virtual async Task ExcluirAsync(Guid id)
@@ -57,7 +57,7 @@ public abstract class RepositorioBase<T> : IRepositorioBase<T> where T : class
         if (entidade != null)
         {
             _dbSet.Remove(entidade);
-            await _contexto.SaveChangesAsync();
+            await Db.SaveChangesAsync();
         }
     }
 

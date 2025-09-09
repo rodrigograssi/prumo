@@ -39,23 +39,23 @@
     else
     {
         <MudGrid>
-            @foreach (var survey in _pesquisas)
+            @foreach (var pesquisa in _pesquisas)
             {
                 <MudItem xs="12" md="6" lg="4">
                     <MudCard Elevation="2" Class="h-100">
                         <MudCardContent>
                             <MudStack>
-                                <MudText Typo="Typo.h6">@survey.Nome</MudText>
+                                <MudText Typo="Typo.h6">@pesquisa.Nome</MudText>
                                 <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                    Criado em: @survey.DataCriacao.ToString("dd/MM/yyyy")
+                                    Criado em: @pesquisa.DataCriacao.ToString("dd/MM/yyyy")
                                 </MudText>
                                 <MudDivider />
                                 <MudStack Row>
                                     <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Info">
-                                        @survey.ObterTotalQuestoes() perguntas
+                                        @pesquisa.TotalDePerguntas perguntas
                                     </MudChip>
                                     <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Success">
-                                        @survey.ObterTotalAplicacoes() aplicações
+                                        @pesquisa.TotalDeRespostas aplicações
                                     </MudChip>
                                 </MudStack>
                             </MudStack>
@@ -65,25 +65,25 @@
                                 <MudStack Row Spacing="1">
                                     <MudButton StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Primary"
                                                Variant="Variant.Filled" Size="Size.Small" FullWidth="true"
-                                               OnClick="() => ApplyPesquisa(survey.Id)">
+                                               OnClick="() => ApplyPesquisa(pesquisa.Id)">
                                         Aplicar
                                     </MudButton>
                                     <MudButton StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary"
                                                Variant="Variant.Outlined" Size="Size.Small" FullWidth="true"
-                                               OnClick="() => EditPesquisa(survey.Id)">
+                                               OnClick="() => EditPesquisa(pesquisa.Id)">
                                         Editar
                                     </MudButton>
                                 </MudStack>
                                 <MudStack Row Spacing="1">
                                     <MudButton StartIcon="@Icons.Material.Filled.Assessment" Color="Color.Info"
                                                Variant="Variant.Text" Size="Size.Small" FullWidth="true"
-                                               OnClick="() => ViewResultados(survey.Id)"
-                                               Disabled="@(survey.ObterTotalAplicacoes() == 0)">
+                                               OnClick="() => ViewResultados(pesquisa.Id)"
+                                               Disabled="@(pesquisa.TotalDeRespostas == 0)">
                                         Resultados
                                     </MudButton>
                                     <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error"
                                                Variant="Variant.Text" Size="Size.Small" FullWidth="true"
-                                               OnClick="() => DeletePesquisa(survey)">
+                                               OnClick="() => DeletePesquisa(pesquisa)">
                                         Excluir
                                     </MudButton>
                                 </MudStack>
@@ -109,32 +109,32 @@
         _pesquisas = await ServicoPesquisa.ObterTodasPesquisasAsync();
     }
 
-    private void ApplyPesquisa(Guid surveyId)
+    private void ApplyPesquisa(string pesquisaId)
     {
-        Navigation.NavigateTo($"/aplicar-pesquisa/{surveyId}");
+        Navigation.NavigateTo($"/aplicar-pesquisa/{pesquisaId}");
     }
 
-    private void EditPesquisa(Guid surveyId)
+    private void EditPesquisa(string pesquisaId)
     {
-        Navigation.NavigateTo($"/editar-pesquisa/{surveyId}");
+        Navigation.NavigateTo($"/editar-pesquisa/{pesquisaId}");
     }
 
-    private void ViewResultados(Guid surveyId)
+    private void ViewResultados(string pesquisaId)
     {
-        Navigation.NavigateTo($"/resultados/{surveyId}");
+        Navigation.NavigateTo($"/resultados/{pesquisaId}");
     }
 
-    private async Task DeletePesquisa(Pesquisa survey)
+    private async Task DeletePesquisa(PesquisaListaView pesquisva)
     {
         bool? result = await DialogService.ShowMessageBox(
             "Confirmar Exclusão", 
-            $"Tem certeza que deseja excluir a pesquisa '{survey.Nome}'? Esta ação não pode ser desfeita.",
+            $"Tem certeza que deseja excluir a pesquisa '{pesquisva.Nome}'? Esta ação não pode ser desfeita.",
             yesText:"Excluir", 
             cancelText:"Cancelar");
             
         if (result == true)
         {
-            await ServicoPesquisa.ExcluirPesquisaAsync(survey.Id);
+            await ServicoPesquisa.ExcluirPesquisaAsync(Guid.Parse(pesquisva.Id));
             await LoadPesquisas();
             Snackbar.Add("Pesquisa excluída com sucesso", Severity.Success);
         }
