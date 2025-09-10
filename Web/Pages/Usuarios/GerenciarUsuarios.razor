@@ -1,8 +1,9 @@
 @page "/usuarios"
 @using PesquisaX.Shared.Views
-@inject IUsuarioService UsuarioService
+@inject IUsuarioServico UsuarioServico
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject ApiController<List<UsuarioView>> ApiControlerListUsuario
 
 <PageTitle>Gerenciar Usuários - PesquisaX</PageTitle>
 
@@ -89,7 +90,14 @@
         _carregando = true;
         try
         {
-            _usuarios = await UsuarioService.ObterUsuariosAsync();
+            var retorno = await ApiControlerListUsuario.GetAsync("api/usuarios?page=1&pageSize=20");
+            if (!retorno.Sucesso || retorno.Data == null)
+            {
+                Snackbar.Add($"Erro ao carregar usuários: {retorno.Mensagem}", Severity.Error);
+                return;
+            }
+
+            _usuarios = retorno.Data;
         }
         catch (Exception ex)
         {
@@ -175,7 +183,7 @@
         {
             try
             {
-                await UsuarioService.ExcluirUsuarioAsync(usuario.Id);
+                await UsuarioServico.ExcluirUsuarioAsync(usuario.Id);
                 Snackbar.Add("Usuário excluído com sucesso!", Severity.Success);
                 await CarregarUsuarios();
             }

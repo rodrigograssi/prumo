@@ -1,10 +1,12 @@
 @page "/registro"
 @layout AuthLayout
+@using PesquisaX.Shared.Comandos
 @using PesquisaX.Shared.DTO.Requestes
-@using MudBlazor
+
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
+@inject ApiController<dynamic> ApiController
 
 <PageTitle>Registrar - PesquisaX</PageTitle>
 
@@ -17,9 +19,9 @@
             </CardHeaderContent>
         </MudCardHeader>
         
-        <MudForm @ref="form">
+        <MudForm @ref="_form">
             <MudCardContent>
-                <MudTextField @bind-Value="registroRequest.Nome"
+                <MudTextField @bind-Value="_comando.Nome"
                              Label="Nome Completo"
                              Variant="Variant.Outlined"
                              Required="true"
@@ -28,7 +30,7 @@
                              MaxLength="100"
                              Class="mb-4" />
                 
-                <MudTextField @bind-Value="registroRequest.Email"
+                <MudTextField @bind-Value="_comando.Email"
                              Label="Email"
                              Variant="Variant.Outlined"
                              InputType="InputType.Email"
@@ -37,7 +39,7 @@
                              Validation="@(new EmailAddressAttribute() {ErrorMessage = "Email deve ter um formato válido"})"
                              Class="mb-4" />
                 
-                <MudTextField @bind-Value="registroRequest.Senha"
+                <MudTextField @bind-Value="_comando.Senha"
                              Label="Senha"
                              Variant="Variant.Outlined"
                              InputType="InputType.Password"
@@ -46,7 +48,7 @@
                              Validation="@(new Func<string, string?>(ValidarSenha))"
                              Class="mb-4" />
                 
-                <MudTextField @bind-Value="registroRequest.ConfirmarSenha"
+                <MudTextField @bind-Value="_comando.ConfirmarSenha"
                              Label="Confirmar Senha"
                              Variant="Variant.Outlined"
                              InputType="InputType.Password"
@@ -62,8 +64,8 @@
                           Color="Color.Primary"
                           Size="Size.Large"
                           FullWidth="true"
-                          Disabled="carregando">
-                    @if (carregando)
+                          Disabled="_carregando">
+                    @if (_carregando)
                     {
                         <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small" Indeterminate="true"/>
                         <span>Criando conta</span>
@@ -92,9 +94,9 @@
 </MudContainer>
 
 @code {
-    private MudForm form = new();
-    private RegistroRequest registroRequest = new();
-    private bool carregando = false;
+    private MudForm _form = new();
+    private readonly UsuarioCrud _comando = new();
+    private bool _carregando = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -108,24 +110,23 @@
 
     private async Task RealizarRegistro()
     {
-        await form.Validate();
-        if (!form.IsValid) return;
+        await _form.Validate();
+        if (!_form.IsValid) return;
 
-        carregando = true;
+        _carregando = true;
         StateHasChanged();
-
         try
         {
-            var response = await AuthService.RegistroAsync(registroRequest);
+            var retorno = await ApiController.PostAsync(_comando, "api/auth/registro");
             
-            if (response.Sucesso)
+            if (retorno.Sucesso)
             {
-                Snackbar.Add(response.Mensagem, Severity.Success);
+                Snackbar.Add(retorno.Mensagem, Severity.Success);
                 Navigation.NavigateTo("/home", replace: true);
             }
             else
             {
-                Snackbar.Add(response.Mensagem, Severity.Error);
+                Snackbar.Add(retorno.Mensagem, Severity.Error);
             }
         }
         catch (Exception)
@@ -134,7 +135,7 @@
         }
         finally
         {
-            carregando = false;
+            _carregando = false;
             StateHasChanged();
         }
     }
@@ -155,7 +156,7 @@
         if (string.IsNullOrWhiteSpace(confirmacao))
             return "Confirmação de senha é obrigatória";
         
-        if (confirmacao != registroRequest.Senha)
+        if (confirmacao != _comando.Senha)
             return "Senhas não conferem";
         
         return null;

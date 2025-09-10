@@ -45,55 +45,51 @@
 </Router>
 
 @code {
-    private MudTheme _theme = new();
-
+    private MudTheme _theme = new MudTheme()
+    {
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#FF6B6B",
+            Secondary = "#4ECDC4", 
+            Tertiary = "#45B7D1",
+            Success = "#96CEB4",
+            Warning = "#FECA57",
+            Error = "#FF6B6B",
+            Info = "#45B7D1",
+            
+            Background = "#121212",
+            BackgroundGray = "#1E1E1E",
+            Surface = "#1E1E1E",
+            
+            AppbarBackground = "#1E1E1E",
+            DrawerBackground = "#121212",
+            
+            TextPrimary = "#FFFFFF",
+            TextSecondary = "#AAAAAA",
+        },
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#1976D2",
+            Secondary = "#4ECDC4",
+            Tertiary = "#45B7D1", 
+            Success = "#4CAF50",
+            Warning = "#FF9800",
+            Error = "#F44336",
+            Info = "#2196F3",
+            
+            Background = "#FFFFFF",
+            BackgroundGray = "#F5F5F5",
+            Surface = "#FFFFFF",
+            
+            AppbarBackground = "#1976D2",
+            DrawerBackground = "#FFFFFF",
+        }
+    };
 
     private async Task CarregarTema()
     {
         await ServicoTema.InicializarAsync();
         ServicoTema.AoMudarTema += StateHasChanged;
-        
-        // Configurar cores personalizadas para o tema
-        _theme = new MudTheme()
-        {
-            PaletteDark = new PaletteDark()
-            {
-                Primary = "#FF6B6B",
-                Secondary = "#4ECDC4", 
-                Tertiary = "#45B7D1",
-                Success = "#96CEB4",
-                Warning = "#FECA57",
-                Error = "#FF6B6B",
-                Info = "#45B7D1",
-                
-                Background = "#121212",
-                BackgroundGray = "#1E1E1E",
-                Surface = "#1E1E1E",
-                
-                AppbarBackground = "#1E1E1E",
-                DrawerBackground = "#121212",
-                
-                TextPrimary = "#FFFFFF",
-                TextSecondary = "#AAAAAA",
-            },
-            PaletteLight = new PaletteLight()
-            {
-                Primary = "#1976D2",
-                Secondary = "#4ECDC4",
-                Tertiary = "#45B7D1", 
-                Success = "#4CAF50",
-                Warning = "#FF9800",
-                Error = "#F44336",
-                Info = "#2196F3",
-                
-                Background = "#FFFFFF",
-                BackgroundGray = "#F5F5F5",
-                Surface = "#FFFFFF",
-                
-                AppbarBackground = "#1976D2",
-                DrawerBackground = "#FFFFFF",
-            }
-        };
     }
     
     protected override async Task OnInitializedAsync()

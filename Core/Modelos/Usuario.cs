@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using PesquisaX.Core.ValueObjects;
 
 namespace PesquisaX.Core;
@@ -10,7 +9,7 @@ public class Usuario: Entidade
     public string Senha { get; private set; } = string.Empty;
     public bool Ativo { get; private set; }
 
-    public Sistema Sistema { get; private set; }
+    public Sistema? Sistema { get; private set; }
     
     public DateTime DataCriacao { get; private set; } 
     

@@ -1,10 +1,13 @@
-﻿@using PesquisaX.Shared.Version
+﻿@inherits LayoutComponentBase
+
+@using PesquisaX.Shared.Version
 @using PesquisaX.Shared.Views
-@using PesquisaX.Web.Services
-@inherits LayoutComponentBase
+
 @inject IServicoTema ServicoTema
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
+
+
 @implements IDisposable
 
 <MudLayout>

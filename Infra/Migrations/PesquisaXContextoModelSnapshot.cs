@@ -191,6 +191,9 @@ namespace PesquisaX.Infra.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("data_criacao");
@@ -261,6 +264,33 @@ namespace PesquisaX.Infra.Migrations
                         .HasForeignKey("PesquisaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("PesquisaX.Core.Usuario", b =>
+                {
+                    b.OwnsOne("PesquisaX.Core.ValueObjects.Sistema", "Sistema", b1 =>
+                        {
+                            b1.Property<Guid>("UsuarioId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<DateTime>("DataUltimoAcesso")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("data_ultimo_acesso");
+
+                            b1.Property<string>("Token")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("token");
+
+                            b1.HasKey("UsuarioId");
+
+                            b1.ToTable("usuarios");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UsuarioId");
+                        });
+
+                    b.Navigation("Sistema");
                 });
 
             modelBuilder.Entity("PesquisaX.Core.Modelos.GrupoQuestao", b =>

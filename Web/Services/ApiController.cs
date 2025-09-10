@@ -33,9 +33,9 @@ namespace PesquisaX.Web.Services
         /// <typeparam name="TData">Tipo dos dados a serem enviados</typeparam>
         /// <param name="dados">Dados para gravar</param>
         /// <param name="enderecoApi">Endpoint da API</param>
-        /// <param name="id">ID para atualização (0 = criação)</param>
+        /// <param name="id">ID para atualização (null ou vazio = criação)</param>
         /// <returns>Resultado da operação</returns>
-        public async Task<RetornoPadrao<T>> GravarAsync<TData>(TData dados, string enderecoApi, int id = 0)
+        public async Task<RetornoPadrao<T>> GravarAsync<TData>(TData dados, string enderecoApi, string? id = null)
         {
             try
             {
@@ -44,9 +44,9 @@ namespace PesquisaX.Web.Services
                 var json = JsonSerializer.Serialize(dados);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 
-                var url = ConstruirUrl(enderecoApi,0);
+                var url = ConstruirUrl(enderecoApi, id);
                 
-                var response = id > 0 
+                var response = !string.IsNullOrEmpty(id)
                     ? await _httpClient.PutAsync(url, content)
                     : await _httpClient.PostAsync(url, content);
 
@@ -74,7 +74,7 @@ namespace PesquisaX.Web.Services
         /// Método obsoleto - use GravarAsync
         /// </summary>
         [Obsolete("Use GravarAsync<TData> para melhor type safety")]
-        public async Task<RetornoPadrao<T>> Gravar(dynamic dados, string enderecoApi, int id = 0)
+        public async Task<RetornoPadrao<T>> Gravar(dynamic dados, string enderecoApi, string id = null)
         {
             return await GravarAsync(dados, enderecoApi, id);
         }
@@ -83,7 +83,7 @@ namespace PesquisaX.Web.Services
         /// Método obsoleto - use GravarAsync
         /// </summary>
         [Obsolete("Use GravarAsync<TData> para melhor type safety")]
-        public async Task<RetornoPadrao<T>> Gravar(T dados, string enderecoApi, int id = 0)
+        public async Task<RetornoPadrao<T>> Gravar(T dados, string enderecoApi, string id = null)
         {
             return await GravarAsync(dados, enderecoApi, id);
         }
@@ -268,10 +268,10 @@ namespace PesquisaX.Web.Services
         /// <param name="enderecoApi">Endpoint da API</param>
         /// <param name="id">ID opcional para operações de atualização</param>
         /// <returns>URL completa</returns>
-        private string ConstruirUrl(string enderecoApi, int id = 0)
+        private string ConstruirUrl(string enderecoApi, string? id = null)
         {
             var baseUrl = $"{enderecoApi}";
-            return id > 0 ? $"{baseUrl}/{id}" : baseUrl;
+            return !string.IsNullOrEmpty(id) ? $"{baseUrl}/{id}" : baseUrl;
         }
 
         /// <summary>

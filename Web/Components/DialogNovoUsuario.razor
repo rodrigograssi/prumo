@@ -1,11 +1,11 @@
-@using PesquisaX.Shared.DTO.Requestes
-@inject IUsuarioService UsuarioService
+@using PesquisaX.Shared.Comandos
 @inject ISnackbar Snackbar
+@inject ApiController<dynamic> ApiUser
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="form">
-            <MudTextField @bind-Value="registroRequest.Nome"
+        <MudForm @ref="_form">
+            <MudTextField @bind-Value="_comandoCriarUsuario.Nome"
                          Label="Nome Completo"
                          Variant="Variant.Outlined"
                          Required="true"
@@ -14,7 +14,7 @@
                          MaxLength="100"
                          Class="mb-4" />
             
-            <MudTextField @bind-Value="registroRequest.Email"
+            <MudTextField @bind-Value="_comandoCriarUsuario.Email"
                          Label="Email"
                          Variant="Variant.Outlined"
                          InputType="InputType.Email"
@@ -23,7 +23,7 @@
                          Validation="@(new EmailAddressAttribute() {ErrorMessage = "Email deve ter um formato válido"})"
                          Class="mb-4" />
             
-            <MudTextField @bind-Value="registroRequest.Senha"
+            <MudTextField @bind-Value="_comandoCriarUsuario.Senha"
                          Label="Senha"
                          Variant="Variant.Outlined"
                          InputType="InputType.Password"
@@ -32,7 +32,7 @@
                          Validation="@(new Func<string, string?>(ValidarSenha))"
                          Class="mb-4" />
             
-            <MudTextField @bind-Value="registroRequest.ConfirmarSenha"
+            <MudTextField @bind-Value="_comandoCriarUsuario.ConfirmarSenha"
                          Label="Confirmar Senha"
                          Variant="Variant.Outlined"
                          InputType="InputType.Password"
@@ -47,8 +47,8 @@
         <MudButton Color="Color.Primary" 
                    Variant="Variant.Filled" 
                    OnClick="CriarUsuario"
-                   Disabled="carregando">
-            @if (carregando)
+                   Disabled="_carregando">
+            @if (_carregando)
             {
                 <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small" Indeterminate="true"/>
                 <span>Criando...</span>
@@ -64,25 +64,31 @@
 @code {
     [CascadingParameter] public IMudDialogInstance  MudDialog { get; set; } = default!;
     
-    private MudForm form = new();
-    private RegistroRequest registroRequest = new();
-    private bool carregando = false;
+    private MudForm _form = new();
+    private UsuarioCrud _comandoCriarUsuario = new();
+    private bool _carregando;
 
-    private void Cancelar() => MudDialog?.Cancel();
+    private void Cancelar() => MudDialog.Cancel();
 
     private async Task CriarUsuario()
     {
-        await form.Validate();
-        if (!form.IsValid) return;
+        await _form.Validate();
+        if (!_form.IsValid) return;
 
-        carregando = true;
+        _carregando = true;
         StateHasChanged();
 
         try
         {
-            var usuario = await UsuarioService.CriarUsuarioAsync(registroRequest);
-            Snackbar.Add($"Usuário '{usuario.Nome}' criado com sucesso!", Severity.Success);
-            MudDialog?.Close(DialogResult.Ok(usuario));
+            var retorno = await ApiUser.PostAsync(_comandoCriarUsuario, "api/usuarios");
+            if (!retorno.Sucesso)
+            {
+                Snackbar.Add($"{retorno.Mensagem}", Severity.Error);
+                return;
+            }
+            
+            Snackbar.Add($"Usuário '{_comandoCriarUsuario.Nome}' criado com sucesso!", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(_comandoCriarUsuario));
         }
         catch (HttpRequestException ex) when (ex.Message.Contains("400"))
         {
@@ -94,7 +100,7 @@
         }
         finally
         {
-            carregando = false;
+            _carregando = false;
             StateHasChanged();
         }
     }
@@ -115,7 +121,7 @@
         if (string.IsNullOrWhiteSpace(confirmacao))
             return "Confirmação de senha é obrigatória";
         
-        if (confirmacao != registroRequest.Senha)
+        if (confirmacao != _comandoCriarUsuario.Senha)
             return "Senhas não conferem";
         
         return null;

@@ -1,4 +1,3 @@
-using PesquisaX.Core.Modelos;
 using PesquisaX.Shared.Comandos;
 using PesquisaX.Shared.Views;
 
@@ -11,7 +10,7 @@ public interface IServicoPesquisa
     Task CriarPesquisaAsync(PesquisaCrud pesquisa);
     Task AlterarPesquisaAsync(PesquisaCrud pesquisa);
     Task ExcluirPesquisaAsync(Guid id);
-    Task<RespostaPessoaView> SalvarResultadoPessoaAsync(Guid pesquisaId, RespostaPessoa resposta);
+    Task<RespostaPessoaView> SalvarResultadoPessoaAsync(Guid pesquisaId, RespostaPessoaView resposta);
     Task<List<RespostaPessoaView>> ObterResultadosPesquisaAsync(Guid pesquisaId);
     Task<RespostaPessoaView?> ObterResultadoPessoaAsync(Guid pesquisaId, Guid pessoaId);
     Task<string> ExportarDadosAsync();

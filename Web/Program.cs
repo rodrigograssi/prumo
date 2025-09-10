@@ -1,4 +1,5 @@
 using ControleDeIp.FrontEnd.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -27,14 +28,20 @@ builder.Services.AddScoped(sp =>
 
 builder.Services.AddMudServices();
 
+// Configurar autorização
+builder.Services.AddAuthorizationCore();
+
 // Usar serviço HTTP para consumir API
-builder.Services.AddScoped<IServicoPesquisa, HttpPesquisaService>();
+// builder.Services.AddScoped<IServicoPesquisa, HttpPesquisaService>();
 builder.Services.AddScoped<IServicoTema, ServicoTema>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+// builder.Services.AddScoped<IAuthService, AuthService>();
+// builder.Services.AddScoped<IUsuarioServico, UsuarioServico>();
 
 builder.Services.AddTransient(typeof(ApiController<>));
 builder.Services.AddTransient(typeof(ApiUsuarioController));
+builder.Services.AddTransient<AutenticacaoController>();
+builder.Services.AddTransient<AuthenticationStateProvider>(provider => provider.GetRequiredService<AutenticacaoController>());
+
 
 var app = builder.Build();
 

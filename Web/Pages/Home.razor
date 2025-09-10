@@ -94,22 +94,22 @@
 
     private async Task CreateSamplePesquisa()
     {
-        try
-        {
-            var samplePesquisa = SampleDataService.CreateTennisEvaluationPesquisa();
-            await ServicoPesquisa.CriarPesquisaAsync(samplePesquisa);
-            
-            Snackbar.Add("Pesquisa de exemplo criada com sucesso!", Severity.Success);
-            
-            // Atualizar o contador
-            var surveys = await ServicoPesquisa.ObterTodasPesquisasAsync();
-            totalPesquisas = surveys.Count;
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Erro ao criar pesquisa de exemplo: {ex.Message}", Severity.Error);
-        }
+        // try
+        // {
+        //     var samplePesquisa = SampleDataService.CreateTennisEvaluationPesquisa();
+        //     await ServicoPesquisa.CriarPesquisaAsync(samplePesquisa);
+        //     
+        //     Snackbar.Add("Pesquisa de exemplo criada com sucesso!", Severity.Success);
+        //     
+        //     // Atualizar o contador
+        //     var surveys = await ServicoPesquisa.ObterTodasPesquisasAsync();
+        //     totalPesquisas = surveys.Count;
+        //     StateHasChanged();
+        // }
+        // catch (Exception ex)
+        // {
+        //     Snackbar.Add($"Erro ao criar pesquisa de exemplo: {ex.Message}", Severity.Error);
+        // }
     }
 
     private Task OpenDialogAsync()

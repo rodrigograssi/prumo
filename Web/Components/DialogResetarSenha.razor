@@ -2,7 +2,7 @@
 @using MudBlazor.Services
 @using PesquisaX.Shared.Comandos
 @using PesquisaX.Shared.DTO.Responses
-@inject IUsuarioService UsuarioService
+@inject IUsuarioServico UsuarioServico
 @inject ISnackbar Snackbar
 
 
@@ -70,7 +70,7 @@
         StateHasChanged();
         try
         {
-            await UsuarioService.ResetarSenhaAsync(Usuario.Id, _resetRequest);
+            await UsuarioServico.ResetarSenhaAsync(Usuario.Id, _resetRequest);
             MudDialog?.Close(DialogResult.Ok(true));
         }
         catch (Exception ex)

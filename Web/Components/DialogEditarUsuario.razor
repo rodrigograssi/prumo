@@ -1,13 +1,11 @@
-@using MudBlazor
-@using MudBlazor.Services
 @using PesquisaX.Shared.Comandos
-@inject IUsuarioService UsuarioService
 @inject ISnackbar Snackbar
+@inject ApiController<dynamic> ApiUser
 
 <MudDialog>
     <DialogContent>
-        <MudForm @ref="form">
-            <MudTextField @bind-Value="usuarioEditado.Nome"
+        <MudForm @ref="_form">
+            <MudTextField @bind-Value="_usuarioEditado.Nome"
                          Label="Nome Completo"
                          Variant="Variant.Outlined"
                          Required="true"
@@ -16,7 +14,7 @@
                          MaxLength="100"
                          Class="mb-4" />
             
-            <MudTextField @bind-Value="usuarioEditado.Email"
+            <MudTextField @bind-Value="_usuarioEditado.Email"
                          Label="Email"
                          Variant="Variant.Outlined"
                          InputType="InputType.Email"
@@ -31,8 +29,8 @@
         <MudButton Color="Color.Primary" 
                    Variant="Variant.Filled" 
                    OnClick="SalvarUsuario"
-                   Disabled="carregando">
-            @if (carregando)
+                   Disabled="_carregando">
+            @if (_carregando)
             {
                 <MudProgressCircular Class="ms-n1 mr-2" Size="Size.Small" Indeterminate="true"/>
                 <span>Salvando...</span>
@@ -49,13 +47,13 @@
     [CascadingParameter] public IMudDialogInstance  MudDialog { get; set; } = default!;
     [Parameter] public UsuarioCrud Usuario { get; set; } = null!;
     
-    private MudForm form = new();
-    private UsuarioCrud usuarioEditado = new();
-    private bool carregando = false;
+    private MudForm _form = new();
+    private UsuarioCrud _usuarioEditado = new();
+    private bool _carregando;
 
     protected override void OnInitialized()
     {
-        usuarioEditado = new UsuarioCrud
+        _usuarioEditado = new UsuarioCrud
         {
             Id = Usuario.Id,
             Nome = Usuario.Nome,
@@ -63,21 +61,26 @@
         };
     }
 
-    private void Cancelar() => MudDialog?.Cancel();
+    private void Cancelar() => MudDialog.Cancel();
 
     private async Task SalvarUsuario()
     {
-        await form.Validate();
-        if (!form.IsValid) return;
+        await _form.Validate();
+        if (!_form.IsValid) return;
 
-        carregando = true;
+        _carregando = true;
         StateHasChanged();
 
         try
         {
-            var usuario = await UsuarioService.AtualizarUsuarioAsync(usuarioEditado.Id, usuarioEditado);
-            Snackbar.Add($"Usuário '{usuario.Nome}' atualizado com sucesso!", Severity.Success);
-            MudDialog?.Close(DialogResult.Ok(usuario));
+            var retorno = await ApiUser.PostAsync(_usuarioEditado, "api/usuarios");
+            if (!retorno.Sucesso)
+            {
+                Snackbar.Add($"{retorno.Mensagem}", Severity.Error);
+                return;
+            }
+            Snackbar.Add($"Usuário '{_usuarioEditado.Nome}' atualizado com sucesso!", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(_usuarioEditado));
         }
         catch (HttpRequestException ex) when (ex.Message.Contains("400"))
         {
@@ -89,7 +92,7 @@
         }
         finally
         {
-            carregando = false;
+            _carregando = false;
             StateHasChanged();
         }
     }

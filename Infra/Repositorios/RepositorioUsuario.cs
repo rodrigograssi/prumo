@@ -9,13 +9,13 @@ public class RepositorioUsuario(PesquisaXContexto db) : RepositorioBase<Usuario>
 {
     public async Task GravarAsync(Usuario usuario)
     {
-        db.Update(usuario);
-        await db.SaveChangesAsync();
+        Db.Update(usuario);
+        await Db.SaveChangesAsync();
     }
 
     public async Task<Usuario?> ObterPeloToken(string token)
     {
-        var usuario = await db.Usuarios.FirstOrDefaultAsync(u => u.Sistema.Token == token);
+        var usuario = await Db.Usuarios.FirstOrDefaultAsync(u => u.Sistema.Token == token);
         return usuario;
     }
 
