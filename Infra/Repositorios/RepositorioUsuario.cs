@@ -9,6 +9,17 @@ public class RepositorioUsuario(PesquisaXContexto db) : RepositorioBase<Usuario>
 {
     public async Task GravarAsync(Usuario usuario)
     {
+       
+    }
+
+    public async Task CriarAsync(Usuario usuario)
+    {
+        await Db.AddAsync(usuario);
+        await Db.SaveChangesAsync();
+    }
+
+    public async Task AlterarAsync(Usuario usuario)
+    {
         Db.Update(usuario);
         await Db.SaveChangesAsync();
     }

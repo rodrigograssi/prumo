@@ -12,7 +12,8 @@ public static class ConverteParaViewExtension
             Id = usuario.Id.ToString(),
             Nome = usuario.Nome,
             Email = usuario.Email,
-            DataCriacao = usuario.DataCriacao
+            DataCriacao = usuario.DataCriacao,
+            Token = usuario.Sistema?.Token ?? string.Empty, 
         };
         return view;
     }

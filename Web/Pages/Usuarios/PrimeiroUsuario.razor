@@ -1,6 +1,7 @@
 @page "/primeiro-usuario"
 @layout AuthLayout
 @using PesquisaX.Shared.Comandos
+@using PesquisaX.Web.Dto
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
@@ -101,14 +102,14 @@
     protected override async Task OnInitializedAsync()
     {
         // Verificar se já está autenticado
-        if (await AuthService.EstaAutenticadoAsync())
+        if (ConfiguracoesWeb.UsuarioLogado != null)
         {
             Navigation.NavigateTo("/home", replace: true);
             return;
         }
 
         // Verificar se já existem usuários
-        var retorno = await ApiExisteUsuario.GetAsync("api/auth/has-users");
+        var retorno = await ApiExisteUsuario.GetAsync("api/Auth/has-users");
         if (!retorno.Sucesso)
         {
             Snackbar.Add(retorno.Mensagem, Severity.Error);

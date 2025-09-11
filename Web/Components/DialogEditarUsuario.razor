@@ -1,6 +1,6 @@
 @using PesquisaX.Shared.Comandos
 @inject ISnackbar Snackbar
-@inject ApiController<dynamic> ApiUser
+@inject ApiController ApiUser
 
 <MudDialog>
     <DialogContent>
@@ -73,7 +73,7 @@
 
         try
         {
-            var retorno = await ApiUser.PostAsync(_usuarioEditado, "api/usuarios");
+            var retorno = await ApiUser.GravarAsync(_usuarioEditado, $"api/usuarios", _usuarioEditado.Id);
             if (!retorno.Sucesso)
             {
                 Snackbar.Add($"{retorno.Mensagem}", Severity.Error);

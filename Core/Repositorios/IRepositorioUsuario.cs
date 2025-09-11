@@ -4,7 +4,8 @@ namespace PesquisaX.Core.Repositorios;
 
 public interface IRepositorioUsuario : IRepositorioBase<Usuario>
 {
-    Task GravarAsync(Usuario usuario);
+    Task CriarAsync(Usuario usuario);
+    Task AlterarAsync(Usuario usuario);
     Task<Usuario?> ObterPeloToken(string token);
     Task<Usuario?> ObterPorEmailAsync(string email);
     Task<bool> EmailExisteAsync(string email);

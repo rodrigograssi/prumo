@@ -8,6 +8,10 @@ namespace PesquisaX.Web.Dto
 
         public static Autenticacao? Autenticacao = new();
         public static UsuarioView? UsuarioLogado;
+        
+        public static string Token = string.Empty;
+        
+        public static string LocalStoragTokeneKey = "authToken";
 
         public static string EnderecoApi = "http://localhost:5092";
         //public static string EnderecoApi = "https://www2.fmvz.unesp.br/ip-api";

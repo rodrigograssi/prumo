@@ -11,10 +11,12 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Configurar HttpClient para API com base no ambiente
-builder.Services.AddScoped(sp => 
+// Registrar o handler de autenticação
+builder.Services.AddTransient<AuthenticationHandler>();
+
+// Configurar HttpClient para API com handler de autenticação automática
+builder.Services.AddScoped(sp =>
 {
-    var httpClient = new HttpClient();
     var configuration = sp.GetRequiredService<IConfiguration>();
     var apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7001/";
     
@@ -22,7 +24,12 @@ builder.Services.AddScoped(sp =>
     Console.WriteLine($"[DEBUG] Configurando HttpClient com BaseAddress: {apiBaseUrl}");
     Console.WriteLine($"[DEBUG] Ambiente: {builder.HostEnvironment.Environment}");
     
+    var authHandler = sp.GetRequiredService<AuthenticationHandler>();
+    authHandler.InnerHandler = new HttpClientHandler();
+    
+    var httpClient = new HttpClient(authHandler);
     httpClient.BaseAddress = new Uri(apiBaseUrl);
+    
     return httpClient;
 });
 
@@ -37,6 +44,7 @@ builder.Services.AddScoped<IServicoTema, ServicoTema>();
 // builder.Services.AddScoped<IAuthService, AuthService>();
 // builder.Services.AddScoped<IUsuarioServico, UsuarioServico>();
 
+builder.Services.AddTransient<ApiController>();
 builder.Services.AddTransient(typeof(ApiController<>));
 builder.Services.AddTransient(typeof(ApiUsuarioController));
 builder.Services.AddTransient<AutenticacaoController>();
@@ -44,12 +52,5 @@ builder.Services.AddTransient<AuthenticationStateProvider>(provider => provider.
 
 
 var app = builder.Build();
-
-// Inicializar AuthService
-var authService = app.Services.GetService<IAuthService>();
-if (authService != null)
-{
-    await authService.InicializarAsync();
-}
 
 await app.RunAsync();

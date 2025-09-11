@@ -69,6 +69,7 @@ builder.Services.AddDbContext<PesquisaXContexto>(options =>
 builder.Services.AddScoped<IPesquisaRepositorio, PesquisaRepositorio>();
 builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuario>();
 builder.Services.AddScoped<IPesquisaHandler, PesquisaHandler>();
+builder.Services.AddScoped<IUsuarioHandler, UsuarioHandler>();
 
 // Configuração da API
 builder.Services.AddControllers()

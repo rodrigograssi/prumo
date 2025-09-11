@@ -1,11 +1,23 @@
 @page "/"
 @page "/login"
+
 @layout AuthLayout
+
+@using ControleDeIp.FrontEnd.Services
 @using PesquisaX.Shared.DTO.Requestes
+@using PesquisaX.Shared.Views
+@using PesquisaX.Web.Dto
 
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
-@inject IAuthService AuthService
+
+
+@inject IJSRuntime Js
+@inject ApiController<UsuarioView> ApiUsario
+@inject ApiUsuarioController ApiUsuarioController
+@inject ApiController ApiTemUsuarioCadastrado
+@inject AutenticacaoController AuthController
+
 
 <PageTitle>Login - PesquisaX</PageTitle>
 
@@ -94,15 +106,21 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Verificar se já está autenticado
-        if (await AuthService.EstaAutenticadoAsync())
-        {
-            Navigation.NavigateTo("/home", replace: true);
-            return;
-        }
+        // // Valida e renova o token
+        // var token = await ApiUsuarioController.ObterTokenDoLocalStorageAsync();
+        // if (!string.IsNullOrEmpty(token))
+        // {
+        //     var retorno = await ApiUsuarioController.LoginComToken(token);
+        //     if (retorno.Sucesso)
+        //     {
+        //         ConfiguracoesWeb.UsuarioLogado = retorno.Data;
+        //         Navigation.NavigateTo("/home", replace: true);    
+        //     }
+        // }
 
         // Verificar se pode registrar (só se não há usuários)
-        _podeRegistrar = !(await AuthService.ExistemUsuariosAsync());
+        var retornoSeTemUsuario =  await ApiTemUsuarioCadastrado.GetAsync("api/Auth/has-users");
+        _podeRegistrar = !retornoSeTemUsuario.Sucesso;
     }
 
     private async Task RealizarLogin()
@@ -115,16 +133,24 @@
 
         try
         {
-            var response = await AuthService.LoginAsync(_loginRequest);
+            var retorno = await ApiUsario.PostAsync(_loginRequest, "api/Auth/login");
             
-            if (response.Sucesso)
+            if (retorno.Sucesso)
             {
-                Snackbar.Add(response.Mensagem, Severity.Success);
+                ConfiguracoesWeb.UsuarioLogado = retorno.Data;
+                ConfiguracoesWeb.Token = retorno.Data?.Token ?? "";
+                
+                AuthController.Carregar();
+                
+                if (_loginRequest.ManterConectado)
+                    await Js.InvokeVoidAsync("localStorage.setItem", ConfiguracoesWeb.LocalStoragTokeneKey, retorno.Data?.Token);
+                
+                Snackbar.Add(retorno.Mensagem, Severity.Success);
                 Navigation.NavigateTo("/home", replace: true);
             }
             else
             {
-                Snackbar.Add(response.Mensagem, Severity.Error);
+                Snackbar.Add(retorno.Mensagem, Severity.Error);
             }
         }
         catch (Exception)

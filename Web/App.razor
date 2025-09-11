@@ -1,14 +1,15 @@
 ﻿@implements IDisposable
+@using ControleDeIp.FrontEnd.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using PesquisaX.Shared.Views
 @using PesquisaX.Web.Dto
-@using PesquisaX.Web.Pages
 
 @inject IServicoTema ServicoTema
 @inject NavigationManager Navigation
 @inject IJSRuntime Js
 @inject ApiController<UsuarioView> ApiUsuarioView
 @inject AutenticacaoController Login
+@inject ApiUsuarioController ApiUsuarioController
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="@ServicoTema.EModoEscuro" />
 <MudPopoverProvider />
@@ -96,26 +97,19 @@
     {
         await CarregarTema();
         
-        string token = await Js.InvokeAsync<string>("localStorage.getItem", "Token");
+        var token = await ApiUsuarioController.ObterTokenDoLocalStorageAsync();
         if (!string.IsNullOrEmpty(token))
         {
-            try
+            ConfiguracoesWeb.Token = token;
+            // Valida e renova o token
+            var retorno = await ApiUsuarioController.LoginComToken(token);
+            if (retorno.Sucesso)
             {
-                var apiUsuario = await ApiUsuarioView.CarregarDadosDoUsuario(token);
-                if (apiUsuario.Sucesso)
-                {
-                    ConfiguracoesWeb.UsuarioLogado = apiUsuario?.Data;
-                    Login.Carregar();
-                    
-                    await Js.InvokeVoidAsync("localStorage.setItem", "Token", token);
-                }
-            }
-            catch (Exception)
-            {
-                ConfiguracoesWeb.UsuarioLogado = null;
+                ConfiguracoesWeb.UsuarioLogado = retorno.Data;
+                ConfiguracoesWeb.Token = retorno.Data?.Token ?? string.Empty;
+                Navigation.NavigateTo("/home", replace: true);    
             }
         }
-        
     }
 
     public void Dispose()

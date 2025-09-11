@@ -23,7 +23,7 @@ public class UsuarioHandler(IRepositorioUsuario repo) : IUsuarioHandler
             // Criar usuário
             var usuario = new Usuario(comando.Nome, comando.Email, senhaHash);
 
-            await repo.GravarAsync(usuario);
+            await repo.CriarAsync(usuario);
             return new RetornoPadrao<Usuario>(true, "Usuário criado com sucesso", usuario);
         }
         catch (Exception ex)
@@ -47,7 +47,7 @@ public class UsuarioHandler(IRepositorioUsuario repo) : IUsuarioHandler
         usuario.Alterar(comando.Nome, comando.Email);
         usuario.DefineAtivo(comando.Ativo);
 
-        await repo.GravarAsync(usuario);
+        await repo.AlterarAsync(usuario);
         return new RetornoPadrao<Usuario>(true, "Usuário alterado com sucesso", usuario);
     }
 
@@ -75,7 +75,7 @@ public class UsuarioHandler(IRepositorioUsuario repo) : IUsuarioHandler
         // Criar hash da nova senha
         var senhaHash = BCrypt.Net.BCrypt.HashPassword(comando.NovaSenha);
         usuario.AlterarSenha(senhaHash); 
-        await repo.GravarAsync(usuario);
+        await repo.AlterarAsync(usuario);
 
         return new RetornoPadrao(true, "Senha alterada com sucesso");
     }

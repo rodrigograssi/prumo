@@ -1,11 +1,13 @@
 ﻿@inherits LayoutComponentBase
 
+@using ControleDeIp.FrontEnd.Services
 @using PesquisaX.Shared.Version
 @using PesquisaX.Shared.Views
+@using PesquisaX.Web.Dto
 
 @inject IServicoTema ServicoTema
-@inject IAuthService AuthService
 @inject NavigationManager Navigation
+@inject ApiUsuarioController ApiUsuarioController
 
 
 @implements IDisposable
@@ -108,7 +110,7 @@
     {
         try
         {
-            _usuarioAtual = await AuthService.ObterUsuarioAtualAsync();
+            _usuarioAtual = ConfiguracoesWeb.UsuarioLogado;
         }
         catch (Exception ex)
         {
@@ -133,7 +135,7 @@
 
     private async Task RealizarLogout()
     {
-        await AuthService.LogoutAsync();
+        await ApiUsuarioController.LogoutAsync();
         _usuarioAtual = null;
         Navigation.NavigateTo("/", replace: true);
     }

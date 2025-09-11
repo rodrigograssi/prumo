@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.JSInterop;
 using PesquisaX.Shared.Views;
+using PesquisaX.Web.Dto;
 
 namespace PesquisaX.Web.Services;
 
@@ -195,22 +196,22 @@ public class AuthService(ILogger<AuthService> logger, IJSRuntime jsRuntime, Http
 //         await _jsRuntime.InvokeVoidAsync($"{storage}.setItem", USER_KEY, usuarioJson);
 //     }
 //
-//     private async Task<string?> ObterTokenDoStorageAsync()
-//     {
-//         try
-//         {
-//             // Tenta localStorage primeiro, depois sessionStorage
-//             var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", TOKEN_KEY);
-//             if (!string.IsNullOrEmpty(token))
-//                 return token;
-//                 
-//             return await _jsRuntime.InvokeAsync<string>("sessionStorage.getItem", TOKEN_KEY);
-//         }
-//         catch
-//         {
-//             return null;
-//         }
-//     }
+     private async Task<string?> ObterTokenDoStorageAsync()
+     {
+         try
+         {
+             // Tenta localStorage primeiro, depois sessionStorage
+             var token = await jsRuntime.InvokeAsync<string>("localStorage.getItem", ConfiguracoesWeb.LocalStoragTokeneKey);
+             if (!string.IsNullOrEmpty(token))
+                 return token;
+                 
+             return await jsRuntime.InvokeAsync<string>("sessionStorage.getItem", ConfiguracoesWeb.LocalStoragTokeneKey);
+         }
+         catch
+         {
+             return null;
+         }
+     }
 //
 //     private void ConfigurarHttpClientHeaders(string token)
 //     {

@@ -2,10 +2,10 @@
 @layout AuthLayout
 @using PesquisaX.Shared.Comandos
 @using PesquisaX.Shared.DTO.Requestes
+@using PesquisaX.Web.Dto
 
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
-@inject IAuthService AuthService
 @inject ApiController<dynamic> ApiController
 
 <PageTitle>Registrar - PesquisaX</PageTitle>
@@ -101,10 +101,9 @@
     protected override async Task OnInitializedAsync()
     {
         // Verificar se já está autenticado
-        if (await AuthService.EstaAutenticadoAsync())
+        if (ConfiguracoesWeb.UsuarioLogado != null)
         {
             Navigation.NavigateTo("/home", replace: true);
-            return;
         }
     }
 
@@ -117,7 +116,7 @@
         StateHasChanged();
         try
         {
-            var retorno = await ApiController.PostAsync(_comando, "api/auth/registro");
+            var retorno = await ApiController.PostAsync(_comando, "api/Auth/registro");
             
             if (retorno.Sucesso)
             {

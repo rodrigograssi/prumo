@@ -1,8 +1,9 @@
 ﻿@page "/home"
-@inject IServicoPesquisa ServicoPesquisa
+@using PesquisaX.Shared.Views
 @inject ISnackbar Snackbar
 
 @inject IDialogService DialogService
+@inject ApiController<List<PesquisaView>> ApiControle
 
 <PageTitle>Sistema de Pesquisas</PageTitle>
 
@@ -23,7 +24,7 @@
                         <MudIcon Icon="@Icons.Material.Filled.List" Class="mr-2" />
                         Minhas Pesquisas
                     </MudText>
-                    <MudText Typo="Typo.body2">Total de pesquisas: @totalPesquisas</MudText>
+                    <MudText Typo="Typo.body2">Total de pesquisas: @_totalPesquisas</MudText>
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/pesquisas" StartIcon="@Icons.Material.Filled.Visibility">
                         Ver Todas as Pesquisas
                     </MudButton>
@@ -62,7 +63,7 @@
         </MudList>
     </MudPaper>
 
-    @if (totalPesquisas == 0)
+    @if (_totalPesquisas == 0)
     {
         <MudPaper Elevation="1" Class="pa-4 ma-2 mt-4 text-center">
             <MudText Typo="Typo.h6" Class="mb-2">Começar Rapidamente</MudText>
@@ -84,12 +85,19 @@
 </MudContainer>
 
 @code {
-    private int totalPesquisas = 0;
+    private int _totalPesquisas = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        var surveys = await ServicoPesquisa.ObterTodasPesquisasAsync();
-        totalPesquisas = surveys.Count;
+        var retorno = await ApiControle.GetAsync("api/Pesquisas");
+
+        if (!retorno.Sucesso)
+        {
+            Snackbar.Add(retorno.Mensagem, Severity.Error);
+            _totalPesquisas = 0;
+        }
+
+        _totalPesquisas = retorno.Data!.Count;
     }
 
     private async Task CreateSamplePesquisa()

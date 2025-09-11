@@ -1,9 +1,8 @@
-@using MudBlazor
-@using MudBlazor.Services
 @using PesquisaX.Shared.Comandos
 @using PesquisaX.Shared.DTO.Responses
-@inject IUsuarioServico UsuarioServico
 @inject ISnackbar Snackbar
+
+@inject ApiController ApiController
 
 
 <MudDialog>
@@ -70,8 +69,11 @@
         StateHasChanged();
         try
         {
-            await UsuarioServico.ResetarSenhaAsync(Usuario.Id, _resetRequest);
-            MudDialog?.Close(DialogResult.Ok(true));
+            var retorno = await ApiController.PostAsync(_resetRequest, $"api/Usuarios/{{id}}/reset-password");
+            if (retorno.Sucesso) 
+                MudDialog?.Close(DialogResult.Ok(true));
+            
+            Snackbar.Add($"Erro ao resetar senha: {retorno.Mensagem}", Severity.Error);
         }
         catch (Exception ex)
         {

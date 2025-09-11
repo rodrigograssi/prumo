@@ -1,63 +1,62 @@
-@using PesquisaX.Web.Services
-@inject IAuthService AuthService
-@inject NavigationManager Navigation
-
-@if (_estaCarregando)
-{
-    <div class="d-flex justify-content-center align-items-center" style="height: 50vh;">
-        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
-        <MudText Class="ml-3">Verificando autenticação...</MudText>
-    </div>
-}
-else if (_estaAutenticado)
-{
-    @ChildContent
-}
-
-@code {
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    private bool _estaCarregando = true;
-    private bool _estaAutenticado = false;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await VerificarAutenticacao();
-    }
-
-    private async Task VerificarAutenticacao()
-    {
-        try
-        {
-            _estaAutenticado = await AuthService.EstaAutenticadoAsync();
-            
-            if (!_estaAutenticado)
-            {
-                // Verificar se existem usuários no sistema
-                var existemUsuarios = await AuthService.ExistemUsuariosAsync();
-                
-                if (existemUsuarios)
-                {
-                    // Redirecionar para login (página inicial) se existem usuários
-                    Navigation.NavigateTo("/", true);
-                }
-                else
-                {
-                    // Redirecionar para primeiro registro se não há usuários
-                    Navigation.NavigateTo("/primeiro-usuario", true);
-                }
-                return;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erro na verificação de autenticação: {ex.Message}");
-            Navigation.NavigateTo("/", true);
-            return;
-        }
-        finally
-        {
-            _estaCarregando = false;
-        }
-    }
-}
+@* @inject IAuthService AuthService *@
+@* @inject NavigationManager Navigation *@
+@* *@
+@* @if (_estaCarregando) *@
+@* { *@
+@*     <div class="d-flex justify-content-center align-items-center" style="height: 50vh;"> *@
+@*         <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" /> *@
+@*         <MudText Class="ml-3">Verificando autenticação...</MudText> *@
+@*     </div> *@
+@* } *@
+@* else if (_estaAutenticado) *@
+@* { *@
+@*     @ChildContent *@
+@* } *@
+@* *@
+@* @code { *@
+@*     [Parameter] public RenderFragment? ChildContent { get; set; } *@
+@* *@
+@*     private bool _estaCarregando = true; *@
+@*     private bool _estaAutenticado = false; *@
+@* *@
+@*     protected override async Task OnInitializedAsync() *@
+@*     { *@
+@*         await VerificarAutenticacao(); *@
+@*     } *@
+@* *@
+@*     private async Task VerificarAutenticacao() *@
+@*     { *@
+@*         try *@
+@*         { *@
+@*             _estaAutenticado = await AuthService.EstaAutenticadoAsync(); *@
+@*              *@
+@*             if (!_estaAutenticado) *@
+@*             { *@
+@*                 // Verificar se existem usuários no sistema *@
+@*                 var existemUsuarios = await AuthService.ExistemUsuariosAsync(); *@
+@*                  *@
+@*                 if (existemUsuarios) *@
+@*                 { *@
+@*                     // Redirecionar para login (página inicial) se existem usuários *@
+@*                     Navigation.NavigateTo("/", true); *@
+@*                 } *@
+@*                 else *@
+@*                 { *@
+@*                     // Redirecionar para primeiro registro se não há usuários *@
+@*                     Navigation.NavigateTo("/primeiro-usuario", true); *@
+@*                 } *@
+@*                 return; *@
+@*             } *@
+@*         } *@
+@*         catch (Exception ex) *@
+@*         { *@
+@*             Console.WriteLine($"Erro na verificação de autenticação: {ex.Message}"); *@
+@*             Navigation.NavigateTo("/", true); *@
+@*             return; *@
+@*         } *@
+@*         finally *@
+@*         { *@
+@*             _estaCarregando = false; *@
+@*         } *@
+@*     } *@
+@* } *@

@@ -43,7 +43,8 @@ public class AuthController(
         try
         {
             var hasUsers = await repositorioUsuario.ExistemUsuariosAsync();
-            return Ok(new RetornoPadrao<bool>(true, "", hasUsers));
+            var retorno = new RetornoPadrao(hasUsers, hasUsers ? "Tem usuário" : "Não tem usuários");
+            return Ok(retorno);
         }
         catch (Exception ex)
         {
@@ -77,7 +78,7 @@ public class AuthController(
             var token = GerarTokenJwt(usuario);
             usuario.DefineAcesso(token);
             
-            await repositorioUsuario.GravarAsync(usuario);
+            await repositorioUsuario.AlterarAsync(usuario);
             return Ok(new RetornoPadrao<UsuarioView>(true, "Logado com sucesso", usuario.ConverteParaView()));
         }
         catch (Exception ex)
@@ -90,7 +91,16 @@ public class AuthController(
     [HttpGet("login/token")]
     public async Task<IActionResult> LoginComToken()
     {
+        // // Debug: Verificar todos os headers
+        // logger.LogInformation("[DEBUG API] Headers recebidos:");
+        // foreach (var header in Request.Headers)
+        // {
+        //     //logger.LogInformation("[DEBUG API] {Key}: {Value}", header.Key, String.Join(", ", header.Value));
+        // }
+        
         string token = Request.Headers[HeaderNames.Authorization];
+        logger.LogInformation("[DEBUG API] Authorization header: '{Token}'", token ?? "NULL");
+        
         if (string.IsNullOrEmpty(token))
             return Unauthorized(new RetornoPadrao<UsuarioView>("Token inválido"));
            
@@ -105,7 +115,7 @@ public class AuthController(
         var tokenAtualido = GerarTokenJwt(usuario);
         
         usuario.DefineAcesso(tokenAtualido);
-        await repositorioUsuario.GravarAsync(usuario);
+        await repositorioUsuario.AlterarAsync(usuario);
         
         return Ok(new RetornoPadrao<UsuarioView>(true, "Logado com sucesso", usuario.ConverteParaView()));
 
