@@ -1,10 +1,13 @@
 @page "/resultado/{PesquisaId:guid}/{PersonId:guid}"
 @page "/resultados/{PesquisaId:guid}"
+@using PesquisaX.Shared.Comandos
 @using PesquisaX.Shared.Views
-@inject IServicoPesquisa ServicoPesquisa
+
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+
+@inject ApiControllerGenerico ApiController
 
 <PageTitle>@(IsResultView ? $"Resultado - {_personResult?.NomePessoa}" : $"Resultados - {_pesquisa?.Nome}")</PageTitle>
 
@@ -178,7 +181,7 @@ else
                             <MudCardActions>
                                 <MudButtonGroup Size="Size.Small" Variant="Variant.Text">
                                     <MudButton StartIcon="Icons.Material.Filled.Visibility" Color="Color.Primary"
-                                               OnClick="() => ViewIndividualResult(result.Id)">
+                                               OnClick="() => ViewIndividualResult(result.PublicId)">
                                         Ver Resultado
                                     </MudButton>
                                     <MudButton StartIcon="Icons.Material.Filled.Delete" Color="Color.Error"
@@ -207,8 +210,8 @@ else
     [Parameter] public Guid PesquisaId { get; set; }
     [Parameter] public Guid? PersonId { get; set; }
 
-    private PesquisaView? _pesquisa;
-    private RespostaPessoaView? _personResult;
+    private PesquisaCrud? _pesquisa;
+    private RespostaPessoaCrud? _personResult;
     private List<RespostaPessoaView>? _todosResultados;
     private Dictionary<string, double> _groupoPorcentagens = new();
     private List<string> _chartLabels = new();
@@ -219,29 +222,36 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _pesquisa = await ServicoPesquisa.ObterPesquisaPorIdAsync(PesquisaId);
-        if (_pesquisa == null)
+        var retorno = await ApiController.GetAsync<PesquisaCrud>($"api/Pesquisas/{PesquisaId}");
+        if(!retorno.Sucesso || retorno.Data == null)
         {
             Snackbar.Add("Pesquisa não encontrada", Severity.Error);
             Navigation.NavigateTo("/pesquisas");
             return;
         }
 
+        _pesquisa = retorno.Data;
+
         if (IsResultView && PersonId.HasValue)
         {
-            _personResult = await ServicoPesquisa.ObterResultadoPessoaAsync(PesquisaId, PersonId.Value);
-            if (_personResult == null)
+            var retornoPessoa = await ApiController.GetAsync<RespostaPessoaCrud>($"api/Pesquisas/{PesquisaId}/resultados/{PersonId}");
+            if(retornoPessoa.Sucesso || retornoPessoa.Data == null)
             {
                 Snackbar.Add("Resultado não encontrado", Severity.Error);
                 Navigation.NavigateTo($"/resultados/{PesquisaId}");
                 return;
             }
-            
+
+            _personResult = retornoPessoa.Data;
             PrepareChartData();
         }
         else
         {
-            _todosResultados = await ServicoPesquisa.ObterResultadosPesquisaAsync(PesquisaId);
+            var retornoResultados = await ApiController.GetAsync<List<RespostaPessoaView>>($"api/Pesquisas/{PesquisaId}/resultados");
+            if (retornoResultados.Sucesso && retornoResultados.Data != null)
+            {
+                _todosResultados = retornoResultados.Data;
+            }
         }
     }
 
@@ -267,7 +277,7 @@ else
         };
     }
 
-    private void ViewIndividualResult(string resultId)
+    private void ViewIndividualResult(Guid resultId)
     {
         Navigation.NavigateTo($"/resultado/{PesquisaId}/{resultId}");
     }
@@ -287,9 +297,13 @@ else
             // await ServicoPesquisa.AlterarPesquisaAsync(_pesquisa);
             
             // Recarrega a lista
-            _todosResultados = await ServicoPesquisa.ObterResultadosPesquisaAsync(PesquisaId);
-            Snackbar.Add("Resultado excluído com sucesso", Severity.Success);
-            StateHasChanged();
+            var retornoResultados = await ApiController.GetAsync<List<RespostaPessoaView>>($"api/Pesquisas/{PesquisaId}/resultados");
+            if (retornoResultados.Sucesso && retornoResultados.Data != null)
+            {
+                _todosResultados = retornoResultados.Data;
+                Snackbar.Add("Resultado excluído com sucesso", Severity.Success);
+                StateHasChanged();
+            }
         }
     }
 }

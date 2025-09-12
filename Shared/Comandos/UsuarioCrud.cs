@@ -4,7 +4,8 @@ namespace PesquisaX.Shared.Comandos;
 
 public class UsuarioCrud
 {
-    public string Id { get; set; } = string.Empty;
+    public int Id { get; set; }
+    public Guid PublicId { get; set; }
     
     [Required(ErrorMessage = "Nome é obrigatório")]
     public string Nome { get; set; } = string.Empty;

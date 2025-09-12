@@ -2,8 +2,8 @@ namespace PesquisaX.Core.Modelos;
 
 public class Resposta: Entidade
 {
-    public Guid ResultadoPessoaId { get; init; }
-    public Guid QuestaoId { get; init; }
+    public int ResultadoPessoaId { get; init; }
+    public int QuestaoId { get; init; }
     public int ValorBruto { get; private set; }
     public int ValorProcessado { get; private set; }
     
@@ -15,7 +15,7 @@ public class Resposta: Entidade
         ValorProcessado = valorProcessado;
     }
 
-    public Resposta(Guid questaoId, int valorBruto, int valorProcessado)
+    public Resposta(int questaoId, int valorBruto, int valorProcessado)
     {
         QuestaoId = questaoId;
         ValorBruto = valorBruto;

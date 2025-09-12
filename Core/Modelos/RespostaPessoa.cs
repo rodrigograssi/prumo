@@ -3,7 +3,7 @@ namespace PesquisaX.Core.Modelos;
 public class RespostaPessoa: Entidade
 {
     private List<Resposta> _respostas = [];
-    public Guid PesquisaId { get; set; }
+    public int PesquisaId { get; set; }
     public string NomePessoa { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public DateTime DataAvaliacao { get; set; } = DateTime.UtcNow;
@@ -11,7 +11,7 @@ public class RespostaPessoa: Entidade
 
     protected RespostaPessoa(){}
 
-    public RespostaPessoa(Guid pesquisaId, string nomePessoa, string? email = null)
+    public RespostaPessoa(int pesquisaId, string nomePessoa, string? email = null)
     {
         PesquisaId = pesquisaId;
         NomePessoa = nomePessoa;

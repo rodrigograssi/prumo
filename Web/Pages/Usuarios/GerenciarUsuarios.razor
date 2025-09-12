@@ -184,7 +184,7 @@
         {
             try
             {
-                await UsuarioServico.ExcluirUsuarioAsync(usuario.Id);
+                await UsuarioServico.ExcluirUsuarioAsync(usuario.PublicId.ToString());
                 Snackbar.Add("Usuário excluído com sucesso!", Severity.Success);
                 await CarregarUsuarios();
             }

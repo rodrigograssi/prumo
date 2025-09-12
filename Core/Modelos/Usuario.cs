@@ -44,7 +44,4 @@ public class Usuario: Entidade
     {
         Sistema = new Sistema(DateTime.UtcNow, token);   
     }
-    
-    
-    
 }

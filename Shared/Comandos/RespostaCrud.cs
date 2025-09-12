@@ -2,8 +2,10 @@
 
 public class RespostaCrud
 {
-    public string ResultadoPessoaId { get; set; } = string.Empty;
-    public string QuestaoId { get; set; } = string.Empty;
+    public int Id { get; set; }
+    public Guid PublicId { get; set; }
+    public int ResultadoPessoaId { get; set; }
+    public int QuestaoId { get; set; } 
     public int ValorBruto { get; set; }
     public int ValorProcessado { get; set; }
 }

@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace PesquisaX.Infra.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class CriacaoInicialComPublicId : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,9 +16,11 @@ namespace PesquisaX.Infra.Migrations
                 name: "pesquisas",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nome = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    data_criacao = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    data_criacao = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    public_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -28,11 +31,16 @@ namespace PesquisaX.Infra.Migrations
                 name: "usuarios",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     nome = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     senha = table.Column<string>(type: "text", nullable: false),
-                    data_criacao = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    Ativo = table.Column<bool>(type: "boolean", nullable: false),
+                    data_ultimo_acesso = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    token = table.Column<string>(type: "text", nullable: true),
+                    data_criacao = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    public_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -43,12 +51,14 @@ namespace PesquisaX.Infra.Migrations
                 name: "grupos_questoes",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    pesquisa_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    pesquisa_id = table.Column<int>(type: "integer", nullable: false),
                     nome = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     categoria = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Ordem = table.Column<int>(type: "integer", nullable: false),
-                    cor = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false, defaultValue: "#FF6B6B")
+                    cor = table.Column<string>(type: "character varying(7)", maxLength: 7, nullable: false, defaultValue: "#FF6B6B"),
+                    public_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -65,11 +75,13 @@ namespace PesquisaX.Infra.Migrations
                 name: "resultados_pessoas",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    pesquisa_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    pesquisa_id = table.Column<int>(type: "integer", nullable: false),
                     nome_pessoa = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     email = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
-                    data_avaliacao = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    data_avaliacao = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    public_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -86,11 +98,13 @@ namespace PesquisaX.Infra.Migrations
                 name: "questoes",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    grupo_questao_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    grupo_questao_id = table.Column<int>(type: "integer", nullable: false),
                     texto = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     e_invertida = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    Ordem = table.Column<int>(type: "integer", nullable: false)
+                    Ordem = table.Column<int>(type: "integer", nullable: false),
+                    public_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -107,11 +121,13 @@ namespace PesquisaX.Infra.Migrations
                 name: "respostas",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    resultado_pessoa_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    questao_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    resultado_pessoa_id = table.Column<int>(type: "integer", nullable: false),
+                    questao_id = table.Column<int>(type: "integer", nullable: false),
                     valor_bruto = table.Column<int>(type: "integer", nullable: false),
-                    valor_processado = table.Column<int>(type: "integer", nullable: false)
+                    valor_processado = table.Column<int>(type: "integer", nullable: false),
+                    public_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {

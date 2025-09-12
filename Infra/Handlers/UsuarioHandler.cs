@@ -34,10 +34,7 @@ public class UsuarioHandler(IRepositorioUsuario repo) : IUsuarioHandler
 
     public async Task<RetornoPadrao<Usuario>> AlterarUsuario(UsuarioCrud comando)
     {
-        if (!Guid.TryParse(comando.Id, out var usuarioId))
-            return new RetornoPadrao<Usuario>("Erro ao alterar usuário", "Id no formato errado");
-        
-        var usuario = await repo.ObterPorIdAsync(usuarioId);
+        var usuario = await repo.ObterPorIdAsync(comando.PublicId);
         if (usuario == null)
             return new RetornoPadrao<Usuario>("Erro ao alterar usuário", "Usuário não localizado");
         

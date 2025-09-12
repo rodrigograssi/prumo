@@ -63,7 +63,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
     /// Obtém uma pesquisa por ID
     /// </summary>
     [HttpGet("{id}")]
-    public async Task<ActionResult<Pesquisa>> ObterPesquisaPorId(Guid id)
+    public async Task<ActionResult> ObterPesquisaPorId(Guid id)
     {
         try
         {
@@ -84,22 +84,28 @@ public class PesquisasController(IPesquisaRepositorio repo,
     /// Cria uma nova pesquisa
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<Pesquisa>> CriarPesquisa([FromBody] PesquisaCrud comando)
+    public async Task<ActionResult> CriarPesquisa([FromBody] PesquisaCrud comando)
     {
         try
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(new RetornoPadrao("Dados inválidos"));
 
             var usuarioId = ObterUsuarioIdAtual();
             var nomeUsuario = ObterNomeUsuarioAtual();
 
             var retorno = await handler.Criar(comando);
             if (!retorno.Sucesso)
-                logger.LogWarning("Não foi possível criar a pesquisa: {Erro} - {Mensagem}", retorno.Mensagem, retorno.Notificacoes);
-                    
+            {
+                logger.LogWarning("Não foi possível criar a pesquisa: {Erro} - {Mensagem}", retorno.Mensagem,
+                    retorno.Notificacoes);
+                return BadRequest(retorno);
+            }
+
             logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) está criando nova pesquisa: {NomePesquisa}",nomeUsuario, usuarioId, comando.Nome);
-            return CreatedAtAction(nameof(ObterPesquisaPorId), retorno);
+            return CreatedAtAction(nameof(AtualizarPesquisa),
+                new { id = retorno.Data!.Id },
+                new RetornoPadrao(true, "Pesquisa criada com sucesso"));
         }
         catch (Exception ex)
         {
@@ -127,7 +133,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
                 logger.LogWarning("Não foi possível alterar a pesquisa: {Erro} - {Mensagem}", retorno.Mensagem, retorno.Notificacoes);
                     
             logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) está alteranod pesquisa: {NomePesquisa}",nomeUsuario, usuarioId, comando.Nome);
-            return NoContent();
+            return Ok(new RetornoPadrao(true, "Pesquisa alterada com sucesso"));;
         }
         catch (Exception ex)
         {
@@ -161,7 +167,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
     /// Salva resultado de uma pessoa na pesquisa
     /// </summary>
     [HttpPost("{pesquisaId}/resultados")]
-    public async Task<ActionResult<RespostaPessoa>> SalvarResultadoPessoa(Guid pesquisaId, [FromBody] RespostaPessoaCrud comando)
+    public async Task<ActionResult> SalvarResultadoPessoa(Guid pesquisaId, [FromBody] RespostaPessoaCrud comando)
     {
         try
         {
@@ -170,8 +176,8 @@ public class PesquisasController(IPesquisaRepositorio repo,
 
             var resultado = await handler.CriarResposta(comando);
             return resultado.Sucesso
-                ? Ok(resultado)
-                : BadRequest(resultado);
+                ? Ok(new RetornoPadrao<RespostaPessoaView>(true, "Resultado salvo com sucesso", resultado.Data!.ConverteParaView()))
+                : BadRequest(new RetornoPadrao<RespostaPessoaView>(resultado.Mensagem, resultado.Notificacoes ?? []));;
         }
         catch (ArgumentException ex)
         {
@@ -193,7 +199,8 @@ public class PesquisasController(IPesquisaRepositorio repo,
     {
         try
         {
-            var resultados = await repo.ObterResultadosPesquisaAsync(pesquisaId);
+            var id = await repo.ObtemPesquisaId(pesquisaId);
+            var resultados = await repo.ObterResultadosPesquisaAsync(id);
             return Ok(resultados);
         }
         catch (Exception ex)
@@ -223,4 +230,6 @@ public class PesquisasController(IPesquisaRepositorio repo,
             return StatusCode(500, "Erro interno do servidor");
         }
     }
+
+   
 }

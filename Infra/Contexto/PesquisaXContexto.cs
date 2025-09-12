@@ -28,7 +28,12 @@ public class PesquisaXContexto : DbContext
             entity.HasKey(e => e.Id);
             
             entity.Property(e => e.Id)
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .ValueGeneratedOnAdd();
+                
+            entity.Property(e => e.PublicId)
+                .HasColumnName("public_id")
+                .IsRequired();
                 
             entity.Property(e => e.Nome)
                 .HasColumnName("nome")
@@ -59,7 +64,12 @@ public class PesquisaXContexto : DbContext
             entity.HasKey(e => e.Id);
             
             entity.Property(e => e.Id)
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .ValueGeneratedOnAdd();
+                
+            entity.Property(e => e.PublicId)
+                .HasColumnName("public_id")
+                .IsRequired();
                 
             entity.Property(e => e.Nome)
                 .HasColumnName("nome")
@@ -93,7 +103,12 @@ public class PesquisaXContexto : DbContext
             entity.HasKey(e => e.Id);
             
             entity.Property(e => e.Id)
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .ValueGeneratedOnAdd();
+                
+            entity.Property(e => e.PublicId)
+                .HasColumnName("public_id")
+                .IsRequired();
                 
             entity.Property(e => e.Texto)
                 .HasColumnName("texto")
@@ -115,7 +130,12 @@ public class PesquisaXContexto : DbContext
             entity.HasKey(e => e.Id);
             
             entity.Property(e => e.Id)
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .ValueGeneratedOnAdd();
+                
+            entity.Property(e => e.PublicId)
+                .HasColumnName("public_id")
+                .IsRequired();
                 
             entity.Property(e => e.NomePessoa)
                 .HasColumnName("nome_pessoa")
@@ -142,7 +162,12 @@ public class PesquisaXContexto : DbContext
             entity.HasKey(e => e.Id);
             
             entity.Property(e => e.Id)
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .ValueGeneratedOnAdd();
+                
+            entity.Property(e => e.PublicId)
+                .HasColumnName("public_id")
+                .IsRequired();
             
             entity.Property(e => e.QuestaoId)
                 .HasColumnName("questao_id");
@@ -178,7 +203,12 @@ public class PesquisaXContexto : DbContext
             entity.HasKey(e => e.Id);
             
             entity.Property(e => e.Id)
-                .HasColumnName("id");
+                .HasColumnName("id")
+                .ValueGeneratedOnAdd();
+                
+            entity.Property(e => e.PublicId)
+                .HasColumnName("public_id")
+                .IsRequired();
                 
             entity.Property(e => e.Nome)
                 .HasColumnName("nome")

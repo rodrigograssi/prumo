@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
 @using ControleDeIp.FrontEnd.Services
+@using Microsoft.AspNetCore.Authorization
 @using PesquisaX.Shared.Version
 @using PesquisaX.Shared.Views
 @using PesquisaX.Web.Dto
@@ -9,8 +10,9 @@
 @inject NavigationManager Navigation
 @inject ApiUsuarioController ApiUsuarioController
 
-
 @implements IDisposable
+
+@attribute [Authorize]
 
 <MudLayout>
     <MudAppBar Elevation="1">

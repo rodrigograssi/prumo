@@ -1,9 +1,11 @@
 @page "/pesquisas"
 @using PesquisaX.Shared.Views
-@inject IServicoPesquisa ServicoPesquisa
+
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+
+@inject ApiControllerGenerico ApiController
 
 <PageTitle>Lista de Pesquisas</PageTitle>
 
@@ -11,7 +13,7 @@
     <MudPaper Elevation="2" Class="pa-4 mb-4">
         <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
             <MudText Typo="Typo.h4">Minhas Pesquisas</MudText>
-            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="Icons.Material.Filled.Add" 
+            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="Icons.Material.Filled.Add"
                        Href="/criar-pesquisa">
                 Nova Pesquisa
             </MudButton>
@@ -30,7 +32,7 @@
             <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
                 Crie sua primeira pesquisa para começar
             </MudText>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="Icons.Material.Filled.Add" 
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="Icons.Material.Filled.Add"
                        Href="/criar-pesquisa">
                 Criar Primeira Pesquisa
             </MudButton>
@@ -65,19 +67,19 @@
                                 <MudStack Row Spacing="1">
                                     <MudButton StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Primary"
                                                Variant="Variant.Filled" Size="Size.Small" FullWidth="true"
-                                               OnClick="() => ApplyPesquisa(pesquisa.Id)">
+                                               OnClick="() => ApplyPesquisa(pesquisa.PublicId)">
                                         Aplicar
                                     </MudButton>
                                     <MudButton StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary"
                                                Variant="Variant.Outlined" Size="Size.Small" FullWidth="true"
-                                               OnClick="() => EditPesquisa(pesquisa.Id)">
+                                               OnClick="() => EditPesquisa(pesquisa.PublicId)">
                                         Editar
                                     </MudButton>
                                 </MudStack>
                                 <MudStack Row Spacing="1">
                                     <MudButton StartIcon="@Icons.Material.Filled.Assessment" Color="Color.Info"
                                                Variant="Variant.Text" Size="Size.Small" FullWidth="true"
-                                               OnClick="() => ViewResultados(pesquisa.Id)"
+                                               OnClick="() => ViewResultados(pesquisa.PublicId)"
                                                Disabled="@(pesquisa.TotalDeRespostas == 0)">
                                         Resultados
                                     </MudButton>
@@ -106,20 +108,26 @@
 
     private async Task LoadPesquisas()
     {
-        _pesquisas = await ServicoPesquisa.ObterTodasPesquisasAsync();
+        var retorno = await ApiController.GetAsync<List<PesquisaListaView>>("/api/Pesquisas");
+        if (retorno.Sucesso || retorno.Data != null)
+            _pesquisas = retorno.Data;
+        else
+        {
+            Snackbar.Add(retorno.Mensagem, Severity.Error);
+        }
     }
 
-    private void ApplyPesquisa(string pesquisaId)
+    private void ApplyPesquisa(Guid pesquisaId)
     {
         Navigation.NavigateTo($"/aplicar-pesquisa/{pesquisaId}");
     }
 
-    private void EditPesquisa(string pesquisaId)
+    private void EditPesquisa(Guid pesquisaId)
     {
         Navigation.NavigateTo($"/editar-pesquisa/{pesquisaId}");
     }
 
-    private void ViewResultados(string pesquisaId)
+    private void ViewResultados(Guid pesquisaId)
     {
         Navigation.NavigateTo($"/resultados/{pesquisaId}");
     }
@@ -127,14 +135,14 @@
     private async Task DeletePesquisa(PesquisaListaView pesquisva)
     {
         bool? result = await DialogService.ShowMessageBox(
-            "Confirmar Exclusão", 
+            "Confirmar Exclusão",
             $"Tem certeza que deseja excluir a pesquisa '{pesquisva.Nome}'? Esta ação não pode ser desfeita.",
-            yesText:"Excluir", 
+            yesText:"Excluir",
             cancelText:"Cancelar");
-            
+
         if (result == true)
         {
-            await ServicoPesquisa.ExcluirPesquisaAsync(Guid.Parse(pesquisva.Id));
+            await ApiController.DeleteAsync($"api/Pesquisas", pesquisva.PublicId.ToString()); 
             await LoadPesquisas();
             Snackbar.Add("Pesquisa excluída com sucesso", Severity.Success);
         }

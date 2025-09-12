@@ -45,10 +45,11 @@ builder.Services.AddScoped<IServicoTema, ServicoTema>();
 // builder.Services.AddScoped<IUsuarioServico, UsuarioServico>();
 
 builder.Services.AddTransient<ApiController>();
+builder.Services.AddTransient<ApiControllerGenerico>();
 builder.Services.AddTransient(typeof(ApiController<>));
-builder.Services.AddTransient(typeof(ApiUsuarioController));
-builder.Services.AddTransient<AutenticacaoController>();
-builder.Services.AddTransient<AuthenticationStateProvider>(provider => provider.GetRequiredService<AutenticacaoController>());
+builder.Services.AddTransient<ApiUsuarioController>();
+builder.Services.AddScoped<AutenticacaoController>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<AutenticacaoController>());
 
 
 var app = builder.Build();

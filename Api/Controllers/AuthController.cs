@@ -98,11 +98,14 @@ public class AuthController(
         //     //logger.LogInformation("[DEBUG API] {Key}: {Value}", header.Key, String.Join(", ", header.Value));
         // }
         
-        string token = Request.Headers[HeaderNames.Authorization];
-        logger.LogInformation("[DEBUG API] Authorization header: '{Token}'", token ?? "NULL");
+        string authHeader = Request.Headers[HeaderNames.Authorization];
+        logger.LogInformation("[DEBUG API] Authorization header: '{AuthHeader}'", authHeader ?? "NULL");
         
-        if (string.IsNullOrEmpty(token))
+        if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
             return Unauthorized(new RetornoPadrao<UsuarioView>("Token inválido"));
+            
+        // Extrair apenas o token, removendo "Bearer "
+        string token = authHeader.Substring("Bearer ".Length).Trim();
            
         var usuario = await repositorioUsuario.ObterPeloToken(token);
         if (usuario == null)

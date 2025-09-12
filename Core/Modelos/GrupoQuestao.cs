@@ -3,7 +3,7 @@ namespace PesquisaX.Core.Modelos;
 public class GrupoQuestao: Entidade
 {
     private readonly List<Questao> _questoes = [];
-    public Guid PesquisaId { get; init; }
+    public int PesquisaId { get; init; }
     public string Nome { get; private set; } = string.Empty;
     public string Categoria { get; private set; } = string.Empty;
     public int Ordem { get; private set; }
@@ -19,7 +19,7 @@ public class GrupoQuestao: Entidade
         Cor = cor;
     }
     
-    public GrupoQuestao(Guid pesquisaId, string nome, string categoria, int ordem, string cor)
+    public GrupoQuestao(int pesquisaId, string nome, string categoria, int ordem, string cor)
     {
         PesquisaId = pesquisaId;
         Nome = nome;
@@ -70,5 +70,12 @@ public class GrupoQuestao: Entidade
         Nome = nome;
         Categoria = categoria;
         Cor = cor;   
+    }
+
+    public void RemoveQuestao(Questao questao)
+    {
+        var questaoExistente = Questoes.FirstOrDefault(g => g.Id == questao.Id);
+        if (questaoExistente != null)
+            _questoes.Remove(questaoExistente);   
     }
 }

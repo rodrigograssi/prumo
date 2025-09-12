@@ -1,4 +1,6 @@
-@* @inject IAuthService AuthService *@
+@* @using ControleDeIp.FrontEnd.Services *@
+@* *@
+@* @inject ApiUsuarioController AuthService *@
 @* @inject NavigationManager Navigation *@
 @* *@
 @* @if (_estaCarregando) *@
@@ -29,12 +31,12 @@
 @*         try *@
 @*         { *@
 @*             _estaAutenticado = await AuthService.EstaAutenticadoAsync(); *@
-@*              *@
+@* *@
 @*             if (!_estaAutenticado) *@
 @*             { *@
 @*                 // Verificar se existem usuários no sistema *@
 @*                 var existemUsuarios = await AuthService.ExistemUsuariosAsync(); *@
-@*                  *@
+@* *@
 @*                 if (existemUsuarios) *@
 @*                 { *@
 @*                     // Redirecionar para login (página inicial) se existem usuários *@

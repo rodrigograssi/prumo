@@ -10,41 +10,43 @@
 @inject ApiController<UsuarioView> ApiUsuarioView
 @inject AutenticacaoController Login
 @inject ApiUsuarioController ApiUsuarioController
+@inject AutenticacaoController AuthController
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="@ServicoTema.EModoEscuro" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-            <Authorizing>
-                
-            </Authorizing>
-            <NotAuthorized>
-                @code {
-                    protected override void OnInitialized()
-                    {
-                        Navigation.NavigateTo("/login");
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <Authorizing>
+                    <h5>Autorizando o usuário...</h5>
+                </Authorizing>
+                <NotAuthorized>
+                    @code {
+                        protected override void OnInitialized()
+                        {
+                            Navigation.NavigateTo("/login");
+                        }
                     }
-                }
-            </NotAuthorized>
-        </AuthorizeRouteView>
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <PageTitle>Página não encontrada</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <MudContainer>
-                <MudAlert Severity="Severity.Error">
-                    Desculpe, não há nada neste endereço.
-                </MudAlert>
-            </MudContainer>
-        </LayoutView>
-    </NotFound>
-</Router>
-
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Página não encontrada</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <MudContainer>
+                    <MudAlert Severity="Severity.Error">
+                        Desculpe, não há nada neste endereço.
+                    </MudAlert>
+                </MudContainer>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
 @code {
     private MudTheme _theme = new MudTheme()
     {
@@ -96,20 +98,6 @@
     protected override async Task OnInitializedAsync()
     {
         await CarregarTema();
-        
-        var token = await ApiUsuarioController.ObterTokenDoLocalStorageAsync();
-        if (!string.IsNullOrEmpty(token))
-        {
-            ConfiguracoesWeb.Token = token;
-            // Valida e renova o token
-            var retorno = await ApiUsuarioController.LoginComToken(token);
-            if (retorno.Sucesso)
-            {
-                ConfiguracoesWeb.UsuarioLogado = retorno.Data;
-                ConfiguracoesWeb.Token = retorno.Data?.Token ?? string.Empty;
-                Navigation.NavigateTo("/home", replace: true);    
-            }
-        }
     }
 
     public void Dispose()

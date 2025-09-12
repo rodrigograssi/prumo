@@ -2,8 +2,9 @@
 
 public class GrupoQuestaoCrud
 {
-    public string Id { get; set; } = string.Empty;
-    public string PesquisaId { get; set; } = string.Empty;
+    public int Id { get; set; }
+    public Guid PublicId { get; set; }
+    public int PesquisaId { get; set; }
     public string Nome { get; set; } = string.Empty;
     public string Categoria { get; set; } = string.Empty;
     public int Ordem { get; set; }

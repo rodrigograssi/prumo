@@ -12,8 +12,8 @@ using PesquisaX.Infra.Contexto;
 namespace PesquisaX.Infra.Migrations
 {
     [DbContext(typeof(PesquisaXContexto))]
-    [Migration("20250908200001_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250911222141_CriacaoInicialComPublicId")]
+    partial class CriacaoInicialComPublicId
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,10 +27,12 @@ namespace PesquisaX.Infra.Migrations
 
             modelBuilder.Entity("PesquisaX.Core.Modelos.GrupoQuestao", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Categoria")
                         .IsRequired()
@@ -55,9 +57,13 @@ namespace PesquisaX.Infra.Migrations
                     b.Property<int>("Ordem")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("PesquisaId")
-                        .HasColumnType("uuid")
+                    b.Property<int>("PesquisaId")
+                        .HasColumnType("integer")
                         .HasColumnName("pesquisa_id");
+
+                    b.Property<Guid>("PublicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("public_id");
 
                     b.HasKey("Id");
 
@@ -68,10 +74,12 @@ namespace PesquisaX.Infra.Migrations
 
             modelBuilder.Entity("PesquisaX.Core.Modelos.Pesquisa", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("timestamp with time zone")
@@ -83,6 +91,10 @@ namespace PesquisaX.Infra.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("nome");
 
+                    b.Property<Guid>("PublicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("public_id");
+
                     b.HasKey("Id");
 
                     b.ToTable("pesquisas", (string)null);
@@ -90,10 +102,12 @@ namespace PesquisaX.Infra.Migrations
 
             modelBuilder.Entity("PesquisaX.Core.Modelos.Questao", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("EInvertida")
                         .ValueGeneratedOnAdd()
@@ -101,12 +115,16 @@ namespace PesquisaX.Infra.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("e_invertida");
 
-                    b.Property<Guid>("GrupoDeQuestaoId")
-                        .HasColumnType("uuid")
+                    b.Property<int>("GrupoDeQuestaoId")
+                        .HasColumnType("integer")
                         .HasColumnName("grupo_questao_id");
 
                     b.Property<int>("Ordem")
                         .HasColumnType("integer");
+
+                    b.Property<Guid>("PublicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("public_id");
 
                     b.Property<string>("Texto")
                         .IsRequired()
@@ -123,17 +141,23 @@ namespace PesquisaX.Infra.Migrations
 
             modelBuilder.Entity("PesquisaX.Core.Modelos.Resposta", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("QuestaoId")
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("PublicId")
                         .HasColumnType("uuid")
+                        .HasColumnName("public_id");
+
+                    b.Property<int>("QuestaoId")
+                        .HasColumnType("integer")
                         .HasColumnName("questao_id");
 
-                    b.Property<Guid>("ResultadoPessoaId")
-                        .HasColumnType("uuid")
+                    b.Property<int>("ResultadoPessoaId")
+                        .HasColumnType("integer")
                         .HasColumnName("resultado_pessoa_id");
 
                     b.Property<int>("ValorBruto")
@@ -155,10 +179,12 @@ namespace PesquisaX.Infra.Migrations
 
             modelBuilder.Entity("PesquisaX.Core.Modelos.RespostaPessoa", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("DataAvaliacao")
                         .HasColumnType("timestamp with time zone")
@@ -176,9 +202,13 @@ namespace PesquisaX.Infra.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("nome_pessoa");
 
-                    b.Property<Guid>("PesquisaId")
-                        .HasColumnType("uuid")
+                    b.Property<int>("PesquisaId")
+                        .HasColumnType("integer")
                         .HasColumnName("pesquisa_id");
+
+                    b.Property<Guid>("PublicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("public_id");
 
                     b.HasKey("Id");
 
@@ -189,10 +219,15 @@ namespace PesquisaX.Infra.Migrations
 
             modelBuilder.Entity("PesquisaX.Core.Usuario", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
+                        .HasColumnType("integer")
                         .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("timestamp with time zone")
@@ -209,6 +244,10 @@ namespace PesquisaX.Infra.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("nome");
+
+                    b.Property<Guid>("PublicId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("public_id");
 
                     b.Property<string>("Senha")
                         .IsRequired()
@@ -264,6 +303,33 @@ namespace PesquisaX.Infra.Migrations
                         .HasForeignKey("PesquisaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("PesquisaX.Core.Usuario", b =>
+                {
+                    b.OwnsOne("PesquisaX.Core.ValueObjects.Sistema", "Sistema", b1 =>
+                        {
+                            b1.Property<int>("UsuarioId")
+                                .HasColumnType("integer");
+
+                            b1.Property<DateTime>("DataUltimoAcesso")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("data_ultimo_acesso");
+
+                            b1.Property<string>("Token")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("token");
+
+                            b1.HasKey("UsuarioId");
+
+                            b1.ToTable("usuarios");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UsuarioId");
+                        });
+
+                    b.Navigation("Sistema");
                 });
 
             modelBuilder.Entity("PesquisaX.Core.Modelos.GrupoQuestao", b =>

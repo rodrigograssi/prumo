@@ -2,5 +2,6 @@
 
 public class RespostaView
 {
-    
+    public int Id { get; set; }
+    public Guid PublicId { get; set; }
 }

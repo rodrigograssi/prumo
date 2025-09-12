@@ -10,7 +10,8 @@ public static class ConverteParaCrudExtension
         
         var view = new PesquisaCrud()
         {
-            Id = pesquisa.Id.ToString(),
+            Id = pesquisa.Id,
+            PublicId = pesquisa.PublicId,
             Nome = pesquisa.Nome,
             DataCriacao = pesquisa.DataCriacao,
             GruposQuestoes = pesquisa.GruposQuestoes.Select(g => g.ConverteParaCrud()).ToList(),
@@ -23,12 +24,13 @@ public static class ConverteParaCrudExtension
     {
         var view = new GrupoQuestaoCrud()
         {
-            Id = grupo.Id.ToString(),
+            Id = grupo.Id,
+            PublicId = grupo.PublicId,
             Nome = grupo.Nome,
             Categoria = grupo.Categoria,
             Cor = grupo.Cor,
             Ordem = grupo.Ordem,
-            PesquisaId = grupo.PesquisaId.ToString(),
+            PesquisaId = grupo.PesquisaId,
             Questoes = grupo.Questoes.Select(q => q.ConverteParaCrud()).ToList(),
         };
         
@@ -39,7 +41,9 @@ public static class ConverteParaCrudExtension
     {
         var view = new QuestaoCrud()
         {
-            GrupoDeQuestaoId = questao.GrupoDeQuestaoId.ToString(),
+            Id = questao.Id,
+            PublicId = questao.PublicId,
+            GrupoDeQuestaoId = questao.GrupoDeQuestaoId,
             Texto = questao.Texto,
             EInvertida = questao.EInvertida,
             Ordem = questao.Ordem,
@@ -51,8 +55,10 @@ public static class ConverteParaCrudExtension
     {
         var view = new RespostaCrud()
         {
-            ResultadoPessoaId = resposta.ResultadoPessoaId.ToString(),
-            QuestaoId = resposta.QuestaoId.ToString(),
+            Id = resposta.Id,
+            PublicId = resposta.PublicId,
+            ResultadoPessoaId = resposta.ResultadoPessoaId,
+            QuestaoId = resposta.QuestaoId,
             ValorBruto = resposta.ValorBruto,
             ValorProcessado = resposta.ValorProcessado,
         };
@@ -64,7 +70,9 @@ public static class ConverteParaCrudExtension
     {
         var view = new RespostaPessoaCrud()
         {
-            PesquisaId = resposta.PesquisaId.ToString(),
+            Id = resposta.Id,
+            PublicId = resposta.PublicId,
+            PesquisaId = resposta.PesquisaId,
             DataAvaliacao = resposta.DataAvaliacao,
             Email = resposta.Email,
             NomePessoa = resposta.NomePessoa,

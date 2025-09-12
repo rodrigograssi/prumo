@@ -8,15 +8,36 @@ namespace PesquisaX.Infra.Repositorios;
 
 public class PesquisaRepositorio(PesquisaXContexto db): IPesquisaRepositorio
 {
-    public async Task GravarAsync(Pesquisa pesquisa)
+    public async Task AlterarAsync(Pesquisa pesquisa)
     {
         db.Pesquisas.Update(pesquisa);
+        await db.SaveChangesAsync();
+    }
+    
+    public async Task CriarAsync(Pesquisa pesquisa)
+    {
+        await db.Pesquisas.AddAsync(pesquisa);
         await db.SaveChangesAsync();
     }
 
     public async Task<Pesquisa?> SelecionaAsync(Guid id)
     {
-        var pesquisa = await db.Pesquisas.FirstOrDefaultAsync(p => p.Id == id);
+        var pesquisa = await db.Pesquisas
+            .Include(p => p.RespostasPessoa)
+            .Include(p => p.GruposQuestoes)
+                .ThenInclude( g => g.Questoes)
+            .FirstOrDefaultAsync(p => p.PublicId == id);
+        return pesquisa;
+    }
+
+    public async Task<Pesquisa?> SelecionaAsync(int id)
+    {
+        var pesquisa = await db.Pesquisas
+            .Include(p => p.RespostasPessoa)
+            .Include(p => p.GruposQuestoes)
+            .ThenInclude( g => g.Questoes)
+            .FirstOrDefaultAsync(p => p.Id == id);
+        
         return pesquisa;
     }
 
@@ -34,6 +55,12 @@ public class PesquisaRepositorio(PesquisaXContexto db): IPesquisaRepositorio
 
     public async Task<GrupoQuestao?> SelecionaGrupoQuestaoAsync(Guid id)
     {
+        var grupo = await db.GruposQuestoes.FirstOrDefaultAsync(g => g.PublicId == id);
+        return grupo;
+    }
+
+    public async Task<GrupoQuestao?> SelecionaGrupoQuestaoAsync(int id)
+    {
         var grupo = await db.GruposQuestoes.FirstOrDefaultAsync(g => g.Id == id);
         return grupo;
     }
@@ -46,7 +73,7 @@ public class PesquisaRepositorio(PesquisaXContexto db): IPesquisaRepositorio
 
     public async Task<Questao?> SelecionaQuestaoAsync(Guid parse)
     {
-        var grupo = await db.Questoes.FirstOrDefaultAsync(q => q.Id == parse);
+        var grupo = await db.Questoes.FirstOrDefaultAsync(q => q.PublicId == parse);
         return grupo;
     }
 
@@ -83,7 +110,8 @@ public class PesquisaRepositorio(PesquisaXContexto db): IPesquisaRepositorio
         throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<RespostaPessoa>> ObterResultadosPesquisaAsync(Guid pesquisaId)
+    
+    public async Task<IEnumerable<RespostaPessoa>> ObterResultadosPesquisaAsync(int pesquisaId)
     {
         var resultados = await db.ResultadosPessoas
             .Include(r => r.Respostas)
@@ -114,7 +142,8 @@ public class PesquisaRepositorio(PesquisaXContexto db): IPesquisaRepositorio
         var pesquisas = await db.Pesquisas
             .Select(p => new PesquisaListaView
             {
-                Id = p.Id.ToString(),
+                Id = p.Id,
+                PublicId = p.PublicId,
                 Nome = p.Nome,
                 DataCriacao = p.DataCriacao,
                 TotalDeGrupos = p.GruposQuestoes.Count(),
@@ -125,5 +154,9 @@ public class PesquisaRepositorio(PesquisaXContexto db): IPesquisaRepositorio
 
         return pesquisas;
     }
-    
+
+    public async Task<int> ObtemPesquisaId(Guid pesquisaId)
+    {
+        return await db.Pesquisas.Where(p => p.PublicId == pesquisaId).Select(p => p.Id).FirstOrDefaultAsync();
+    }
 }

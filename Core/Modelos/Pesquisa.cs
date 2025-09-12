@@ -53,4 +53,11 @@ public class Pesquisa: Entidade
     {
         Nome = nome;
     }
+
+    public void RemoveGrupo(GrupoQuestao grupo)
+    {
+        var grupoExistente = GruposQuestoes.FirstOrDefault(g => g.Id == grupo.Id);
+        if (grupoExistente != null)
+            _gruposQuestoes.Remove(grupoExistente);
+    }
 }

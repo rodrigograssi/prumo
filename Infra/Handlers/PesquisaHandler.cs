@@ -8,25 +8,112 @@ namespace PesquisaX.Infra.Handlers;
 
 public class PesquisaHandler(IPesquisaRepositorio repo): IPesquisaHandler
 {
-    public async Task<RetornoPadrao> Criar(PesquisaCrud comando)
+    public async Task<RetornoPadrao<Pesquisa>> Criar(PesquisaCrud comando)
     {
         var pesquisa = new Pesquisa(comando.Nome);
-        await repo.GravarAsync(pesquisa);
-        return new RetornoPadrao(true, "Pesquisa criada com sucesso");
+
+        foreach (var grupo in comando.GruposQuestoes)
+        {
+            var novoGrupo = new GrupoQuestao(grupo.Nome, grupo.Categoria, grupo.Cor);
+            foreach (var questao in grupo.Questoes)
+            {
+                var novaQuestao = new Questao(questao.Texto, questao.EInvertida);
+                novoGrupo.AdicionarQuestao(novaQuestao);
+            }
+            
+            pesquisa.AdicionarGrupoQuestao(novoGrupo);
+        }
+        
+        await repo.CriarAsync(pesquisa);
+        return new RetornoPadrao<Pesquisa>(true, "Pesquisa criada com sucesso", pesquisa);
     }
 
     public async Task<RetornoPadrao> Alterar(PesquisaCrud comando)
     {
-        Guid id;
-        if (!Guid.TryParse(comando.Id, out id))
-            return new RetornoPadrao("Erro ao alterar a pequisa", "Guid invalido");
 
-        var pesquisa = await repo.SelecionaAsync(id);
+        var pesquisa = await repo.SelecionaAsync(comando.PublicId);
         if(pesquisa == null)
             return new RetornoPadrao("Erro ao alterar a pequisa", "Pesquisa não localizada");
         
+        // Atualizar nome da pesquisa
         pesquisa.Alterar(comando.Nome);
-        await repo.GravarAsync(pesquisa);
+
+        // Remover grupos que não existem mais no comando
+        var idsGruposComando = new HashSet<int>(
+            comando.GruposQuestoes.Select(g =>g.Id)
+        );
+        
+        var gruposParaRemover = pesquisa.GruposQuestoes
+            .Where(gq => !idsGruposComando.Contains(gq.Id))
+            .ToList();
+
+        foreach (var grupo in gruposParaRemover)
+        {
+            pesquisa.RemoveGrupo(grupo);
+            await repo.ExcluirGrupoQuestoes(grupo); 
+        }
+
+        // Processar grupos do comando
+        foreach (var grupoComando in comando.GruposQuestoes)
+        {
+            if (grupoComando.Id == 0)
+            {
+                // Novo grupo
+                var novoGrupo = new GrupoQuestao(grupoComando.Nome, grupoComando.Categoria, grupoComando.Cor);
+                foreach (var questao in grupoComando.Questoes)
+                {
+                    var novaQuestao = new Questao(questao.Texto, questao.EInvertida);
+                    novoGrupo.AdicionarQuestao(novaQuestao);
+                }
+                pesquisa.AdicionarGrupoQuestao(novoGrupo);
+            }
+            else
+            {
+                var grupoExistente = pesquisa.GruposQuestoes.FirstOrDefault(g => g.Id == grupoComando.Id);
+                if (grupoExistente != null)
+                {
+                    grupoExistente.Alterar(grupoComando.Nome, grupoComando.Categoria, grupoComando.Cor);
+
+                    // Remover questões que não existem mais no comando
+                    var idsQuestoesComando = new HashSet<int>(
+                        grupoComando.Questoes
+                            .Select(g => g.Id)
+                    );
+                    
+                    var questoesParaRemover = grupoExistente.Questoes
+                        .Where(geq => !idsQuestoesComando.Contains(geq.Id))
+                        .ToList();
+
+                    foreach (var questao in questoesParaRemover)
+                    {
+                        grupoExistente.RemoveQuestao(questao);
+                        await repo.ExcluiQuestaoAsync(questao);
+                    }
+
+                    // Processar questões do comando
+                    foreach (var questaoComando in grupoComando.Questoes)
+                    {
+                        if (questaoComando.Id == 0)
+                        {
+                            // Nova questão
+                            var novaQuestao = new Questao(questaoComando.Texto, questaoComando.EInvertida);
+                            grupoExistente.AdicionarQuestao(novaQuestao);
+                        }
+                        else
+                        {
+                            // Questão existente - atualizar
+                            var questaoExistente = grupoExistente.Questoes.FirstOrDefault(q => q.Id == questaoComando.Id);
+                            if (questaoExistente != null)
+                            {
+                                questaoExistente.Alterar(questaoComando.Texto, questaoComando.EInvertida, questaoComando.Ordem);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        await repo.AlterarAsync(pesquisa);
         return new RetornoPadrao(true, "Pesquisa alterada com sucesso");
     }
 
@@ -42,22 +129,22 @@ public class PesquisaHandler(IPesquisaRepositorio repo): IPesquisaHandler
     
     public async Task<RetornoPadrao> CriarGrupoDeQuestao(GrupoQuestaoCrud comando)
     {
-        var pesquisa = await repo.SelecionaAsync(Guid.Parse(comando.PesquisaId));
+        var pesquisa = await repo.SelecionaAsync(comando.PesquisaId);
         if(pesquisa == null)
             return new RetornoPadrao("Erro ao excluir a pequisa", "Pesquisa não localizada");
         
         var grupo = new GrupoQuestao(comando.Nome, comando.Categoria, comando.Cor);
         pesquisa.AdicionarGrupoQuestao(grupo);
         
-        await repo.GravarAsync(pesquisa);
+        await repo.AlterarAsync(pesquisa);
         return new RetornoPadrao(true, "Grupo criado com sucesso");
     }
     
     public async Task<RetornoPadrao> AlterarGrupoDeQuestao(GrupoQuestaoCrud comando)
     {
-        var grupo = await repo.SelecionaGrupoQuestaoAsync(Guid.Parse(comando.Id));
+        var grupo = await repo.SelecionaGrupoQuestaoAsync(comando.PublicId);
         if(grupo == null)
-            return new RetornoPadrao( "Erro ao alterar grupo de questão", "Grupo não localizada");;
+            return new RetornoPadrao( "Erro ao alterar grupo de questão", "Grupo não localizada");
         
         grupo.Alterar(comando.Nome, comando.Categoria, comando.Cor);
         await repo.GravarGrupoDeQuestaoAsync(grupo);
@@ -66,13 +153,13 @@ public class PesquisaHandler(IPesquisaRepositorio repo): IPesquisaHandler
     
     public async Task<RetornoPadrao> ExcluirGrupoDeQuestao(GrupoQuestaoCrud comando)
     {
-        var pesquisa = await repo.SelecionaAsync(Guid.Parse(comando.PesquisaId));
+        var pesquisa = await repo.SelecionaAsync(comando.PesquisaId);
         if(pesquisa == null)
             return new RetornoPadrao( "Erro ao excluir grupo de questão", "Pequisa não localizada");
         
-        var grupo = pesquisa.GruposQuestoes.FirstOrDefault(g => g.Id == Guid.Parse(comando.Id));
+        var grupo = pesquisa.GruposQuestoes.FirstOrDefault(g => g.Id == comando.Id);
         if(grupo== null)
-            return new RetornoPadrao( "Erro ao excluir grupo de questão", "Grupo não localizada");;
+            return new RetornoPadrao( "Erro ao excluir grupo de questão", "Grupo não localizada");
         
         await repo.ExcluirGrupoQuestoes(grupo);
         return new RetornoPadrao(true, "Grupo excluído com sucesso");
@@ -80,11 +167,11 @@ public class PesquisaHandler(IPesquisaRepositorio repo): IPesquisaHandler
 
     public async Task<RetornoPadrao> CriarQuestao(QuestaoCrud comando)
     {
-        var grupoQuestao = await repo.SelecionaGrupoQuestaoAsync(Guid.Parse(comando.GrupoDeQuestaoId));
+        var grupoQuestao = await repo.SelecionaGrupoQuestaoAsync(comando.GrupoDeQuestaoId);
         if (grupoQuestao == null)
             return new RetornoPadrao( "Erro ao criar questão", "Questão não localizada");
 
-        var questao = new Questao(comando.Texto, comando.EInvertida, 0);
+        var questao = new Questao(comando.Texto, comando.EInvertida);
         grupoQuestao.AdicionarQuestao(questao);
         
         await repo.GravarGrupoDeQuestaoAsync(grupoQuestao);
@@ -93,7 +180,7 @@ public class PesquisaHandler(IPesquisaRepositorio repo): IPesquisaHandler
     
     public async Task<RetornoPadrao>  AlterarQuestao(QuestaoCrud comando)
     {
-        var questao = await repo.SelecionaQuestaoAsync(Guid.Parse(comando.Id));
+        var questao = await repo.SelecionaQuestaoAsync(comando.PublicId);
         if (questao == null)
             return new RetornoPadrao( "Erro ao alterar questão", "Questão não localizada");
 
@@ -105,32 +192,24 @@ public class PesquisaHandler(IPesquisaRepositorio repo): IPesquisaHandler
     
     public async Task<RetornoPadrao>  ExcluirQuestao(QuestaoCrud comando)
     {
-        var questao = await repo.SelecionaQuestaoAsync(Guid.Parse(comando.Id));
+        var questao = await repo.SelecionaQuestaoAsync(comando.PublicId);
         if (questao == null)
-            return new RetornoPadrao( "Erro ao excluir questão", "Questão não localizada");;
+            return new RetornoPadrao( "Erro ao excluir questão", "Questão não localizada");
 
         await repo.ExcluiQuestaoAsync(questao);
         return new RetornoPadrao(true, "Questão excluída com sucesso");
     }
 
-    public async Task<RetornoPadrao> CriarResposta(RespostaPessoaCrud comando)
+    public async Task<RetornoPadrao<RespostaPessoa>> CriarResposta(RespostaPessoaCrud comando)
     {
-        Guid pesquisaId;
-        if(!Guid.TryParse(comando.PesquisaId, out pesquisaId))
-            return new RetornoPadrao("Erro ao criar resposta", "Guid inválido");
-        
-        var respostaPessoa = new RespostaPessoa(pesquisaId, comando.NomePessoa, comando.Email);
+        var respostaPessoa = new RespostaPessoa(comando.PesquisaId, comando.NomePessoa, comando.Email);
         foreach (var item in comando.Respostas)
         {
-            if(!Guid.TryParse(item.QuestaoId, out var questaoId))
-                return new RetornoPadrao("Erro ao criar resposta", "Guid da questão inválido");
-            
-            var questao = new Resposta(questaoId, item.ValorBruto, item.ValorProcessado);
+            var questao = new Resposta(item.QuestaoId, item.ValorBruto, item.ValorProcessado);
             respostaPessoa.AdicionarResposta(questao);
         }
-        
         await repo.GravarRespostaPessoaAsync(respostaPessoa);
-        return new RetornoPadrao(true,"Resposta criada com sucesso");
+        return new RetornoPadrao<RespostaPessoa>(true,"Resposta criada com sucesso", respostaPessoa);
         
     }
 }

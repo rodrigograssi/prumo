@@ -9,7 +9,8 @@ public static class ConverteParaViewExtension
     {
         var view = new UsuarioView()
         {
-            Id = usuario.Id.ToString(),
+            Id = usuario.Id,
+            PublicId = usuario.PublicId,
             Nome = usuario.Nome,
             Email = usuario.Email,
             DataCriacao = usuario.DataCriacao,
@@ -23,12 +24,28 @@ public static class ConverteParaViewExtension
     {
         var view = new RespostaPessoaView()
         {
-            Id = respostaPessoa.Id.ToString(),
+            Id = respostaPessoa.Id,
+            PublicId = respostaPessoa.PublicId,
             PesquisaId = respostaPessoa.PesquisaId.ToString(),
             NomePessoa = respostaPessoa.NomePessoa,
             Email = respostaPessoa.Email,
             DataAvaliacao = respostaPessoa.DataAvaliacao,
             PercentuaisGrupos = respostaPessoa.ObterPercentuaisGrupos(questoes)
+        };
+        
+        return view;
+    }
+    
+    public static RespostaPessoaView ConverteParaView(this RespostaPessoa respostaPessoa)
+    {
+        var view = new RespostaPessoaView()
+        {
+            Id = respostaPessoa.Id,
+            PublicId = respostaPessoa.PublicId,
+            PesquisaId = respostaPessoa.PesquisaId.ToString(),
+            NomePessoa = respostaPessoa.NomePessoa,
+            Email = respostaPessoa.Email,
+            DataAvaliacao = respostaPessoa.DataAvaliacao
         };
         
         return view;

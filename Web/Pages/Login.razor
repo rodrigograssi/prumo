@@ -4,6 +4,7 @@
 @layout AuthLayout
 
 @using ControleDeIp.FrontEnd.Services
+@using Microsoft.AspNetCore.Authorization
 @using PesquisaX.Shared.DTO.Requestes
 @using PesquisaX.Shared.Views
 @using PesquisaX.Web.Dto
@@ -18,6 +19,7 @@
 @inject ApiController ApiTemUsuarioCadastrado
 @inject AutenticacaoController AuthController
 
+@attribute [AllowAnonymous]
 
 <PageTitle>Login - PesquisaX</PageTitle>
 
@@ -106,17 +108,19 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // // Valida e renova o token
-        // var token = await ApiUsuarioController.ObterTokenDoLocalStorageAsync();
-        // if (!string.IsNullOrEmpty(token))
-        // {
-        //     var retorno = await ApiUsuarioController.LoginComToken(token);
-        //     if (retorno.Sucesso)
-        //     {
-        //         ConfiguracoesWeb.UsuarioLogado = retorno.Data;
-        //         Navigation.NavigateTo("/home", replace: true);    
-        //     }
-        // }
+        var token = await ApiUsuarioController.ObterTokenDoLocalStorageAsync();
+        if (!string.IsNullOrEmpty(token))
+        {
+            // Valida e renova o token
+            var retorno = await ApiUsuarioController.LoginComToken(token);
+            if (retorno.Sucesso)
+            {
+                AuthController.Carregar();
+                
+                await ApiUsuarioController.SalvarTokenAsync(retorno.Data?.Token ?? "");
+                Navigation.NavigateTo("/home", replace: true);    
+            }
+        }
 
         // Verificar se pode registrar (só se não há usuários)
         var retornoSeTemUsuario =  await ApiTemUsuarioCadastrado.GetAsync("api/Auth/has-users");
