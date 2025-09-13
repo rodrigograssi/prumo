@@ -33,7 +33,7 @@ public class Pesquisa: Entidade
     public void AdicionarGrupoQuestao(GrupoQuestao grupoQuestao)
     {
         ArgumentNullException.ThrowIfNull(grupoQuestao);
-        if (_gruposQuestoes.All(g => g.Id != grupoQuestao.Id))
+        if (_gruposQuestoes.All(g => g.Id != grupoQuestao.Id) || grupoQuestao.Id == 0)
         {
             grupoQuestao.DefinirOrdem(_gruposQuestoes.Count);
             _gruposQuestoes.Add(grupoQuestao);

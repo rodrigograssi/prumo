@@ -200,13 +200,16 @@ public class PesquisaHandler(IPesquisaRepositorio repo): IPesquisaHandler
         return new RetornoPadrao(true, "Questão excluída com sucesso");
     }
 
-    public async Task<RetornoPadrao<RespostaPessoa>> CriarResposta(RespostaPessoaCrud comando)
+    public async Task<RetornoPadrao<RespostaPessoa>> CriarResposta(Guid pesquisaId, RespostaPessoaCrud comando)
     {
         var respostaPessoa = new RespostaPessoa(comando.PesquisaId, comando.NomePessoa, comando.Email);
+        var questoes = await repo.ObterQuestoes(pesquisaId);
+        
         foreach (var item in comando.Respostas)
         {
-            var questao = new Resposta(item.QuestaoId, item.ValorBruto, item.ValorProcessado);
-            respostaPessoa.AdicionarResposta(questao);
+            var questao = questoes.FirstOrDefault(q => q.Id == item.QuestaoId);
+            var resposta = new Resposta(questao, item.ValorBruto);
+            respostaPessoa.AdicionarResposta(resposta);
         }
         await repo.GravarRespostaPessoaAsync(respostaPessoa);
         return new RetornoPadrao<RespostaPessoa>(true,"Resposta criada com sucesso", respostaPessoa);

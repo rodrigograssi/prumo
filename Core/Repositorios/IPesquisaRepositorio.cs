@@ -26,4 +26,7 @@ public interface IPesquisaRepositorio
     Task<List<Pesquisa>?> ObterTodasPequisaAsync();
     Task<List<PesquisaListaView>?> ObterPequisaListView();
     Task<int> ObtemPesquisaId(Guid pesquisaId);
+    Task<List<GrupoQuestao>> ObtemGruposDePergunta(int pesquisaId);
+    Task<List<MediaDeResultadosDosGruposView>> ObtemMediaDosResultadosPorGrupoView(Guid personId);
+    Task<List<Questao>> ObterQuestoes(Guid pesquisaId);
 }

@@ -1,11 +1,12 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using PesquisaX.Core;
 using PesquisaX.Core.Repositorios;
 using PesquisaX.Infra.Contexto;
 
 namespace PesquisaX.Infra.Repositorios;
 
-public abstract class RepositorioBase<T> : IRepositorioBase<T> where T : class
+public abstract class RepositorioBase<T> : IRepositorioBase<T> where T : Entidade
 {
     protected readonly PesquisaXContexto Db;
     protected readonly DbSet<T> _dbSet;
@@ -23,7 +24,7 @@ public abstract class RepositorioBase<T> : IRepositorioBase<T> where T : class
 
     public virtual async Task<T?> ObterPorIdAsync(Guid id)
     {
-        return await _dbSet.FindAsync(id);
+        return await _dbSet.FirstOrDefaultAsync(x => x.PublicId == id);
     }
 
     public virtual async Task<T?> ObterPorAsync(Expression<Func<T, bool>> predicado)

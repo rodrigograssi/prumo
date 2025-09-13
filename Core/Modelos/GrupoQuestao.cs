@@ -31,7 +31,7 @@ public class GrupoQuestao: Entidade
     public void AdicionarQuestao(Questao questao)
     {
         ArgumentNullException.ThrowIfNull(questao);
-        if (_questoes.All(g => g.Id != questao.Id))
+        if (_questoes.All(g => g.Id != questao.Id) || questao.Id == 0)
         {
             questao.DefinirOrdem(_questoes.Count);
             _questoes.Add(questao);

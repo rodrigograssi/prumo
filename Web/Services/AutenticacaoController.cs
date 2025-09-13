@@ -5,14 +5,8 @@ using ControleDeIp.FrontEnd.Services;
 
 namespace PesquisaX.Web.Services
 {
-    public class AutenticacaoController : AuthenticationStateProvider
+    public class AutenticacaoController(ApiUsuarioController apiUsuario) : AuthenticationStateProvider
     {
-        private readonly ApiUsuarioController _apiUsuario;
-
-        public AutenticacaoController(ApiUsuarioController apiUsuario)
-        {
-            _apiUsuario = apiUsuario;
-        }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
@@ -31,16 +25,19 @@ namespace PesquisaX.Web.Services
             }
 
             // Verificar se tem token no localStorage
-            var token = await _apiUsuario.ObterTokenDoLocalStorageAsync();
+            var token = await apiUsuario.ObterTokenDoLocalStorageAsync();
             if (!string.IsNullOrEmpty(token))
             {
                 try
                 {
                     ConfiguracoesWeb.Token = token;
-                    var resultado = await _apiUsuario.LoginComToken(token);
+                    var resultado = await apiUsuario.LoginComToken(token);
                     
                     if (resultado.Sucesso && resultado.Data != null)
                     {
+                        ConfiguracoesWeb.UsuarioLogado = resultado.Data;
+                        ConfiguracoesWeb.Token = resultado.Data.Token;
+                        
                         var claims = new List<Claim>
                         {
                             new Claim(ClaimTypes.Name, resultado.Data.Nome),
@@ -55,7 +52,7 @@ namespace PesquisaX.Web.Services
                 catch
                 {
                     // Token inválido, limpar
-                    await _apiUsuario.LogoutAsync();
+                    await apiUsuario.LogoutAsync();
                 }
             }
 
@@ -65,7 +62,7 @@ namespace PesquisaX.Web.Services
 
         public void Carregar()
         {
-            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+            NotifyAuthenticationStateChanged( GetAuthenticationStateAsync());
         }
 
         

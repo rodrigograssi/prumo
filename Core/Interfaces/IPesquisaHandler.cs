@@ -15,5 +15,5 @@ public interface IPesquisaHandler
     Task<RetornoPadrao> CriarQuestao(QuestaoCrud comando);
     Task<RetornoPadrao> AlterarQuestao(QuestaoCrud comando);
     Task<RetornoPadrao> ExcluirQuestao(QuestaoCrud comando);
-    Task<RetornoPadrao<RespostaPessoa>> CriarResposta(RespostaPessoaCrud comando);
+    Task<RetornoPadrao<RespostaPessoa>> CriarResposta(Guid pesquisaId, RespostaPessoaCrud comando);
 }

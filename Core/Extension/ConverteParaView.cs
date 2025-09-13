@@ -20,22 +20,6 @@ public static class ConverteParaViewExtension
     }
 
 
-    public static RespostaPessoaView ConverteParaView(this RespostaPessoa respostaPessoa, List<GrupoQuestao> questoes)
-    {
-        var view = new RespostaPessoaView()
-        {
-            Id = respostaPessoa.Id,
-            PublicId = respostaPessoa.PublicId,
-            PesquisaId = respostaPessoa.PesquisaId.ToString(),
-            NomePessoa = respostaPessoa.NomePessoa,
-            Email = respostaPessoa.Email,
-            DataAvaliacao = respostaPessoa.DataAvaliacao,
-            PercentuaisGrupos = respostaPessoa.ObterPercentuaisGrupos(questoes)
-        };
-        
-        return view;
-    }
-    
     public static RespostaPessoaView ConverteParaView(this RespostaPessoa respostaPessoa)
     {
         var view = new RespostaPessoaView()
@@ -45,9 +29,28 @@ public static class ConverteParaViewExtension
             PesquisaId = respostaPessoa.PesquisaId.ToString(),
             NomePessoa = respostaPessoa.NomePessoa,
             Email = respostaPessoa.Email,
-            DataAvaliacao = respostaPessoa.DataAvaliacao
+            DataAvaliacao = respostaPessoa.DataAvaliacao,
         };
         
+        return view;
+    }
+
+    public static RespostaPessoaView ConverteParaView(this RespostaPessoa respostaPessoa, List<GrupoQuestao> grupos)
+    {
+        var view = new RespostaPessoaView()
+        {
+            Id = respostaPessoa.Id,
+            PublicId = respostaPessoa.PublicId,
+            PesquisaId = respostaPessoa.PesquisaId.ToString(),
+            NomePessoa = respostaPessoa.NomePessoa,
+            Email = respostaPessoa.Email,
+            DataAvaliacao = respostaPessoa.DataAvaliacao
+
+        };
+        var percentuais = respostaPessoa.ObterPercentuaisGrupos(grupos);
+        view.PercentuaisGrupos = percentuais;
+        view.MediaGeral = percentuais.Values.Average();
+
         return view;
     }
 }

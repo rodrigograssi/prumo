@@ -9,9 +9,9 @@ namespace PesquisaX.Web.Dto
         public static string Token = string.Empty;
         
         public static string LocalStoragTokeneKey = "authToken";
+        public static string LocalStorageChaveTema = "pesquisax-tema"; // "pesquisax-tema"
 
         public static string EnderecoApi = "http://localhost:5092";
         public static string VersaoDoSistema = "1.0.2";
-
     }
 }

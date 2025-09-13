@@ -28,7 +28,7 @@
                     @code {
                         protected override void OnInitialized()
                         {
-                            Navigation.NavigateTo("/login");
+                            Navigation.NavigateTo("/");
                         }
                     }
                 </NotAuthorized>
@@ -73,7 +73,7 @@
         PaletteLight = new PaletteLight()
         {
             Primary = "#1976D2",
-            Secondary = "#4ECDC4",
+            Secondary = "#634ECD",
             Tertiary = "#45B7D1", 
             Success = "#4CAF50",
             Warning = "#FF9800",
@@ -98,6 +98,7 @@
     protected override async Task OnInitializedAsync()
     {
         await CarregarTema();
+        AuthController.Carregar();
     }
 
     public void Dispose()

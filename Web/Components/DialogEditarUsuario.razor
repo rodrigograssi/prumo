@@ -1,6 +1,7 @@
 @using PesquisaX.Shared.Comandos
+@using PesquisaX.Shared.Views
 @inject ISnackbar Snackbar
-@inject ApiController ApiUser
+@inject ApiControllerGenerico ApiUser
 
 <MudDialog>
     <DialogContent>
@@ -45,7 +46,7 @@
 
 @code {
     [CascadingParameter] public IMudDialogInstance  MudDialog { get; set; } = default!;
-    [Parameter] public UsuarioCrud Usuario { get; set; } = null!;
+    [Parameter] public UsuarioView Usuario { get; set; } = null!;
     
     private MudForm _form = new();
     private UsuarioCrud _usuarioEditado = new();
@@ -56,6 +57,7 @@
         _usuarioEditado = new UsuarioCrud
         {
             Id = Usuario.Id,
+            PublicId = Usuario.PublicId,
             Nome = Usuario.Nome,
             Email = Usuario.Email
         };
@@ -73,7 +75,7 @@
 
         try
         {
-            var retorno = await ApiUser.GravarAsync(_usuarioEditado, $"api/usuarios", _usuarioEditado.PublicId.ToString());
+            var retorno = await ApiUser.GravarAsync(_usuarioEditado, $"api/Usuarios", _usuarioEditado.PublicId.ToString());
             if (!retorno.Sucesso)
             {
                 Snackbar.Add($"{retorno.Mensagem}", Severity.Error);

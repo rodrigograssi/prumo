@@ -78,8 +78,8 @@ public class UsuariosController(IRepositorioUsuario repositorioUsuario, IUsuario
         }
     }
 
-    [HttpPut("{id}")]
-    public async Task<ActionResult<Usuario>> AtualizarUsuario(int id, [FromBody] UsuarioCrud comando)
+    [HttpPut("{id:Guid}")]
+    public async Task<ActionResult<Usuario>> AtualizarUsuario(Guid id, [FromBody] UsuarioCrud comando)
     {
         try
         {
@@ -105,7 +105,7 @@ public class UsuariosController(IRepositorioUsuario repositorioUsuario, IUsuario
         {
             var retorno = await handler.ExcluirUsuarioAsync(id);
             return retorno.Sucesso 
-                ? NoContent() 
+                ? Ok(retorno) 
                 : BadRequest(retorno);
             
            
@@ -117,7 +117,7 @@ public class UsuariosController(IRepositorioUsuario repositorioUsuario, IUsuario
         }
     }
 
-    [HttpPost("{id}/reset-password")]
+    [HttpPost("{id:Guid}/reset-password")]
     public async Task<ActionResult> ResetarSenha(Guid id, [FromBody] ResetPasswordRequest comando)
     {
         try

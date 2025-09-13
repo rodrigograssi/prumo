@@ -1,11 +1,12 @@
 using Microsoft.JSInterop;
+using PesquisaX.Web.Dto;
 
 namespace PesquisaX.Web.Servicos;
 
 public class ServicoTema : IServicoTema
 {
     private readonly IJSRuntime _jsRuntime;
-    private const string CHAVE_TEMA = "pesquisax_modo_escuro";
+    
     private bool _eModoEscuro = false;
 
     public bool EModoEscuro => _eModoEscuro;
@@ -20,7 +21,7 @@ public class ServicoTema : IServicoTema
     {
         try
         {
-            var temaArmazenado = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", CHAVE_TEMA);
+            var temaArmazenado = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", ConfiguracoesWeb.LocalStorageChaveTema);
             _eModoEscuro = !string.IsNullOrEmpty(temaArmazenado) && bool.Parse(temaArmazenado);
         }
         catch
@@ -39,7 +40,7 @@ public class ServicoTema : IServicoTema
         if (_eModoEscuro != eModoEscuro)
         {
             _eModoEscuro = eModoEscuro;
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", CHAVE_TEMA, _eModoEscuro.ToString());
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", ConfiguracoesWeb.LocalStorageChaveTema, _eModoEscuro.ToString());
             AoMudarTema?.Invoke();
         }
     }

@@ -1,6 +1,5 @@
 @page "/resultado/{PesquisaId:guid}/{PersonId:guid}"
 @page "/resultados/{PesquisaId:guid}"
-@using PesquisaX.Shared.Comandos
 @using PesquisaX.Shared.Views
 
 @inject IDialogService DialogService
@@ -71,14 +70,13 @@ else if (IsResultView && _personResult != null)
                 <MudGrid>
                     @foreach (var kvp in _groupoPorcentagens)
                     {
-                        var group = _pesquisa.GruposQuestoes.First(g => g.Categoria == kvp.Key);
                         <MudItem xs="12" sm="6" md="4">
                             <MudCard Elevation="0" Style="border: 1px solid #e0e0e0;">
                                 <MudCardContent Class="text-center">
-                                    <div style="width: 20px; height: 20px; background-color: @group.Cor; border-radius: 50%; margin: 0 auto 8px;"></div>
-                                    <MudText Typo="Typo.subtitle1">@kvp.Key</MudText>
+                                    <div style="width: 20px; height: 20px; background-color: @kvp.Cor; border-radius: 50%; margin: 0 auto 8px;"></div>
+                                    <MudText Typo="Typo.subtitle1">@kvp.Categoria</MudText>
                                     <MudText Typo="Typo.h4" Color="Color.Primary">
-                                        @kvp.Value.ToString("0")%
+                                        @kvp.Valor.ToString("0")%
                                     </MudText>
                                 </MudCardContent>
                             </MudCard>
@@ -210,19 +208,21 @@ else
     [Parameter] public Guid PesquisaId { get; set; }
     [Parameter] public Guid? PersonId { get; set; }
 
-    private PesquisaCrud? _pesquisa;
-    private RespostaPessoaCrud? _personResult;
+    private PesquisaResultadoView? _pesquisa;
+    private RespostaPessoaView? _personResult;
     private List<RespostaPessoaView>? _todosResultados;
-    private Dictionary<string, double> _groupoPorcentagens = new();
+    
+    //Porcentagens Média dos Grupos de Resposta da Pessoa Lista com (Nome da Categoria, Valor, Cor)
+    private List<MediaDeResultadosDosGruposView> _groupoPorcentagens = [];
     private List<string> _chartLabels = new();
     private List<double> _actualData = new();
     private List<double> _desiredData = new();
 
     private bool IsResultView => PersonId.HasValue;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        var retorno = await ApiController.GetAsync<PesquisaCrud>($"api/Pesquisas/{PesquisaId}");
+        var retorno = await ApiController.GetAsync<PesquisaResultadoView>($"api/Pesquisas/{PesquisaId}/resultado");
         if(!retorno.Sucesso || retorno.Data == null)
         {
             Snackbar.Add("Pesquisa não encontrada", Severity.Error);
@@ -234,8 +234,8 @@ else
 
         if (IsResultView && PersonId.HasValue)
         {
-            var retornoPessoa = await ApiController.GetAsync<RespostaPessoaCrud>($"api/Pesquisas/{PesquisaId}/resultados/{PersonId}");
-            if(retornoPessoa.Sucesso || retornoPessoa.Data == null)
+            var retornoPessoa = await ApiController.GetAsync<RespostaPessoaView>($"api/Pesquisas/{PesquisaId}/resultados/{PersonId}");
+            if(!retornoPessoa.Sucesso || retornoPessoa.Data == null)
             {
                 Snackbar.Add("Resultado não encontrado", Severity.Error);
                 Navigation.NavigateTo($"/resultados/{PesquisaId}");
@@ -243,6 +243,10 @@ else
             }
 
             _personResult = retornoPessoa.Data;
+            var retornoPorcentagesn = await ApiController.GetAsync<List<MediaDeResultadosDosGruposView>>($"api/Pesquisas/{PesquisaId}/resultados/{PersonId}/media");
+            if(retornoPorcentagesn.Sucesso && retornoPorcentagesn.Data != null) 
+              _groupoPorcentagens = retornoPorcentagesn.Data;
+            
             PrepareChartData();
         }
         else
@@ -259,10 +263,12 @@ else
     {
         if (_pesquisa == null || _personResult == null) return;
 
-        _groupoPorcentagens = _personResult.PercentuaisGrupos;
-        
-        _chartLabels = _pesquisa.GruposQuestoes.Select(g => g.Categoria).ToList();
-        _actualData = _chartLabels.Select(label => _groupoPorcentagens.GetValueOrDefault(label, 0)).ToList();
+
+        _chartLabels = _groupoPorcentagens.Select(gp => gp.Categoria).ToList();
+        _actualData =  _chartLabels
+            .Select(label => _groupoPorcentagens
+                .FirstOrDefault(gp => gp.Categoria == label)?.Valor ?? 0)
+            .ToList();
         _desiredData = _chartLabels.Select(_ => 100.0).ToList();
     }
 
@@ -297,14 +303,15 @@ else
             // await ServicoPesquisa.AlterarPesquisaAsync(_pesquisa);
             
             // Recarrega a lista
-            var retornoResultados = await ApiController.GetAsync<List<RespostaPessoaView>>($"api/Pesquisas/{PesquisaId}/resultados");
-            if (retornoResultados.Sucesso && retornoResultados.Data != null)
+            var retornoResultados = await ApiController.DeleteAsync($"api/Pesquisas/{PesquisaId}/resultados","ccc" );
+            if (retornoResultados.Sucesso)
             {
-                _todosResultados = retornoResultados.Data;
                 Snackbar.Add("Resultado excluído com sucesso", Severity.Success);
                 StateHasChanged();
             }
         }
     }
+    
+ 
 }
 

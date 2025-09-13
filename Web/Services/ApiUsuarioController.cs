@@ -8,7 +8,7 @@ using PesquisaX.Web.Services;
 
 namespace ControleDeIp.FrontEnd.Services
 {
-    public class ApiUsuarioController(
+    public class ApiUsuarioController(AuthenticationHandler AuthController,
         ApiControllerGenerico client,
         ILogger<ApiUsuarioController> logger,
         IJSRuntime jsRuntime)
@@ -22,13 +22,6 @@ namespace ControleDeIp.FrontEnd.Services
             };
 
             var retorno = await client.PostAsync<UsuarioView>(comando, "api/Auth/login");
-
-            if (retorno.Sucesso)
-            {
-                ConfiguracoesWeb.Token = retorno.Data!.Token;
-                ConfiguracoesWeb.UsuarioLogado = retorno.Data;
-            }
-
             return retorno;
         }
 
@@ -37,12 +30,6 @@ namespace ControleDeIp.FrontEnd.Services
             ConfiguracoesWeb.Token = token;
             
             var retorno = await client.GetAsync<UsuarioView>($"api/Auth/login/token");
-            if (retorno.Sucesso)
-            {
-                // Atualiza o token da aplicação
-                ConfiguracoesWeb.Token = retorno.Data!.Token;
-                ConfiguracoesWeb.UsuarioLogado = retorno.Data;
-            }
             return retorno;
         }
 

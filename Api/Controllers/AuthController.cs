@@ -115,10 +115,10 @@ public class AuthController(
         if (usuario.Ativo == false)
             return Unauthorized(new RetornoPadrao<UsuarioView>("Usuário desativado"));
 
-        var tokenAtualido = GerarTokenJwt(usuario);
-        
-        usuario.DefineAcesso(tokenAtualido);
-        await repositorioUsuario.AlterarAsync(usuario);
+        // var tokenAtualido = GerarTokenJwt(usuario);
+        //
+        // usuario.DefineAcesso(tokenAtualido);
+        // await repositorioUsuario.AlterarAsync(usuario);
         
         return Ok(new RetornoPadrao<UsuarioView>(true, "Logado com sucesso", usuario.ConverteParaView()));
 

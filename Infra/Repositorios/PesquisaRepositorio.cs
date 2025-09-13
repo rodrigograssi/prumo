@@ -121,9 +121,13 @@ public class PesquisaRepositorio(PesquisaXContexto db): IPesquisaRepositorio
         return resultados;
     }
 
-    public Task<RespostaPessoa?> ObterResultadoPessoaAsync(Guid pesquisaId, Guid pessoaId)
+    public async Task<RespostaPessoa?> ObterResultadoPessoaAsync(Guid pesquisaId, Guid pessoaId)
     {
-        throw new NotImplementedException();
+        var retorno = await db.ResultadosPessoas
+            .Include(r => r.Respostas)
+            .FirstOrDefaultAsync( r => r.PublicId == pessoaId);
+
+        return retorno;
     }
 
     public async Task<List<Pesquisa>?> ObterTodasPequisaAsync()
@@ -158,5 +162,77 @@ public class PesquisaRepositorio(PesquisaXContexto db): IPesquisaRepositorio
     public async Task<int> ObtemPesquisaId(Guid pesquisaId)
     {
         return await db.Pesquisas.Where(p => p.PublicId == pesquisaId).Select(p => p.Id).FirstOrDefaultAsync();
+    }
+
+    public async Task<List<GrupoQuestao>> ObtemGruposDePergunta(int pesquisaId)
+    {
+        var grupos = await db.GruposQuestoes
+            .Where(g => g.PesquisaId == pesquisaId)
+            .Include(g => g.Questoes)
+            .ToListAsync();
+        
+        return grupos;
+    }
+
+    public async Task<List<MediaDeResultadosDosGruposView>> ObtemMediaDosResultadosPorGrupoView(Guid personId)
+    {
+        // 1. Buscar a pessoa específica com suas respostas
+        var respostaPessoa = await db.ResultadosPessoas
+            .Include(rp => rp.Respostas)
+            .FirstOrDefaultAsync(rp => rp.PublicId == personId);
+
+        if (respostaPessoa == null)
+            return new List<MediaDeResultadosDosGruposView>();
+
+        // 2. Buscar questões e grupos relacionados às respostas da pessoa
+        var questoesIds = respostaPessoa.Respostas.Select(r => r.QuestaoId).ToList();
+        
+        var questoes = await db.Questoes
+            .Where(q => questoesIds.Contains(q.Id))
+            .ToListAsync();
+
+        var gruposIds = questoes.Select(q => q.GrupoDeQuestaoId).Distinct().ToList();
+        
+        var grupos = await db.GruposQuestoes
+            .Where(g => gruposIds.Contains(g.Id))
+            .ToListAsync();
+
+        // 3. Agrupar respostas por grupo e calcular percentuais
+        var resultado = new List<MediaDeResultadosDosGruposView>();
+
+        foreach (var grupo in grupos)
+        {
+            // Buscar questões deste grupo
+            var questoesDoGrupo = questoes.Where(q => q.GrupoDeQuestaoId == grupo.Id).ToList();
+            
+            // Buscar respostas para questões deste grupo
+            var respostasDoGrupo = respostaPessoa.Respostas
+                .Where(r => questoesDoGrupo.Any(q => q.Id == r.QuestaoId))
+                .Select(r => r.ValorBruto)
+                .ToList();
+
+            if (respostasDoGrupo.Any())
+            {
+                resultado.Add(new MediaDeResultadosDosGruposView
+                {
+                    Categoria = grupo.Categoria,
+                    Cor = grupo.Cor,
+                    Valor = grupo.CalcularPercentual(respostasDoGrupo)
+                });
+            }
+        }
+
+        return resultado;
+    }
+
+    public async Task<List<Questao>> ObterQuestoes(Guid pesquisaId)
+    {
+        var id = await ObtemPesquisaId(pesquisaId);
+        var questoes = await db.GruposQuestoes
+                            .Include(q => q.Questoes)
+                            .Where(g => g.PesquisaId == id)
+                            .SelectMany( g => g.Questoes)
+                            .ToListAsync();
+        return questoes;
     }
 }

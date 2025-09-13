@@ -1,0 +1,149 @@
+﻿@page "/"
+@using ControleDeIp.FrontEnd.Services
+@using PesquisaX.Web.Dto
+@layout AuthLayout
+@inject NavigationManager Navigation
+@inject ApiUsuarioController ApiUsuario
+@inject AutenticacaoController AuthController
+
+<PageTitle>PesquisaX - Sistema de Pesquisas</PageTitle>
+
+@if (_verificandoAuth)
+{
+    <MudContainer Class="d-flex justify-center align-center" Style="height: 100vh;">
+        <MudStack AlignItems="AlignItems.Center" Spacing="3">
+            <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+            <MudText>Carregando...</MudText>
+        </MudStack>
+    </MudContainer>
+}
+else
+{
+    <!-- Hero Section -->
+    <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
+        <MudPaper Elevation="2" Class="pa-8 text-center mb-6">
+            <MudText Typo="Typo.h2" Color="Color.Primary" GutterBottom="true">
+                <MudIcon Icon="@Icons.Material.Filled.Assessment" Size="Size.Large" Class="mr-3" />
+                PesquisaX
+            </MudText>
+            <MudText Typo="Typo.h5" Color="Color.Secondary" Class="mb-4">
+                Sistema de Pesquisas com Gráfico Radar
+            </MudText>
+            <MudText Typo="Typo.body1" Class="mb-6" Style="max-width: 600px; margin: 0 auto;">
+                Crie pesquisas personalizadas, aplique-as durante meetings e visualize os resultados 
+                através de gráficos radar comparativos. Ideal para avaliações de equipe, feedback 
+                de projetos e análises comportamentais.
+            </MudText>
+            
+            @if (_estaLogado)
+            {
+                <MudButton Variant="Variant.Filled" 
+                          Color="Color.Primary" 
+                          Size="Size.Large"
+                          StartIcon="@Icons.Material.Filled.Dashboard"
+                          OnClick="IrParaHome">
+                    Ir para o Dashboard
+                </MudButton>
+            }
+            else
+            {
+                <MudStack Row Justify="Justify.Center" Spacing="3">
+                    <MudButton Variant="Variant.Filled" 
+                              Color="Color.Primary" 
+                              Size="Size.Large"
+                              StartIcon="@Icons.Material.Filled.Login"
+                              Href="/login">
+                        Entrar no Sistema
+                    </MudButton>
+                </MudStack>
+            }
+        </MudPaper>
+
+        <!-- Features Section -->
+        <MudGrid>
+            <MudItem xs="12">
+                <MudPaper Elevation="1" Class="pa-6 h-100">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudIcon Icon="@Icons.Material.Filled.Create" Size="Size.Large" Color="Color.Primary" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Criar Pesquisas</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center">
+                            Monte suas pesquisas com grupos de perguntas organizados por categorias
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12" >
+                <MudPaper Elevation="1" Class="pa-6 h-100">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudIcon Icon="@Icons.Material.Filled.Assignment" Size="Size.Large" Color="Color.Secondary" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Aplicar Durante Meetings</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center">
+                            Use as pesquisas em tempo real para avaliar pessoas e situações
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12">
+                <MudPaper Elevation="1" Class="pa-6 h-100">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Tertiary" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">Visualizar Resultados</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center">
+                            Compare resultados com gráficos radar intuitivos e detalhados
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+}
+
+@code {
+    private bool _verificandoAuth = true;
+    private bool _estaLogado = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await VerificarAutenticacao();
+        _verificandoAuth = false;
+        StateHasChanged();
+    }
+
+    private async Task VerificarAutenticacao()
+    {
+        try
+        {
+            // Verificar se já tem usuário em memória
+            if (ConfiguracoesWeb.UsuarioLogado != null && !string.IsNullOrEmpty(ConfiguracoesWeb.Token))
+            {
+                _estaLogado = true;
+                return;
+            }
+
+            // Verificar token no localStorage
+            var token = await ApiUsuario.ObterTokenDoLocalStorageAsync();
+            if (!string.IsNullOrEmpty(token))
+            {
+                var resultado = await ApiUsuario.LoginComToken(token);
+                if (resultado.Sucesso && resultado.Data != null)
+                {
+                    ConfiguracoesWeb.UsuarioLogado = resultado.Data;
+                    ConfiguracoesWeb.Token = resultado.Data.Token;
+                    AuthController.Carregar();
+                    _estaLogado = true;
+                }
+            }
+        }
+        catch
+        {
+            _estaLogado = false;
+        }
+    }
+
+    private void IrParaHome()
+    {
+        Navigation.NavigateTo("/home");
+    }
+}

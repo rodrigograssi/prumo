@@ -229,13 +229,15 @@ else
 
         try
         {
-            _respostaPessoa.DataAvaliacao = DateTime.UtcNow;
             var retorno = await ApiController.GravarAsync<RespostaPessoaView>(_respostaPessoa, $"api/Pesquisas/{_pesquisa.PublicId}/resultados");
-            if (retorno.Sucesso)
+            if (retorno.Sucesso && retorno.Data != null)
             {
                 Snackbar.Add($"Avaliação de {_respostaPessoa.NomePessoa} salva com sucesso!", Severity.Success);
-                Navigation.NavigateTo($"/resultado/{_pesquisa.Id}/{retorno.Data}");
+                Navigation.NavigateTo($"/resultado/{_pesquisa.PublicId}/{retorno.Data.PublicId}");
+                return;
             }
+            
+            Snackbar.Add(retorno.Mensagem, Severity.Error);
         }
         catch (Exception ex)
         {

@@ -174,7 +174,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var resultado = await handler.CriarResposta(comando);
+            var resultado = await handler.CriarResposta(pesquisaId, comando);
             return resultado.Sucesso
                 ? Ok(new RetornoPadrao<RespostaPessoaView>(true, "Resultado salvo com sucesso", resultado.Data!.ConverteParaView()))
                 : BadRequest(new RetornoPadrao<RespostaPessoaView>(resultado.Mensagem, resultado.Notificacoes ?? []));;
@@ -192,21 +192,51 @@ public class PesquisasController(IPesquisaRepositorio repo,
     }
 
     /// <summary>
+    /// Obtem uma view para a pagina de resultado
+    /// </summary>
+    [HttpGet("{pesquisaId}/resultado")]
+    public async Task<ActionResult> ObterResultadoPesquisa(Guid pesquisaId)
+    {
+        var pesquisa = await repo.SelecionaAsync(pesquisaId);
+        if (pesquisa == null)
+        {
+            return BadRequest(new RetornoPadrao<PesquisaResultadoView>("Pesquisa não localizada"));
+        }
+        
+        var categorias = pesquisa.GruposQuestoes.Select(gr =>
+            new CategoriaView() { Nome = gr.Categoria, Cor = gr.Cor}
+        
+        ).ToList();
+        var view = new PesquisaResultadoView()
+        {
+            Nome = pesquisa.Nome,
+            Categorias = categorias,
+        };
+        
+        return Ok(new RetornoPadrao<PesquisaResultadoView>(true, "", view));
+    }
+
+    /// <summary>
     /// Obtém todos os resultados de uma pesquisa
     /// </summary>
     [HttpGet("{pesquisaId}/resultados")]
-    public async Task<ActionResult<IEnumerable<RespostaPessoa>>> ObterResultadosPesquisa(Guid pesquisaId)
+    public async Task<ActionResult> ObterResultadosPesquisa(Guid pesquisaId)
     {
         try
         {
             var id = await repo.ObtemPesquisaId(pesquisaId);
+            var grupos = await repo.ObtemGruposDePergunta(id);
             var resultados = await repo.ObterResultadosPesquisaAsync(id);
-            return Ok(resultados);
+
+            var view = resultados.Select(r => r.ConverteParaView(grupos)).ToList();
+            var retorno = new RetornoPadrao<List<RespostaPessoaView>>(true, "", view);
+            
+            return Ok(retorno);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Erro ao obter resultados da pesquisa {PesquisaId}", pesquisaId);
-            return StatusCode(500, "Erro interno do servidor");
+            return StatusCode(500, new RetornoPadrao<List<RespostaPessoaView>>("Erro interno do servidor"));
         }
     }
 
@@ -214,21 +244,31 @@ public class PesquisasController(IPesquisaRepositorio repo,
     /// Obtém resultado específico de uma pessoa na pesquisa
     /// </summary>
     [HttpGet("{pesquisaId}/resultados/{pessoaId}")]
-    public async Task<ActionResult<RespostaPessoa>> ObterResultadoPessoa(Guid pesquisaId, Guid pessoaId)
+    public async Task<ActionResult> ObterResultadoPessoa(Guid pesquisaId, Guid pessoaId)
     {
         try
         {
             var resultado = await repo.ObterResultadoPessoaAsync(pesquisaId, pessoaId);
             if (resultado == null)
-                return NotFound($"Resultado não encontrado para pessoa {pessoaId} na pesquisa {pesquisaId}");
+                return BadRequest(new RetornoPadrao<RespostaPessoaView>("Resultado não localizado"));
 
-            return Ok(resultado);
+            var questoes = await repo.ObtemGruposDePergunta(resultado.PesquisaId);
+            
+            var view = resultado.ConverteParaView(questoes);
+            return Ok(new RetornoPadrao<RespostaPessoaView>(true, "", view));
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Erro ao obter resultado da pessoa {PessoaId} na pesquisa {PesquisaId}", pessoaId, pesquisaId);
-            return StatusCode(500, "Erro interno do servidor");
+            return StatusCode(500, new RetornoPadrao<List<RespostaPessoaView>>("Erro interno do servidor"));
         }
+    }
+
+    [HttpGet("{PesquisaId}/resultados/{PersonId}/media")]
+    public async Task<IActionResult> ObterMediaPessoa(Guid PesquisaId, Guid PersonId)
+    {
+        var retorno = await repo.ObtemMediaDosResultadosPorGrupoView(PersonId);
+        return Ok(new RetornoPadrao<List<MediaDeResultadosDosGruposView>>(true, "", retorno));       
     }
 
    

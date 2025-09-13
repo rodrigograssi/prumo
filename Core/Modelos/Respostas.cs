@@ -15,10 +15,10 @@ public class Resposta: Entidade
         ValorProcessado = valorProcessado;
     }
 
-    public Resposta(int questaoId, int valorBruto, int valorProcessado)
+    public Resposta(Questao questao, int valorBruto)
     {
-        QuestaoId = questaoId;
+        QuestaoId = questao.Id;
         ValorBruto = valorBruto;
-        ValorProcessado = valorProcessado;
+        ValorProcessado = questao.ProcessarResposta(valorBruto);
     }
 }

@@ -1,14 +1,13 @@
 @page "/usuarios"
 @using PesquisaX.Shared.Views
-@inject IUsuarioServico UsuarioServico
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
-@inject ApiController<List<UsuarioView>> ApiControlerListUsuario
+
+@inject ApiControllerGenerico ApiController
 
 
 <PageTitle>Gerenciar Usuários - PesquisaX</PageTitle>
 
-<AuthGuard>
 <MudContainer MaxWidth="MaxWidth.Large">
     <div class="d-flex align-center justify-space-between mb-4">
         <MudText Typo="Typo.h4">Gerenciar Usuários</MudText>
@@ -75,7 +74,6 @@
         </MudCardContent>
     </MudCard>
 </MudContainer>
-</AuthGuard>
 
 @code {
     private List<UsuarioView> _usuarios = new();
@@ -91,13 +89,12 @@
         _carregando = true;
         try
         {
-            var retorno = await ApiControlerListUsuario.GetAsync("api/usuarios?page=1&pageSize=20");
+            var retorno = await ApiController.GetAsync<List<UsuarioView>>("api/Usuarios?page=1&pageSize=20");
             if (!retorno.Sucesso || retorno.Data == null)
             {
                 Snackbar.Add($"Erro ao carregar usuários: {retorno.Mensagem}", Severity.Error);
                 return;
             }
-
             _usuarios = retorno.Data;
         }
         catch (Exception ex)
@@ -184,9 +181,14 @@
         {
             try
             {
-                await UsuarioServico.ExcluirUsuarioAsync(usuario.PublicId.ToString());
-                Snackbar.Add("Usuário excluído com sucesso!", Severity.Success);
-                await CarregarUsuarios();
+                var retorno = await ApiController.DeleteAsync("api/Usuarios", usuario.PublicId.ToString());
+                if (retorno.Sucesso)
+                {
+                    Snackbar.Add("Usuário excluído com sucesso!", Severity.Success);
+                    await CarregarUsuarios();
+                    return;
+                }
+                Snackbar.Add(retorno.Mensagem, Severity.Error);
             }
             catch (Exception ex)
             {
