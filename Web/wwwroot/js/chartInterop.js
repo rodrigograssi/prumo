@@ -57,3 +57,51 @@ window.chartFunctions = {
         }
     }
 };
+
+// Função global para capturar gráfico radar como imagem
+window.captureRadarChart = function() {
+    try {
+        // Procurar o primeiro canvas que contém um gráfico radar ativo
+        const canvases = document.querySelectorAll('canvas');
+        for (let canvas of canvases) {
+            if (canvas.chart && canvas.chart.config.type === 'radar') {
+                return canvas.toDataURL('image/png');
+            }
+        }
+        
+        console.warn('Nenhum gráfico radar encontrado');
+        return '';
+    } catch (error) {
+        console.error('Erro ao capturar gráfico:', error);
+        return '';
+    }
+};
+
+// Função global para fazer download de arquivo
+window.downloadFile = function(fileData, fileName, mimeType) {
+    try {
+        // Converter byte array para blob
+        const byteArray = new Uint8Array(fileData);
+        const blob = new Blob([byteArray], { type: mimeType });
+        
+        // Criar URL temporária
+        const url = window.URL.createObjectURL(blob);
+        
+        // Criar link de download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        
+        // Adicionar ao DOM temporariamente e clicar
+        document.body.appendChild(link);
+        link.click();
+        
+        // Limpar
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        console.log('Download iniciado:', fileName);
+    } catch (error) {
+        console.error('Erro ao fazer download:', error);
+    }
+};

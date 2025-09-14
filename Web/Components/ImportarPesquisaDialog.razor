@@ -1,0 +1,100 @@
+@inject ISnackbar Snackbar
+@inject ApiControllerGenerico ApiController
+
+<MudDialog>
+    <TitleContent>Importar Pesquisa</TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body2" Class="mb-4">
+            Selecione um arquivo JSON de pesquisa exportado anteriormente:
+        </MudText>
+
+        <MudFileUpload T="IBrowserFile" Accept=".json,application/json" 
+                       FilesChanged="OnFileSelected" MaximumFileCount="1">
+            <ActivatorContent>
+                <MudPaper Height="100px" Class="border-dashed border-2 border-gray-300 d-flex align-center justify-center cursor-pointer hover:border-primary"
+                          Style="border-color: var(--mud-palette-lines-default); transition: border-color 0.3s;">
+                    <div class="d-flex flex-column align-center">
+                        <MudIcon Icon="Icons.Material.Filled.CloudUpload" Size="Size.Large" Color="Color.Secondary" />
+                        <MudText Typo="Typo.body2" Class="mt-2">
+                            Clique para selecionar arquivo JSON
+                        </MudText>
+                    </div>
+                </MudPaper>
+            </ActivatorContent>
+        </MudFileUpload>
+
+        @if (_selectedFile != null)
+        {
+            <MudText Typo="Typo.body2" Class="mt-3">
+                <MudIcon Icon="Icons.Material.Filled.AttachFile" Size="Size.Small" />
+                Arquivo selecionado: @_selectedFile.Name
+            </MudText>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                   OnClick="ImportarPesquisa" 
+                   Disabled="_selectedFile == null || _importando">
+            @if (_importando)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                <span class="ml-2">Importando...</span>
+            }
+            else
+            {
+                <span>Importar</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance  MudDialog { get; set; } = default!;
+
+    private bool _importando = false;
+    private IBrowserFile? _selectedFile;
+
+    private void OnFileSelected(IBrowserFile file)
+    {
+        _selectedFile = file;
+        StateHasChanged();
+    }
+
+    private async Task ImportarPesquisa()
+    {
+        if (_selectedFile == null) return;
+
+        _importando = true;
+        StateHasChanged();
+
+        try
+        {
+            var retorno = await ApiController.PostFileAsync<object>(_selectedFile, "/api/Pesquisas/importar");
+
+            if (retorno.Sucesso)
+            {
+                Snackbar.Add("Pesquisa importada com sucesso!", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add($"Erro ao importar: {retorno.Mensagem}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao importar pesquisa: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _importando = false;
+            StateHasChanged();
+        }
+    }
+
+    private void Cancelar()
+    {
+        MudDialog.Cancel();
+    }
+}

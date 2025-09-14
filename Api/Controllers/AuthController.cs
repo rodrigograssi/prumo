@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using PesquisaX.Core.Repositorios;
 using PesquisaX.Core;
@@ -17,6 +18,7 @@ namespace PesquisaX.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class AuthController(
     IRepositorioUsuario repositorioUsuario,
     IUsuarioHandler handler,
@@ -24,6 +26,7 @@ public class AuthController(
     ILogger<AuthController> logger) : ControllerBase
 {
 
+    [AllowAnonymous]
     [HttpPost("registro")]
     public async Task<ActionResult> Registro([FromBody] UsuarioCrud comando)
     {
@@ -37,6 +40,7 @@ public class AuthController(
             : BadRequest(retorno);
     }
 
+    [AllowAnonymous]
     [HttpGet("has-users")]
     public async Task<ActionResult> HasUsers()
     {
@@ -53,6 +57,7 @@ public class AuthController(
         }
     }
 
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<ActionResult> Login([FromBody] LoginRequest request)
     {
@@ -88,6 +93,7 @@ public class AuthController(
         }
     }
     
+    [AllowAnonymous]
     [HttpGet("login/token")]
     public async Task<IActionResult> LoginComToken()
     {

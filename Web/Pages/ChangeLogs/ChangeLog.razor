@@ -4,7 +4,6 @@
 
 <PageTitle>Histórico de Mudanças - PesquisaX</PageTitle>
 
-<AuthGuard>
 <MudContainer MaxWidth="MaxWidth.Large">
     <!-- Header -->
     <MudPaper Elevation="2" Class="pa-4 mb-4">
@@ -35,7 +34,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.Layers" 
                             Style="font-size: 2.5rem;" 
                             Color="Color.Primary" />
-                    <MudText Typo="Typo.h6" Class="mt-2">@stats.TotalVersions</MudText>
+                    <MudText Typo="Typo.h6" Class="mt-2">@_stats.TotalVersions</MudText>
                     <MudText Typo="Typo.caption">Versões Total</MudText>
                 </MudCardContent>
             </MudCard>
@@ -47,7 +46,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" 
                             Style="font-size: 2.5rem;" 
                             Color="Color.Success" />
-                    <MudText Typo="Typo.h6" Class="mt-2">@stats.Features</MudText>
+                    <MudText Typo="Typo.h6" Class="mt-2">@_stats.Features</MudText>
                     <MudText Typo="Typo.caption">Novas Funcionalidades</MudText>
                 </MudCardContent>
             </MudCard>
@@ -59,7 +58,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.BugReport" 
                             Style="font-size: 2.5rem;" 
                             Color="Color.Warning" />
-                    <MudText Typo="Typo.h6" Class="mt-2">@stats.Fixes</MudText>
+                    <MudText Typo="Typo.h6" Class="mt-2">@_stats.Fixes</MudText>
                     <MudText Typo="Typo.caption">Correções</MudText>
                 </MudCardContent>
             </MudCard>
@@ -71,7 +70,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.TrendingUp" 
                             Style="font-size: 2.5rem;" 
                             Color="Color.Info" />
-                    <MudText Typo="Typo.h6" Class="mt-2">@stats.Enhancements</MudText>
+                    <MudText Typo="Typo.h6" Class="mt-2">@_stats.Enhancements</MudText>
                     <MudText Typo="Typo.caption">Melhorias</MudText>
                 </MudCardContent>
             </MudCard>
@@ -80,7 +79,7 @@
 
     <!-- Timeline das versões -->
     <MudTimeline TimelineOrientation="TimelineOrientation.Vertical">
-        @foreach (var version in changelog)
+        @foreach (var version in _changelog)
         {
             <MudTimelineItem Color="@(version.IsUnreleased ? Color.Warning : Color.Primary)" 
                            Variant="@(version.IsUnreleased ? Variant.Outlined : Variant.Filled)"
@@ -176,11 +175,10 @@
         </MudStack>
     </MudPaper>
 </MudContainer>
-</AuthGuard>
 
 @code {
-    private List<VersionChanges> changelog = new();
-    private ChangeLogStats stats = new();
+    private List<VersionChanges> _changelog = new();
+    private ChangeLogStats _stats = new();
 
     protected override void OnInitialized()
     {
@@ -189,8 +187,8 @@
 
     private void LoadChangelog()
     {
-        changelog = ChangeLogService.GetChangeLog();
-        stats = ChangeLogService.GetStats();
+        _changelog = ChangeLogService.GetChangeLog();
+        _stats = ChangeLogService.GetStats();
     }
 
     private void RefreshChangelog()

@@ -235,4 +235,10 @@ public class PesquisaRepositorio(PesquisaXContexto db): IPesquisaRepositorio
                             .ToListAsync();
         return questoes;
     }
+
+    public async Task ExcluirResultadoAsync(RespostaPessoa resultado)
+    {
+        db.ResultadosPessoas.Remove(resultado);
+        await db.SaveChangesAsync();
+    }
 }

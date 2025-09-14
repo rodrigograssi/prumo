@@ -29,4 +29,5 @@ public interface IPesquisaRepositorio
     Task<List<GrupoQuestao>> ObtemGruposDePergunta(int pesquisaId);
     Task<List<MediaDeResultadosDosGruposView>> ObtemMediaDosResultadosPorGrupoView(Guid personId);
     Task<List<Questao>> ObterQuestoes(Guid pesquisaId);
+    Task ExcluirResultadoAsync(RespostaPessoa resultado);
 }

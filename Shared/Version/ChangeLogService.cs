@@ -12,12 +12,49 @@ public static class ChangeLogService
     {
         return new List<VersionChanges>
         {
+            new VersionChanges
+            {
+                Version = "1.0.2",
+                ReleaseDate = DateTime.Now,
+                Changes = new List<ChangeLogItem>
+                {
+                    new ChangeLogItem
+                    {
+                        Type = ChangeType.Feature,
+                        Description = "Incluído a opção de exibir/ocultar o resultado atual",
+                        Author = "Rodrigo"
+                    },
+                    new ChangeLogItem
+                    {
+                        Type = ChangeType.Feature,
+                        Description = "Incluído de exportar o resultado para PDF",
+                        Author = "Rodrigo"
+                    },
+                    new ChangeLogItem
+                    {
+                        Type = ChangeType.Feature,
+                        Description = "Incluído processo de exportar e importar pesquisa",
+                        Author = "Rodrigo"
+                    },
+                    new ChangeLogItem
+                    {
+                        Type = ChangeType.Fix,
+                        Description = "Corrigido a exclusão de resultado",
+                        Author = "Rodrigo"
+                    },
+                    new ChangeLogItem
+                    {
+                        Type = ChangeType.Security,
+                        Description = "Melhorias no processo de autenticação",
+                        Author = "Rodrigo"
+                    }
+                }
+            },
             // Versão atual em desenvolvimento
             new VersionChanges
             {
                 Version = "1.0.1",
                 ReleaseDate = DateTime.Now,
-                IsUnreleased = true,
                 Changes = new List<ChangeLogItem>
                 {
                     new ChangeLogItem

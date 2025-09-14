@@ -215,4 +215,15 @@ public class PesquisaHandler(IPesquisaRepositorio repo): IPesquisaHandler
         return new RetornoPadrao<RespostaPessoa>(true,"Resposta criada com sucesso", respostaPessoa);
         
     }
+
+    public async Task<RetornoPadrao> ExcluirResultado(Guid pesquisaId, Guid personId)
+    {
+        var resultado = await repo.ObterResultadoPessoaAsync(pesquisaId, personId);
+        if (resultado == null)
+            return new RetornoPadrao("Resultado não localizado");
+
+        await repo.ExcluirResultadoAsync(resultado);
+        return new RetornoPadrao(true, "Resultado excluido com sucesso");
+    }
+
 }

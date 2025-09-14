@@ -1,7 +1,7 @@
 // Configuração do Service Worker para PesquisaX
 window.swConfig = {
-    version: '1.0.0',
-    cacheName: 'pesquisax-v1.0.0',
+    version: '1.0.2',
+    cacheName: 'pesquisax-v1.0.2',
     staticAssets: [
         '/',
         '/css/app.css',

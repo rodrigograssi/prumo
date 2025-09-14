@@ -1,5 +1,9 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using PesquisaX.Core.Repositorios;
 using PesquisaX.Core.Modelos;
 using System.Security.Claims;
@@ -13,14 +17,13 @@ namespace PesquisaX.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-// [Authorize]
+[Authorize]
 public class PesquisasController(IPesquisaRepositorio repo,
     ILogger<PesquisasController> logger, 
     IPesquisaHandler handler) : ControllerBase
 {
-
     /// <summary>
-    /// Obtém o ID do usuário atual autenticado
+    /// Obtém o ‘ID’ do utilizador atual autenticado
     /// </summary>
     private Guid ObterUsuarioIdAtual()
     {
@@ -29,7 +32,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
     }
 
     /// <summary>
-    /// Obtém o nome do usuário atual autenticado
+    /// Obtém o nome do utilizador atual autenticado
     /// </summary>
     private string ObterNomeUsuarioAtual()
     {
@@ -60,9 +63,9 @@ public class PesquisasController(IPesquisaRepositorio repo,
     }
 
     /// <summary>
-    /// Obtém uma pesquisa por ID
+    /// Obtém uma pesquisa por ‘ID’
     /// </summary>
-    [HttpGet("{id}")]
+    [HttpGet("{Id:guid}")]
     public async Task<ActionResult> ObterPesquisaPorId(Guid id)
     {
         try
@@ -81,7 +84,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
     }
 
     /// <summary>
-    /// Cria uma nova pesquisa
+    /// Cria uma pesquisa
     /// </summary>
     [HttpPost]
     public async Task<ActionResult> CriarPesquisa([FromBody] PesquisaCrud comando)
@@ -103,9 +106,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
             }
 
             logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) está criando nova pesquisa: {NomePesquisa}",nomeUsuario, usuarioId, comando.Nome);
-            return CreatedAtAction(nameof(AtualizarPesquisa),
-                new { id = retorno.Data!.Id },
-                new RetornoPadrao(true, "Pesquisa criada com sucesso"));
+            return Ok(retorno);
         }
         catch (Exception ex)
         {
@@ -117,7 +118,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
     /// <summary>
     /// Atualiza uma pesquisa existente
     /// </summary>
-    [HttpPut("{id}")]
+    [HttpPut("{Id:guid}")]
     public async Task<IActionResult> AtualizarPesquisa(Guid id, [FromBody] PesquisaCrud comando)
     {
         try
@@ -132,8 +133,8 @@ public class PesquisasController(IPesquisaRepositorio repo,
             if (!retorno.Sucesso)
                 logger.LogWarning("Não foi possível alterar a pesquisa: {Erro} - {Mensagem}", retorno.Mensagem, retorno.Notificacoes);
                     
-            logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) está alteranod pesquisa: {NomePesquisa}",nomeUsuario, usuarioId, comando.Nome);
-            return Ok(new RetornoPadrao(true, "Pesquisa alterada com sucesso"));;
+            logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) está alterando pesquisa: {NomePesquisa}",nomeUsuario, usuarioId, comando.Nome);
+            return Ok(new RetornoPadrao(true, "Pesquisa alterada com sucesso"));
         }
         catch (Exception ex)
         {
@@ -145,7 +146,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
     /// <summary>
     /// Exclui uma pesquisa
     /// </summary>
-    [HttpDelete("{id}")]
+    [HttpDelete("{Id:guid}")]
     public async Task<IActionResult> ExcluirPesquisa(Guid id)
     {
         try
@@ -166,7 +167,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
     /// <summary>
     /// Salva resultado de uma pessoa na pesquisa
     /// </summary>
-    [HttpPost("{pesquisaId}/resultados")]
+    [HttpPost("{PesquisaId:guid}/resultados")]
     public async Task<ActionResult> SalvarResultadoPessoa(Guid pesquisaId, [FromBody] RespostaPessoaCrud comando)
     {
         try
@@ -177,7 +178,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
             var resultado = await handler.CriarResposta(pesquisaId, comando);
             return resultado.Sucesso
                 ? Ok(new RetornoPadrao<RespostaPessoaView>(true, "Resultado salvo com sucesso", resultado.Data!.ConverteParaView()))
-                : BadRequest(new RetornoPadrao<RespostaPessoaView>(resultado.Mensagem, resultado.Notificacoes ?? []));;
+                : BadRequest(new RetornoPadrao<RespostaPessoaView>(resultado.Mensagem, resultado.Notificacoes ?? []));
         }
         catch (ArgumentException ex)
         {
@@ -192,9 +193,9 @@ public class PesquisasController(IPesquisaRepositorio repo,
     }
 
     /// <summary>
-    /// Obtem uma view para a pagina de resultado
+    /// Obtem uma view para a página de resultado
     /// </summary>
-    [HttpGet("{pesquisaId}/resultado")]
+    [HttpGet("{PesquisaId:guid}/resultado")]
     public async Task<ActionResult> ObterResultadoPesquisa(Guid pesquisaId)
     {
         var pesquisa = await repo.SelecionaAsync(pesquisaId);
@@ -219,7 +220,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
     /// <summary>
     /// Obtém todos os resultados de uma pesquisa
     /// </summary>
-    [HttpGet("{pesquisaId}/resultados")]
+    [HttpGet("{PesquisaId:guid}/resultados")]
     public async Task<ActionResult> ObterResultadosPesquisa(Guid pesquisaId)
     {
         try
@@ -243,7 +244,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
     /// <summary>
     /// Obtém resultado específico de uma pessoa na pesquisa
     /// </summary>
-    [HttpGet("{pesquisaId}/resultados/{pessoaId}")]
+    [HttpGet("{PesquisaId:guid}/resultados/{PessoaId:guid}")]
     public async Task<ActionResult> ObterResultadoPessoa(Guid pesquisaId, Guid pessoaId)
     {
         try
@@ -264,12 +265,275 @@ public class PesquisasController(IPesquisaRepositorio repo,
         }
     }
 
-    [HttpGet("{PesquisaId}/resultados/{PersonId}/media")]
-    public async Task<IActionResult> ObterMediaPessoa(Guid PesquisaId, Guid PersonId)
+    [HttpDelete("{PesquisaId:guid}/resultados/{PessoaId:guid}")]
+    public async Task<ActionResult> ApagarResultadoPesquisa(Guid pesquisaId, Guid pessoaId)
     {
-        var retorno = await repo.ObtemMediaDosResultadosPorGrupoView(PersonId);
+        try
+        {
+            var retorno = await handler.ExcluirResultado(pesquisaId, pessoaId);
+            return retorno.Sucesso ? Ok(retorno)
+                : BadRequest(retorno);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao obter resultado da pessoa {PessoaId} na pesquisa {PesquisaId}", pessoaId,
+                pesquisaId);
+            return StatusCode(500, new RetornoPadrao<List<RespostaPessoaView>>("Erro interno do servidor"));
+        }
+    }
+
+    [HttpGet("{PesquisaId:guid}/resultados/{PessoaId:guid}/media")]
+    public async Task<IActionResult> ObterMediaPessoa(Guid pesquisaId, Guid pessoaId)
+    {
+        var retorno = await repo.ObtemMediaDosResultadosPorGrupoView(pessoaId);
         return Ok(new RetornoPadrao<List<MediaDeResultadosDosGruposView>>(true, "", retorno));       
     }
 
-   
+    /// <summary>
+    /// Exporta uma pesquisa para JSON (sem dados de respostas)
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("{id:guid}/exportar")]
+    public async Task<IActionResult> ExportarPesquisa(Guid id)
+    {
+        try
+        {
+            var pesquisa = await repo.SelecionaAsync(id);
+            if (pesquisa == null)
+                return NotFound(new RetornoPadrao("Pesquisa não encontrada"));
+
+            var usuarioId = ObterUsuarioIdAtual();
+            var nomeUsuario = ObterNomeUsuarioAtual();
+            
+            logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) está exportando pesquisa: {NomePesquisa}", 
+                nomeUsuario, usuarioId, pesquisa.Nome);
+
+            // Converter para CRUD limpo (sem IDs internos e sem respostas)
+            var exportData = new PesquisaCrud
+            {
+                Id = 0,
+                PublicId = Guid.Empty,
+                Nome = pesquisa.Nome,
+                DataCriacao = pesquisa.DataCriacao,
+                GruposQuestoes = pesquisa.GruposQuestoes.Select(g => new GrupoQuestaoCrud
+                {
+                    Id = 0,
+                    PublicId = Guid.Empty,
+                    PesquisaId = 0,
+                    Nome = g.Nome,
+                    Categoria = g.Categoria,
+                    Ordem = g.Ordem,
+                    Cor = g.Cor,
+                    Questoes = g.Questoes.Select(q => new QuestaoCrud
+                    {
+                        Id = 0,
+                        PublicId = Guid.Empty,
+                        GrupoDeQuestaoId = 0,
+                        Texto = q.Texto,
+                        EInvertida = q.EInvertida,
+                        Ordem = q.Ordem
+                    }).ToList()
+                }).ToList(),
+                RespostasPessoa = [] // Vazio na exportação
+            };
+
+            var json = JsonSerializer.Serialize(exportData, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+            var fileName = $"{pesquisa.Nome.Replace(" ", "_")}_export_{DateTime.Now:yyyyMMdd}.json";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(json);
+
+            return File(bytes, "application/json", fileName);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao exportar pesquisa com ID {Id}", id);
+            return StatusCode(500, new RetornoPadrao<object>("Erro interno do servidor"));
+        }
+    }
+
+    /// <summary>
+    /// Importa uma pesquisa de arquivo JSON
+    /// </summary>
+    [HttpPost("importar")]
+    public async Task<IActionResult> ImportarPesquisa(IFormFile arquivo)
+    {
+        try
+        {
+            if (arquivo.Length == 0)
+                return BadRequest(new RetornoPadrao<object>("Nenhum arquivo foi enviado"));
+
+            if (!arquivo.ContentType.Contains("json") && !arquivo.FileName.EndsWith(".json"))
+                return BadRequest(new RetornoPadrao<object>("Arquivo deve ser do tipo JSON"));
+
+            var usuarioId = ObterUsuarioIdAtual();
+            var nomeUsuario = ObterNomeUsuarioAtual();
+
+            await using var stream = arquivo.OpenReadStream();
+            using var reader = new StreamReader(stream);
+            var jsonContent = await reader.ReadToEndAsync();
+
+            var pesquisaImportada = JsonSerializer.Deserialize<PesquisaCrud>(jsonContent, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (pesquisaImportada == null)
+                return BadRequest(new RetornoPadrao<object>("Formato de arquivo JSON inválido"));
+
+            // Adicionar sufixo para evitar conflito de nomes
+            pesquisaImportada.Nome += $" (Importado {DateTime.Now:dd/MM/yyyy HH:mm})";
+            pesquisaImportada.DataCriacao = DateTime.UtcNow;
+
+            // Limpar IDs (garantir que serão novos registros)
+            pesquisaImportada.Id = 0;
+            pesquisaImportada.PublicId = Guid.Empty;
+            pesquisaImportada.RespostasPessoa.Clear();
+
+            foreach (var grupo in pesquisaImportada.GruposQuestoes)
+            {
+                grupo.Id = 0;
+                grupo.PublicId = Guid.Empty;
+                grupo.PesquisaId = 0;
+                
+                foreach (var questao in grupo.Questoes)
+                {
+                    questao.Id = 0;
+                    questao.PublicId = Guid.Empty;
+                    questao.GrupoDeQuestaoId = 0;
+                }
+            }
+
+            var retorno = await handler.Criar(pesquisaImportada);
+            if (!retorno.Sucesso)
+            {
+                logger.LogWarning("Erro ao importar pesquisa: {Erro}", retorno.Mensagem);
+                return BadRequest(retorno);
+            }
+
+            logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) importou pesquisa: {NomePesquisa}", 
+                nomeUsuario, usuarioId, pesquisaImportada.Nome);
+
+            return Ok(new RetornoPadrao<object>(true, "Pesquisa importada com sucesso", new { Id = retorno.Data!.PublicId }));
+        }
+        catch (JsonException ex)
+        {
+            logger.LogError(ex, "Erro ao deserializar JSON da pesquisa");
+            return BadRequest(new RetornoPadrao<object>("Formato JSON inválido", ex.Message));
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao importar pesquisa");
+            return StatusCode(500, new RetornoPadrao<object>("Erro interno do servidor"));
+        }
+    }
+
+    /// <summary>
+    /// Exporta resultado individual para PDF recebendo gráfico do frontend
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("{pesquisaId:guid}/resultados/{pessoaId:guid}/pdf")]
+    public async Task<IActionResult> ExportarResultadoPdf(Guid pesquisaId, Guid pessoaId, [FromBody] ExportarPdfCommand command)
+    {
+        try
+        {
+            // Configurar QuestPDF (necessário para licença)
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            logger.LogInformation("Gerando PDF do resultado para {NomePessoa} da pesquisa {NomePesquisa}", 
+                command.NomePessoa, command.NomePesquisa);
+
+            // Converter imagem base64 para bytes
+            byte[] chartImageBytes = Convert.FromBase64String(command.ChartImageBase64.Split(',').Last());
+
+            // Gerar PDF com QuestPDF
+            var pdfDocument = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(40);
+                    
+                    page.Header()
+                        .PaddingBottom(20)
+                        .Column(column =>
+                        {
+                            column.Item().AlignCenter().Text("Resultado da Avaliação")
+                                .FontSize(24).FontColor(Colors.Blue.Medium).Bold();
+                            column.Item().AlignCenter().Text(command.NomePessoa)
+                                .FontSize(18);
+                            column.Item().AlignCenter().Text($"{command.NomePesquisa} - {command.DataAvaliacao:dd/MM/yyyy HH:mm}")
+                                .FontSize(14);
+                        });
+
+                    page.Content().Column(column =>
+                    {
+                        // Gráfico
+                        column.Item().PaddingTop(20).AlignCenter()
+                            .Image(chartImageBytes).FitWidth();
+
+                        // Detalhes por categoria
+                        if (command.DetalhesGrupos.Any())
+                        {
+                            column.Item().PaddingTop(30).Column(detailsColumn =>
+                            {
+                                detailsColumn.Item().Text("Detalhes por Categoria")
+                                    .FontSize(16).Bold();
+
+                                detailsColumn.Item().PaddingTop(15).Grid(grid =>
+                                {
+                                    grid.Columns(3);
+                                    grid.Spacing(15);
+
+                                    foreach (var grupo in command.DetalhesGrupos)
+                                    {
+                                        grid.Item().Border(1).BorderColor(Colors.Grey.Lighten2)
+                                            .Padding(15)
+                                            .Column(itemColumn =>
+                                            {
+                                                itemColumn.Item().AlignCenter()
+                                                    .Width(20).Height(20)
+                                                    .Background(grupo.Cor);
+                                                itemColumn.Item().AlignCenter().PaddingTop(8)
+                                                    .Text(grupo.Categoria).FontSize(12).Bold();
+                                                itemColumn.Item().AlignCenter().PaddingTop(5)
+                                                    .Text($"{grupo.Valor:F0}%").FontSize(20).Bold()
+                                                    .FontColor(Colors.Blue.Medium);
+                                            });
+                                    }
+                                });
+                            });
+                        }
+                    });
+
+                    page.Footer()
+                        .AlignCenter()
+                        .BorderTop(1)
+                        .BorderColor(Colors.Grey.Lighten2)
+                        .PaddingTop(10)
+                        .Text($"Relatório gerado em {DateTime.Now:dd/MM/yyyy HH:mm} - PesquisaX")
+                        .FontSize(10).FontColor(Colors.Grey.Medium);
+                });
+            });
+
+            var pdfBytes = pdfDocument.GeneratePdf();
+            var fileName = $"{command.NomePessoa}_{command.NomePesquisa}_Resultado_{DateTime.Now:yyyyMMdd}.pdf"
+                .Replace(" ", "_")
+                .Replace("/", "_")
+                .Replace("\\", "_");
+
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao gerar PDF do resultado para pesquisa {PesquisaId}, pessoa {PessoaId}", 
+                pesquisaId, pessoaId);
+            return StatusCode(500, new RetornoPadrao<object>("Erro interno do servidor"));
+        }
+    }
+
 }

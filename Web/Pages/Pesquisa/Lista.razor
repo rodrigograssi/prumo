@@ -6,6 +6,7 @@
 @inject NavigationManager Navigation
 
 @inject ApiControllerGenerico ApiController
+@inject HttpClient HttpClient
 
 <PageTitle>Lista de Pesquisas</PageTitle>
 
@@ -13,10 +14,16 @@
     <MudPaper Elevation="2" Class="pa-4 mb-4">
         <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
             <MudText Typo="Typo.h4">Minhas Pesquisas</MudText>
-            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="Icons.Material.Filled.Add"
-                       Href="/criar-pesquisa">
-                Nova Pesquisa
-            </MudButton>
+            <MudStack Row Spacing="2">
+                <MudButton Variant="Variant.Outlined" Color="Color.Info" StartIcon="@Icons.Material.Filled.Upload"
+                           OnClick="OpenImportDialog">
+                    Importar
+                </MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Add"
+                           Href="/criar-pesquisa">
+                    Nova Pesquisa
+                </MudButton>
+            </MudStack>
         </MudStack>
     </MudPaper>
 
@@ -83,12 +90,17 @@
                                                Disabled="@(pesquisa.TotalDeRespostas == 0)">
                                         Resultados
                                     </MudButton>
-                                    <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                    <MudButton StartIcon="@Icons.Material.Filled.Download" Color="Color.Warning"
                                                Variant="Variant.Text" Size="Size.Small" FullWidth="true"
-                                               OnClick="() => DeletePesquisa(pesquisa)">
-                                        Excluir
+                                               OnClick="() => ExportarPesquisa(pesquisa.PublicId)">
+                                        Exportar
                                     </MudButton>
                                 </MudStack>
+                                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error"
+                                           Variant="Variant.Text" Size="Size.Small" FullWidth="true"
+                                           OnClick="() => DeletePesquisa(pesquisa)">
+                                    Excluir
+                                </MudButton>
                             </MudStack>
                         </MudCardActions>
                     </MudCard>
@@ -98,8 +110,69 @@
     }
 </MudContainer>
 
+<!-- Diálogo de Importação usando MudBlazor Dialog Service -->
+@if (_showImportDialog)
+{
+    <MudOverlay @onclick="@(() => _showImportDialog = false)" />
+    <MudPaper Class="mud-dialog mud-dialog-width-md" Style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1301;">
+        <MudDialogContainer>
+            <MudDialogContent>
+                <MudText Typo="Typo.h6" Class="mb-4">Importar Pesquisa</MudText>
+                <MudText Typo="Typo.body2" Class="mb-4">
+                    Selecione um arquivo JSON de pesquisa exportado anteriormente:
+                </MudText>
+                
+                <MudFileUpload T="IBrowserFile" Accept=".json,application/json" 
+                               FilesChanged="OnFileSelected" MaximumFileCount="1">
+                    <ActivatorContent>
+                        <MudPaper Height="100px" Class="d-flex align-center justify-center cursor-pointer"
+                                  Style="border: 2px dashed var(--mud-palette-lines-default, #e0e0e0); transition: border-color 0.3s;">
+                            <div class="d-flex flex-column align-center">
+                                <MudIcon Icon="Icons.Material.Filled.CloudUpload" Size="Size.Large" Color="Color.Secondary" />
+                                <MudText Typo="Typo.body2" Class="mt-2">
+                                    Clique para selecionar arquivo JSON
+                                </MudText>
+                            </div>
+                        </MudPaper>
+                    </ActivatorContent>
+                </MudFileUpload>
+
+                @if (_selectedFile != null)
+                {
+                    <MudText Typo="Typo.body2" Class="mt-3">
+                        <MudIcon Icon="Icons.Material.Filled.AttachFile" Size="Size.Small" />
+                        Arquivo selecionado: @_selectedFile.Name
+                    </MudText>
+                }
+            </MudDialogContent>
+            <MudDialogActions>
+                <MudButton OnClick="@(() => { _showImportDialog = false; _selectedFile = null; })">Cancelar</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                           OnClick="ImportarPesquisa" 
+                           Disabled="_selectedFile == null || _importando">
+                    @if (_importando)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                        <span class="ml-2">Importando...</span>
+                    }
+                    else
+                    {
+                        <span>Importar</span>
+                    }
+                </MudButton>
+            </MudDialogActions>
+        </MudDialogContainer>
+    </MudPaper>
+}
+
 @code {
     private List<PesquisaListaView>? _pesquisas;
+    
+    // Importação
+    private bool _showImportDialog = false;
+    private bool _importando = false;
+    private IBrowserFile? _selectedFile;
+    
 
     protected override async Task OnInitializedAsync()
     {
@@ -145,6 +218,75 @@
             await ApiController.DeleteAsync($"api/Pesquisas", pesquisva.PublicId.ToString()); 
             await LoadPesquisas();
             Snackbar.Add("Pesquisa excluída com sucesso", Severity.Success);
+        }
+    }
+
+    private async Task ExportarPesquisa(Guid pesquisaId)
+    {
+        try
+        {
+            // Usar BaseAddress do HttpClient configurado para API
+            var baseUrl = HttpClient.BaseAddress?.ToString() ?? "https://localhost:7001/";
+            var url = $"{baseUrl.TrimEnd('/')}/api/Pesquisas/{pesquisaId}/exportar";
+            
+            Navigation.NavigateTo(url, forceLoad: true);
+            Snackbar.Add("Download da pesquisa iniciado", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao exportar pesquisa: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void OnFileSelected(IBrowserFile file)
+    {
+        _selectedFile = file;
+        StateHasChanged();
+    }
+
+    private async Task ImportarPesquisa()
+    {
+        if (_selectedFile == null) return;
+
+        _importando = true;
+        StateHasChanged();
+
+        try
+        {
+            var retorno = await ApiController.PostFileAsync<object>(_selectedFile, "/api/Pesquisas/importar");
+            
+            if (retorno.Sucesso)
+            {
+                Snackbar.Add("Pesquisa importada com sucesso!", Severity.Success);
+                _showImportDialog = false;
+                _selectedFile = null;
+                await LoadPesquisas();
+            }
+            else
+            {
+                Snackbar.Add($"Erro ao importar: {retorno.Mensagem}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao importar pesquisa: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _importando = false;
+            StateHasChanged();
+        }
+    }
+    
+    private async Task OpenImportDialog()
+    {
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<ImportarPesquisaDialog>("Importar Pesquisa", options);
+        var result = await dialog.Result;
+
+        if ( result is { Canceled: false })
+        {
+            await LoadPesquisas();
         }
     }
 }

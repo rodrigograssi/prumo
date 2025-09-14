@@ -111,13 +111,27 @@ services:
         - "traefik.http.services.pesquisax-api.loadbalancer.server.port=8080"
         - "traefik.http.services.pesquisax-api.loadbalancer.healthcheck.path=/health"
         - "traefik.http.services.pesquisax-api.loadbalancer.healthcheck.interval=10s"
-        
-        # Middleware
+            
+        # Middleware CORS
         - "traefik.http.routers.pesquisax-api.middlewares=api-cors,api-headers"
         - "traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=https://pesquisax.thaishiroki.com.br,https://www.pesquisax.thaishiroki.com.br"
         - "traefik.http.middlewares.api-cors.headers.accesscontrolallowheaders=*"
         - "traefik.http.middlewares.api-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
         - "traefik.http.middlewares.api-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+
+        # ===========================
+        # Swagger Router Protegido
+        # ===========================
+        # Middleware BasicAuth
+        - "traefik.http.middlewares.swagger-auth.basicauth.users=admin:$apr1$2B.TuWvt$vgyh9n2GeEr5YZBhXnhIS."
+
+        # Roteador só para o Swagger
+        - "traefik.http.routers.pesquisax-swagger.rule=Host(`api-pesquisax.thaishiroki.com.br`) && PathPrefix(`/swagger`)"
+        - "traefik.http.routers.pesquisax-swagger.entrypoints=websecure"
+        - "traefik.http.routers.pesquisax-swagger.tls=true"
+        - "traefik.http.routers.pesquisax-swagger.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.pesquisax-swagger.middlewares=swagger-auth"
+        - "traefik.http.services.pesquisax-swagger.loadbalancer.server.port=8080"
 
   # PesquisaX Web Frontend
   web:

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Forms;
 using PesquisaX.Shared.DTO;
 
 namespace PesquisaX.Web.Services
@@ -71,6 +72,61 @@ namespace PesquisaX.Web.Services
             catch (Exception ex)
             {
                 return new RetornoPadrao($"Erro na requisição: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Executa uma requisição POST de upload de arquivo
+        /// </summary>
+        /// <typeparam name="TRetorno">Tipo de dados retornados</typeparam>
+        /// <param name="file">Arquivo para upload</param>
+        /// <param name="url">Endpoint da API</param>
+        /// <param name="fileParameterName">Nome do parâmetro do arquivo (padrão: "arquivo")</param>
+        /// <returns>Resultado da operação com dados tipados</returns>
+        public async Task<RetornoPadrao<TRetorno>> PostFileAsync<TRetorno>(IBrowserFile file, string url, string fileParameterName = "arquivo")
+        {
+            try
+            {
+                using var content = new MultipartFormDataContent();
+                using var fileStream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB max
+                using var streamContent = new StreamContent(fileStream);
+                
+                streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType ?? "application/octet-stream");
+                content.Add(streamContent, fileParameterName, file.Name);
+
+                var response = await _httpClient.PostAsync(url, content);
+                return await ProcessarRespostaComTipo<TRetorno>(response);
+            }
+            catch (Exception ex)
+            {
+                return new RetornoPadrao<TRetorno>($"Erro no upload do arquivo: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Executa uma requisição POST de upload de arquivo que retorna apenas sucesso/erro
+        /// </summary>
+        /// <param name="file">Arquivo para upload</param>
+        /// <param name="url">Endpoint da API</param>
+        /// <param name="fileParameterName">Nome do parâmetro do arquivo (padrão: "arquivo")</param>
+        /// <returns>Resultado da operação sem dados tipados</returns>
+        public async Task<RetornoPadrao> PostFileAsync(IBrowserFile file, string url, string fileParameterName = "arquivo")
+        {
+            try
+            {
+                using var content = new MultipartFormDataContent();
+                using var fileStream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB max
+                using var streamContent = new StreamContent(fileStream);
+                
+                streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType ?? "application/octet-stream");
+                content.Add(streamContent, fileParameterName, file.Name);
+
+                var response = await _httpClient.PostAsync(url, content);
+                return await ProcessarRespostaSemTipo(response);
+            }
+            catch (Exception ex)
+            {
+                return new RetornoPadrao($"Erro no upload do arquivo: {ex.Message}");
             }
         }
 
@@ -338,6 +394,36 @@ namespace PesquisaX.Web.Services
                 Console.WriteLine($"[DEBUG] Erro de deserialização: {ex.Message}");
                 Console.WriteLine($"[DEBUG] JSON recebido: {resultado}");
                 return new RetornoPadrao("Formato de resposta inválido do servidor");
+            }
+        }
+
+        /// <summary>
+        /// Executa uma requisição POST para download de arquivo
+        /// </summary>
+        /// <param name="dados">Dados para enviar</param>
+        /// <param name="url">Endpoint da API</param>
+        /// <returns>Bytes do arquivo para download</returns>
+        public async Task<RetornoPadrao<byte[]>> PostDownloadAsync(object dados, string url)
+        {
+            try
+            {
+                var json = JsonSerializer.Serialize(dados);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync(url, content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return new RetornoPadrao<byte[]>($"Erro HTTP {(int)response.StatusCode}: {errorContent}");
+                }
+
+                // Ler o conteúdo como bytes (para arquivos)
+                var fileBytes = await response.Content.ReadAsByteArrayAsync();
+                return new RetornoPadrao<byte[]>(true, "Download realizado com sucesso", fileBytes);
+            }
+            catch (Exception ex)
+            {
+                return new RetornoPadrao<byte[]>($"Erro no download: {ex.Message}");
             }
         }
 

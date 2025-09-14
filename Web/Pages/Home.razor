@@ -1,35 +1,27 @@
 ﻿@page "/home"
 
 
-@using Microsoft.AspNetCore.Authorization
 @using PesquisaX.Shared.Views
 @inject ISnackbar Snackbar
 
-@inject IDialogService DialogService
+@* @inject IDialogService DialogService *@
 @inject ApiController<List<PesquisaView>> ApiControle
 
 <PageTitle>Sistema de Pesquisas</PageTitle>
 
 
 <MudContainer MaxWidth="MaxWidth.Large">
-    <MudPaper Elevation="2" Class="pa-4 ma-2">
-        <MudText Typo="Typo.h4" GutterBottom="true">Sistema de Pesquisas com Gráfico Radar</MudText>
-        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
-            Crie pesquisas personalizadas, aplique-as durante meetings e visualize os resultados através de gráficos radar comparativos.
-        </MudText>
-    </MudPaper>
-
     <MudGrid>
         <MudItem xs="12" md="6">
             <MudPaper Elevation="1" Class="pa-4 ma-2">
                 <MudStack Spacing="3">
                     <MudText Typo="Typo.h6">
                         <MudIcon Icon="@Icons.Material.Filled.List" Class="mr-2" />
-                        Minhas Pesquisas
+                        Pesquisas
                     </MudText>
                     <MudText Typo="Typo.body2">Total de pesquisas: @_totalPesquisas</MudText>
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/pesquisas" StartIcon="@Icons.Material.Filled.Visibility">
-                        Ver Todas as Pesquisas
+                        Ver as Pesquisas
                     </MudButton>
                 </MudStack>
             </MudPaper>
@@ -88,7 +80,7 @@
 </MudContainer>
 
 @code {
-    private int _totalPesquisas = 0;
+    private int _totalPesquisas;
 
     protected override async Task OnInitializedAsync()
     {
@@ -103,29 +95,29 @@
         _totalPesquisas = retorno.Data!.Count;
     }
 
-    private async Task CreateSamplePesquisa()
-    {
-        // try
-        // {
-        //     var samplePesquisa = SampleDataService.CreateTennisEvaluationPesquisa();
-        //     await ServicoPesquisa.CriarPesquisaAsync(samplePesquisa);
-        //     
-        //     Snackbar.Add("Pesquisa de exemplo criada com sucesso!", Severity.Success);
-        //     
-        //     // Atualizar o contador
-        //     var surveys = await ServicoPesquisa.ObterTodasPesquisasAsync();
-        //     totalPesquisas = surveys.Count;
-        //     StateHasChanged();
-        // }
-        // catch (Exception ex)
-        // {
-        //     Snackbar.Add($"Erro ao criar pesquisa de exemplo: {ex.Message}", Severity.Error);
-        // }
-    }
+    // private async Task CreateSamplePesquisa()
+    // {
+    //     // try
+    //     // {
+    //     //     var samplePesquisa = SampleDataService.CreateTennisEvaluationPesquisa();
+    //     //     await ServicoPesquisa.CriarPesquisaAsync(samplePesquisa);
+    //     //     
+    //     //     Snackbar.Add("Pesquisa de exemplo criada com sucesso!", Severity.Success);
+    //     //     
+    //     //     // Atualizar o contador
+    //     //     var surveys = await ServicoPesquisa.ObterTodasPesquisasAsync();
+    //     //     totalPesquisas = surveys.Count;
+    //     //     StateHasChanged();
+    //     // }
+    //     // catch (Exception ex)
+    //     // {
+    //     //     Snackbar.Add($"Erro ao criar pesquisa de exemplo: {ex.Message}", Severity.Error);
+    //     // }
+    // }
 
-    private Task OpenDialogAsync()
-    {
-        var options = new DialogOptions() { CloseOnEscapeKey = true };
-        return DialogService.ShowAsync<DialogUsageExample_Dialog>("Simple Dialog", options);
-    }
+    // private Task OpenDialogAsync()
+    // {
+    //     var options = new DialogOptions() { CloseOnEscapeKey = true };
+    //     return DialogService.ShowAsync<DialogUsageExample_Dialog>("Simple Dialog", options);
+    // }
 }

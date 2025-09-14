@@ -1,10 +1,14 @@
 @page "/resultado/{PesquisaId:guid}/{PersonId:guid}"
 @page "/resultados/{PesquisaId:guid}"
 @using PesquisaX.Shared.Views
+@using PesquisaX.Shared.Comandos
+@using Microsoft.JSInterop
 
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject HttpClient HttpClient
+@inject IJSRuntime JS
 
 @inject ApiControllerGenerico ApiController
 
@@ -33,26 +37,41 @@ else if (IsResultView && _personResult != null)
                 </MudText>
             </MudPaper>
 
+            <!-- Controle de exibição -->
+            <MudPaper Elevation="1" Class="pa-4 mb-4">
+                <MudStack Row AlignItems="AlignItems.Center" Spacing="3">
+                    <MudIcon Icon="@Icons.Material.Filled.CompareArrows" Color="Color.Primary" />
+                    <MudSwitch @bind-Value="@_mostrarComparacao" 
+                              Color="Color.Primary"
+                              Label="Mostrar resultado" />
+                </MudStack>
+            </MudPaper>
+
             <!-- Gráficos lado a lado -->
             <MudGrid Justify="Justify.Center">
-                <MudItem xs="12" lg="6">
-                    <MudPaper Elevation="2" Class="pa-4">
-                        <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-4" Color="Color.Error">
-                            Situação Atual
-                        </MudText>
-                        <RadarChart Title=""
-                                  Labels="@_chartLabels"
-                                  Data="@_actualData"
-                                  BorderColor="rgb(244, 67, 54)"
-                                  BackgroundColor="rgba(244, 67, 54, 0.1)"
-                                  ShowLegend="false" />
-                    </MudPaper>
-                </MudItem>
-
+                <!-- Gráfico Atual (sempre visível) -->
+                @if (_mostrarComparacao)
+                {
+                    <MudItem xs="12" lg="@(_mostrarComparacao ? 6 : 8)">
+                        <MudPaper Elevation="2" Class="pa-4">
+                            <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-4" Color="Color.Primary">
+                                @(_mostrarComparacao ? "Situação Atual" : $"Resultado - {_personResult?.NomePessoa}")
+                            </MudText>
+                            <RadarChart Title=""
+                                        Labels="@_chartLabels"
+                                        Data="@_actualData"
+                                        BorderColor="rgb(227, 49, 14)"
+                                        BackgroundColor="rgba(227, 49, 14, 0.1)"
+                                        ShowLegend="false"/>
+                        </MudPaper>
+                    </MudItem>
+                }
+                <!-- Gráfico Ideal (condicional) -->
+   
                 <MudItem xs="12" lg="6">
                     <MudPaper Elevation="2" Class="pa-4">
                         <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-4" Color="Color.Success">
-                            Situação Desejada
+                            Situação Ideal (100%)
                         </MudText>
                         <RadarChart Title=""
                                   Labels="@_chartLabels"
@@ -64,38 +83,46 @@ else if (IsResultView && _personResult != null)
                 </MudItem>
             </MudGrid>
 
-            <!-- Detalhes por Grupo -->
-            <MudPaper Elevation="1" Class="pa-4 mt-6">
-                <MudText Typo="Typo.h6" Class="mb-4">Detalhes por Categoria</MudText>
-                <MudGrid>
-                    @foreach (var kvp in _groupoPorcentagens)
-                    {
-                        <MudItem xs="12" sm="6" md="4">
-                            <MudCard Elevation="0" Style="border: 1px solid #e0e0e0;">
-                                <MudCardContent Class="text-center">
-                                    <div style="width: 20px; height: 20px; background-color: @kvp.Cor; border-radius: 50%; margin: 0 auto 8px;"></div>
-                                    <MudText Typo="Typo.subtitle1">@kvp.Categoria</MudText>
-                                    <MudText Typo="Typo.h4" Color="Color.Primary">
-                                        @kvp.Valor.ToString("0")%
-                                    </MudText>
-                                </MudCardContent>
-                            </MudCard>
-                        </MudItem>
-                    }
-                </MudGrid>
-            </MudPaper>
-
+            @if (_mostrarComparacao)
+            {
+                <!-- Detalhes por Grupo -->
+                <MudPaper Elevation="1" Class="pa-4 mt-6">
+                    <MudText Typo="Typo.h6" Class="mb-4">Detalhes por Categoria</MudText>
+                    <MudGrid>
+                        @foreach (var kvp in _groupoPorcentagens)
+                        {
+                            <MudItem xs="12" sm="6" md="4">
+                                <MudCard Elevation="0" Style="border: 1px solid #e0e0e0;">
+                                    <MudCardContent Class="text-center">
+                                        <div style="width: 20px; height: 20px; background-color: @kvp.Cor; border-radius: 50%; margin: 0 auto 8px;"></div>
+                                        <MudText Typo="Typo.subtitle1">@kvp.Categoria</MudText>
+                                        <MudText Typo="Typo.h4" Color="Color.Primary">
+                                            @kvp.Valor.ToString("0")%
+                                        </MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudPaper>
+            }
             <!-- Botões de ação -->
             <MudPaper Elevation="0" Class="pa-4 mt-6">
                 <MudStack Row Justify="Justify.Center" Spacing="3">
                     <MudButton Variant="Variant.Text" 
-                             StartIcon="Icons.Material.Filled.ArrowBack"
+                             StartIcon="@Icons.Material.Filled.ArrowBack"
                              OnClick="@(() => Navigation.NavigateTo($"/resultados/{PesquisaId}"))">
                         Ver Todos os Resultados
                     </MudButton>
+                    <MudButton Variant="Variant.Outlined" 
+                             Color="Color.Secondary"
+                             StartIcon="@Icons.Material.Filled.PictureAsPdf"
+                             OnClick="@(() => ExportarPdf())">
+                        Exportar PDF
+                    </MudButton>
                     <MudButton Variant="Variant.Filled" 
                              Color="Color.Primary"
-                             StartIcon="Icons.Material.Filled.PlayArrow"
+                             StartIcon="@Icons.Material.Filled.PlayArrow"
                              OnClick="@(() => Navigation.NavigateTo($"/aplicar-pesquisa/{PesquisaId}"))">
                         Nova Avaliação
                     </MudButton>
@@ -178,11 +205,11 @@ else
                             </MudCardContent>
                             <MudCardActions>
                                 <MudButtonGroup Size="Size.Small" Variant="Variant.Text">
-                                    <MudButton StartIcon="Icons.Material.Filled.Visibility" Color="Color.Primary"
+                                    <MudButton StartIcon="@Icons.Material.Filled.Visibility" Color="Color.Primary"
                                                OnClick="() => ViewIndividualResult(result.PublicId)">
                                         Ver Resultado
                                     </MudButton>
-                                    <MudButton StartIcon="Icons.Material.Filled.Delete" Color="Color.Error"
+                                    <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error"
                                                OnClick="() => DeleteResult(result)">
                                         Excluir
                                     </MudButton>
@@ -196,7 +223,7 @@ else
 
         <MudPaper Elevation="1" Class="pa-4 mt-4">
             <MudButton Variant="Variant.Text" 
-                     StartIcon="Icons.Material.Filled.ArrowBack"
+                     StartIcon="@Icons.Material.Filled.ArrowBack"
                      OnClick="@(() => Navigation.NavigateTo("/pesquisas"))">
                 Voltar para Pesquisas
             </MudButton>
@@ -212,11 +239,13 @@ else
     private RespostaPessoaView? _personResult;
     private List<RespostaPessoaView>? _todosResultados;
     
-    //Porcentagens Média dos Grupos de Resposta da Pessoa Lista com (Nome da Categoria, Valor, Cor)
+    //Percentages Média dos Grupos de Resposta da Pessoa Lista com (Nome da Categoria, Valor, Cor)
     private List<MediaDeResultadosDosGruposView> _groupoPorcentagens = [];
     private List<string> _chartLabels = new();
     private List<double> _actualData = new();
     private List<double> _desiredData = new();
+    
+    private bool _mostrarComparacao;
 
     private bool IsResultView => PersonId.HasValue;
 
@@ -244,7 +273,7 @@ else
 
             _personResult = retornoPessoa.Data;
             var retornoPorcentagesn = await ApiController.GetAsync<List<MediaDeResultadosDosGruposView>>($"api/Pesquisas/{PesquisaId}/resultados/{PersonId}/media");
-            if(retornoPorcentagesn.Sucesso && retornoPorcentagesn.Data != null) 
+            if(retornoPorcentagesn is { Sucesso: true, Data: not null }) 
               _groupoPorcentagens = retornoPorcentagesn.Data;
             
             PrepareChartData();
@@ -252,7 +281,7 @@ else
         else
         {
             var retornoResultados = await ApiController.GetAsync<List<RespostaPessoaView>>($"api/Pesquisas/{PesquisaId}/resultados");
-            if (retornoResultados.Sucesso && retornoResultados.Data != null)
+            if (retornoResultados is { Sucesso: true, Data: not null })
             {
                 _todosResultados = retornoResultados.Data;
             }
@@ -290,7 +319,7 @@ else
 
     private async Task DeleteResult(RespostaPessoaView result)
     {
-        bool? confirmed = await DialogService.ShowMessageBox(
+        var confirmed = await DialogService.ShowMessageBox(
             "Confirmar Exclusão",
             $"Tem certeza que deseja excluir o resultado de '{result.NomePessoa}'? Esta ação não pode ser desfeita.",
             yesText: "Excluir",
@@ -303,15 +332,68 @@ else
             // await ServicoPesquisa.AlterarPesquisaAsync(_pesquisa);
             
             // Recarrega a lista
-            var retornoResultados = await ApiController.DeleteAsync($"api/Pesquisas/{PesquisaId}/resultados","ccc" );
+            var retornoResultados = await ApiController.DeleteAsync($"api/Pesquisas/{PesquisaId}/resultados",result.PublicId.ToString() );
             if (retornoResultados.Sucesso)
             {
                 Snackbar.Add("Resultado excluído com sucesso", Severity.Success);
                 StateHasChanged();
+                return;
             }
+            Snackbar.Add(retornoResultados.Mensagem, Severity.Error);
         }
     }
-    
+
+    private async Task ExportarPdf()
+    {
+        if (PersonId == null || _personResult == null || _pesquisa == null) return;
+
+        try
+        {
+           // Snackbar.Add("Capturando gráfico...", Severity.Info);
+            
+            // Capturar o gráfico como imagem base64 via JavaScript
+            var chartImageBase64 = await JS.InvokeAsync<string>("captureRadarChart");
+            
+            if (string.IsNullOrEmpty(chartImageBase64))
+            {
+                Snackbar.Add("Erro ao capturar gráfico", Severity.Error);
+                return;
+            }
+
+            // Criar comando para exportação
+            var command = new ExportarPdfCommand
+            {
+                ChartImageBase64 = chartImageBase64,
+                NomePessoa = _personResult.NomePessoa,
+                NomePesquisa = _pesquisa.Nome,
+                DataAvaliacao = _personResult.DataAvaliacao,
+                DetalhesGrupos = _groupoPorcentagens
+            };
+
+            Snackbar.Add("Gerando PDF...", Severity.Info);
+
+            // Enviar para API via POST para download
+            var retorno = await ApiController.PostDownloadAsync(command, $"api/Pesquisas/{PesquisaId}/resultados/{PersonId}/pdf");
+            
+            if (retorno.Sucesso && retorno.Data != null)
+            {
+                // Fazer download do PDF
+                var fileName = $"{_personResult.NomePessoa}_{_pesquisa.Nome}_Resultado_{DateTime.Now:yyyyMMdd}.pdf"
+                    .Replace(" ", "_").Replace("/", "_").Replace("\\", "_");
+                
+                await JS.InvokeVoidAsync("downloadFile", retorno.Data, fileName, "application/pdf");
+                Snackbar.Add("PDF exportado com sucesso!", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add($"Erro ao gerar PDF: {retorno.Mensagem}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao exportar PDF: {ex.Message}", Severity.Error);
+        }
+    }
  
 }
 

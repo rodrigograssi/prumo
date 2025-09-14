@@ -10,7 +10,7 @@ public static class AppVersion
     /// <summary>
     /// Versão atual da aplicação (Semantic Versioning)
     /// </summary>
-    public const string Current = "1.0.0";
+    public const string Current = "1.0.2";
     
     /// <summary>
     /// Nome da aplicação
