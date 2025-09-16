@@ -71,6 +71,9 @@ builder.Services.AddScoped<IRepositorioUsuario, RepositorioUsuario>();
 builder.Services.AddScoped<IPesquisaHandler, PesquisaHandler>();
 builder.Services.AddScoped<IUsuarioHandler, UsuarioHandler>();
 
+// Configuração do serviço de IA (OpenAI)
+builder.Services.AddScoped<PesquisaX.Api.Services.IAIService, PesquisaX.Api.Services.OpenAIService>();
+
 // Configuração da API
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

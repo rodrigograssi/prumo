@@ -51,6 +51,9 @@ builder.Services.AddTransient<ApiUsuarioController>();
 builder.Services.AddScoped<AutenticacaoController>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<AutenticacaoController>());
 
+// Serviço de IA
+builder.Services.AddScoped<IAService>();
+
 
 var app = builder.Build();
 
