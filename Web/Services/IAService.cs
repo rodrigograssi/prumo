@@ -4,13 +4,13 @@ using System.Text.Json;
 
 namespace PesquisaX.Web.Services;
 
-public class IAService(ApiController<bool> apiController, ApiController apiControllerBase)
+public class IAService(ApiControllerGenerico apiController)
 {
     public async Task<bool> EstaDisponivel()
     {
         try
         {
-            var response = await apiController.GetAsync("ia/disponivel");
+            var response = await apiController.GetAsync<bool>("ia/disponivel");
             return response?.Sucesso == true && response.Data;
         }
         catch
@@ -23,7 +23,7 @@ public class IAService(ApiController<bool> apiController, ApiController apiContr
     {
         try
         {
-            var response = await apiControllerBase.PostAsync(comando, "ia/gerar-perguntas");
+            var response = await apiController.PostAsync(comando, "ia/gerar-perguntas");
             return response?.Sucesso == true ? response.Notificacoes?.FirstOrDefault() : null;
         }
         catch
@@ -36,7 +36,7 @@ public class IAService(ApiController<bool> apiController, ApiController apiContr
     {
         try
         {
-            var response = await apiControllerBase.PostAsync(comando, "ia/melhorar-pesquisa");
+            var response = await apiController.PostAsync(comando, "ia/melhorar-pesquisa");
             return response?.Sucesso == true ? response.Notificacoes?.FirstOrDefault() : null;
         }
         catch
@@ -49,7 +49,7 @@ public class IAService(ApiController<bool> apiController, ApiController apiContr
     {
         try
         {
-            var response = await apiControllerBase.PostAsync(comando, "ia/sugerir-pesquisa");
+            var response = await apiController.PostAsync(comando, "ia/sugerir-pesquisa");
             return response?.Sucesso == true ? response.Notificacoes?.FirstOrDefault() : null;
         }
         catch
