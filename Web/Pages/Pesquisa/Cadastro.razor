@@ -5,6 +5,8 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject ApiControllerGenerico ApiController
+@inject IAService IAService
+@inject IDialogService DialogService
 
 
 <PageTitle>@(IsEditing ? "Editar Pesquisa" : "Criar Nova Pesquisa")</PageTitle>
@@ -16,11 +18,44 @@
 
     <MudForm @ref="_form" Model="_pesquisa" @bind-IsValid="_formIsValid">
         <MudPaper Elevation="1" Class="pa-4 mb-4">
-            <MudTextField T="string" Label="Nome da Pesquisa"
-                          @bind-Value="_pesquisa.Nome"
-                          Required="true"
-                          Variant="Variant.Outlined"
-                          Class="mb-4" />
+            <MudStack>
+                <MudTextField T="string" Label="Nome da Pesquisa"
+                              @bind-Value="_pesquisa.Nome"
+                              Required="true"
+                              Variant="Variant.Outlined"
+                              Class="mb-4" />
+
+                @if (!IsEditing && _iaDisponivel)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Class="mr-2" />
+                        Agora você pode gerar pesquisas automaticamente com inteligência artificial!
+                    </MudAlert>
+
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Info"
+                               StartIcon="@Icons.Material.Filled.AutoAwesome"
+                               OnClick="AbrirGeracaoIA"
+                               Disabled="_gerandoComIA">
+                        @if (_gerandoComIA)
+                        {
+                            <MudProgressCircular Color="Color.Default" Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <text>Gerando com IA...</text>
+                        }
+                        else
+                        {
+                            <text>Gerar Pesquisa com IA</text>
+                        }
+                    </MudButton>
+                }
+                else if (!IsEditing && !_iaDisponivel)
+                {
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Class="mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                        Geração por IA não disponível (configure a chave OpenAI na API)
+                    </MudAlert>
+                }
+            </MudStack>
         </MudPaper>
 
         @foreach (var group in _pesquisa.GruposQuestoes)
@@ -136,11 +171,16 @@
     private MudForm _form = new();
     private bool _formIsValid;
     private PesquisaCrud _pesquisa = new();
+    private bool _iaDisponivel = false;
+    private bool _gerandoComIA = false;
 
     private bool IsEditing => PesquisaId.HasValue;
 
     protected override async Task OnInitializedAsync()
     {
+        // Verificar se IA está disponível
+        _iaDisponivel = await IAService.EstaDisponivel();
+
         if (IsEditing && PesquisaId.HasValue)
         {
             var retorno = await ApiController.GetAsync<PesquisaCrud>($"api/Pesquisas/{PesquisaId.ToString()}");
@@ -221,5 +261,32 @@
     private void GoBack()
     {
         Navigation.NavigateTo("/pesquisas");
+    }
+
+    private async Task AbrirGeracaoIA()
+    {
+        var parameters = new DialogParameters<DialogGeracaoIA>
+        {
+            { x => x.IAService, IAService },
+            { x => x.ApiController, ApiController }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = await DialogService.ShowAsync<DialogGeracaoIA>("Gerar Pesquisa com IA", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is PesquisaCrud pesquisaGerada)
+        {
+            _pesquisa = pesquisaGerada;
+            StateHasChanged();
+            Snackbar.Add("Pesquisa gerada com sucesso! Revise e ajuste conforme necessário.", Severity.Success);
+        }
     }
 }

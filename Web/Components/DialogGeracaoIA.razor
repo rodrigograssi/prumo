@@ -1,0 +1,217 @@
+@using PesquisaX.Shared.Comandos
+@using MudBlazor
+@inject ISnackbar Snackbar
+
+<MudDialog Class="pa-4">
+    <DialogContent>
+        <MudStack Spacing="4">
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Class="mr-2" />
+                Gerar Pesquisa com Inteligência Artificial
+            </MudText>
+
+            <MudAlert Severity="Severity.Info" Variant="Variant.Text">
+                A IA criará uma pesquisa completa com categorias e perguntas baseadas no tema que você fornecer.
+            </MudAlert>
+
+            <MudTextField @bind-Value="_temaPesquisa"
+                          Label="Tema da Pesquisa"
+                          Placeholder="Ex: Avaliação de Liderança, Satisfação do Cliente, Performance de Vendas..."
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          Immediate="true"
+                          Class="mb-3" />
+
+            <MudNumericField @bind-Value="_quantidadeGrupos"
+                             Label="Quantidade de Categorias"
+                             Variant="Variant.Outlined"
+                             Min="3"
+                             Max="8"
+                             Class="mb-3" />
+
+            <MudExpansionPanels Elevation="0">
+                <MudExpansionPanel IsExpanded="false">
+                    <TitleContent>
+                        <div style="display: flex; align-items: center">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" class="mr-3"></MudIcon>
+                            <MudText>Como Funciona</MudText>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <MudText Typo="Typo.body2">
+                            A IA analisará o tema fornecido e criará:
+                            <br />• Categorias relevantes para o assunto
+                            <br />• 4-5 perguntas específicas para cada categoria
+                            <br />• Cores adequadas para visualização
+                            <br />• Perguntas otimizadas para escala 0-10
+                            <br /><br />
+                            Depois da geração, você poderá revisar e ajustar as perguntas conforme necessário.
+                        </MudText>
+                    </ChildContent>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+
+            @if (_gerando)
+            {
+                <MudPaper Class="pa-4 text-center" Elevation="0" Style="background-color: #f5f5f5;">
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" Class="mb-2" />
+                    <MudText Typo="Typo.body1">Gerando pesquisa com IA...</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Isso pode levar alguns segundos</MudText>
+                </MudPaper>
+            }
+        </MudStack>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel" Disabled="_gerando">Cancelar</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="GerarPesquisa"
+                   Disabled="@(_gerando || string.IsNullOrWhiteSpace(_temaPesquisa))"
+                   StartIcon="@Icons.Material.Filled.AutoAwesome">
+            @if (_gerando)
+            {
+                <text>Gerando...</text>
+            }
+            else
+            {
+                <text>Gerar Pesquisa</text>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public IAService IAService { get; set; } = default!;
+    [Parameter] public ApiControllerGenerico ApiController { get; set; } = default!;
+
+    private string _temaPesquisa = "";
+    private int _quantidadeGrupos = 5;
+    private bool _gerando = false;
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task GerarPesquisa()
+    {
+        if (string.IsNullOrWhiteSpace(_temaPesquisa))
+        {
+            Snackbar.Add("Por favor, informe o tema da pesquisa", Severity.Warning);
+            return;
+        }
+
+        _gerando = true;
+        StateHasChanged();
+
+        try
+        {
+            var comando = new SugerirPesquisaCommand
+            {
+                TemaPesquisa = _temaPesquisa.Trim(),
+                QuantidadeGrupos = _quantidadeGrupos
+            };
+
+            var resultado = await IAService.SugerirPesquisa(comando);
+
+            if (string.IsNullOrEmpty(resultado))
+            {
+                Snackbar.Add("Não foi possível gerar a pesquisa. Tente novamente.", Severity.Error);
+                return;
+            }
+
+            var pesquisaGerada = ProcessarResultadoIA(resultado);
+            pesquisaGerada.Nome = $"Pesquisa: {_temaPesquisa}";
+
+            MudDialog.Close(DialogResult.Ok(pesquisaGerada));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao gerar pesquisa: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _gerando = false;
+            StateHasChanged();
+        }
+    }
+
+    private PesquisaCrud ProcessarResultadoIA(string resultado)
+    {
+        var pesquisa = new PesquisaCrud();
+        var linhas = resultado.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        GrupoQuestaoCrud? grupoAtual = null;
+        var ordem = 0;
+
+        foreach (var linha in linhas)
+        {
+            var linhaTrimmed = linha.Trim();
+
+            // Detectar nova categoria
+            if (linhaTrimmed.StartsWith("**") && linhaTrimmed.Contains("Categoria:"))
+            {
+                if (grupoAtual != null)
+                    pesquisa.GruposQuestoes.Add(grupoAtual);
+
+                var nomeCategoria = ExtrairNomeCategoria(linhaTrimmed);
+                var cor = ExtrairCor(linhaTrimmed);
+
+                grupoAtual = new GrupoQuestaoCrud
+                {
+                    Nome = nomeCategoria,
+                    Categoria = nomeCategoria,
+                    Cor = cor,
+                    Ordem = ordem++
+                };
+            }
+            // Detectar pergunta numerada
+            else if (grupoAtual != null && System.Text.RegularExpressions.Regex.IsMatch(linhaTrimmed, @"^\d+\.\s+"))
+            {
+                var textoQuestao = System.Text.RegularExpressions.Regex.Replace(linhaTrimmed, @"^\d+\.\s+", "").Trim();
+                if (!string.IsNullOrEmpty(textoQuestao))
+                {
+                    grupoAtual.Questoes.Add(new QuestaoCrud
+                    {
+                        Texto = textoQuestao,
+                        EInvertida = false,
+                        Ordem = grupoAtual.Questoes.Count
+                    });
+                }
+            }
+        }
+
+        // Adicionar último grupo
+        if (grupoAtual != null)
+            pesquisa.GruposQuestoes.Add(grupoAtual);
+
+        // Garantir que há pelo menos um grupo com uma pergunta
+        if (pesquisa.GruposQuestoes.Count == 0)
+        {
+            pesquisa.GruposQuestoes.Add(new GrupoQuestaoCrud
+            {
+                Nome = "Categoria Geral",
+                Categoria = "Geral",
+                Cor = "#2196F3",
+                Ordem = 0,
+                Questoes = new List<QuestaoCrud>
+                {
+                    new QuestaoCrud { Texto = "Pergunta de exemplo", EInvertida = false, Ordem = 0 }
+                }
+            });
+        }
+
+        return pesquisa;
+    }
+
+    private string ExtrairNomeCategoria(string linha)
+    {
+        var match = System.Text.RegularExpressions.Regex.Match(linha, @"Categoria:\s*([^*]+?)(?:\s*\(|$|\*\*)");
+        return match.Success ? match.Groups[1].Value.Trim() : "Categoria";
+    }
+
+    private string ExtrairCor(string linha)
+    {
+        var match = System.Text.RegularExpressions.Regex.Match(linha, @"#[0-9A-Fa-f]{6}");
+        return match.Success ? match.Value : "#2196F3";
+    }
+}
