@@ -25,6 +25,12 @@
                               Variant="Variant.Outlined"
                               Class="mb-4" />
 
+                <MudTextField T="string" Label="Nome do Resultado Desejado"
+                              @bind-Value="_pesquisa.NomeResultadoDesejado"
+                              Variant="Variant.Outlined"
+                              Class="mb-4"
+                              HelperText="Nome que aparecerá como referência de 100% no gráfico de resultados" />
+
                 @if (!IsEditing && _iaDisponivel)
                 {
                     <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-4">
@@ -48,13 +54,13 @@
                         }
                     </MudButton>
                 }
-                else if (!IsEditing && !_iaDisponivel)
-                {
-                    <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Class="mb-4">
-                        <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
-                        Geração por IA não disponível (configure a chave OpenAI na API)
-                    </MudAlert>
-                }
+                @* else if (!IsEditing && !_iaDisponivel) *@
+                @* { *@
+                @*     <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Class="mb-4"> *@
+                @*         <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" /> *@
+                @*         Geração por IA não disponível (configure a chave OpenAI na API) *@
+                @*     </MudAlert> *@
+                @* } *@
             </MudStack>
         </MudPaper>
 
@@ -171,15 +177,16 @@
     private MudForm _form = new();
     private bool _formIsValid;
     private PesquisaCrud _pesquisa = new();
-    private bool _iaDisponivel = false;
-    private bool _gerandoComIA = false;
+    private bool _iaDisponivel;
+    private bool _gerandoComIA;
 
     private bool IsEditing => PesquisaId.HasValue;
 
     protected override async Task OnInitializedAsync()
     {
         // Verificar se IA está disponível
-        _iaDisponivel = await IAService.EstaDisponivel();
+        //_iaDisponivel = await IAService.EstaDisponivel();
+        _iaDisponivel = false;
 
         if (IsEditing && PesquisaId.HasValue)
         {

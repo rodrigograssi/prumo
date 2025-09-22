@@ -7,6 +7,8 @@ public class Pesquisa: Entidade
     private List<GrupoQuestao> _gruposQuestoes = [];
     private List<RespostaPessoa> _respostas = [];
     public string Nome { get; private set; } = string.Empty;
+
+    public string NomeDoResultadoDesejado { get; set; } = "Resultado Desejado";
     public DateTime DataCriacao { get; init; } = DateTime.UtcNow;
     public IReadOnlyCollection<GrupoQuestao> GruposQuestoes => _gruposQuestoes; 
     public List<RespostaPessoa> RespostasPessoa => _respostas;
@@ -14,10 +16,11 @@ public class Pesquisa: Entidade
     
     protected Pesquisa(){}
 
-    public Pesquisa(string nome)
+    public Pesquisa(string nome, string nomeDoResultado = "Resultado Desejado")
     {
         Nome = nome;
         DataCriacao = DateTime.UtcNow;
+        NomeDoResultadoDesejado = nomeDoResultado;
     }
     
     public int ObterTotalQuestoes()
@@ -49,9 +52,10 @@ public class Pesquisa: Entidade
         }
     }
 
-    public void Alterar(string nome)
+    public void Alterar(string nome, string nomeDoResultadoDesejado = "Resultado Desejado")
     {
         Nome = nome;
+        NomeDoResultadoDesejado = nomeDoResultadoDesejado;
     }
 
     public void RemoveGrupo(GrupoQuestao grupo)

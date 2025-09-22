@@ -39,7 +39,12 @@ public class PesquisaXContexto : DbContext
                 .HasColumnName("nome")
                 .HasMaxLength(200)
                 .IsRequired();
-                
+
+            entity.Property(e => e.NomeDoResultadoDesejado)
+                .HasColumnName("nome_do_resultado_desejado")
+                .HasMaxLength(200)
+                .HasDefaultValue("Resultado Desejado");
+
             entity.Property(e => e.DataCriacao)
                 .HasColumnName("data_criacao")
                 .IsRequired();

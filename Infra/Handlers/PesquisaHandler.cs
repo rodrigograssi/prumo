@@ -10,7 +10,7 @@ public class PesquisaHandler(IPesquisaRepositorio repo): IPesquisaHandler
 {
     public async Task<RetornoPadrao<Pesquisa>> Criar(PesquisaCrud comando)
     {
-        var pesquisa = new Pesquisa(comando.Nome);
+        var pesquisa = new Pesquisa(comando.Nome, comando.NomeResultadoDesejado);
 
         foreach (var grupo in comando.GruposQuestoes)
         {
@@ -35,8 +35,8 @@ public class PesquisaHandler(IPesquisaRepositorio repo): IPesquisaHandler
         if(pesquisa == null)
             return new RetornoPadrao("Erro ao alterar a pequisa", "Pesquisa não localizada");
         
-        // Atualizar nome da pesquisa
-        pesquisa.Alterar(comando.Nome);
+        // Atualizar dados da pesquisa
+        pesquisa.Alterar(comando.Nome, comando.NomeResultadoDesejado);
 
         // Remover grupos que não existem mais no comando
         var idsGruposComando = new HashSet<int>(

@@ -13,6 +13,7 @@ public static class ConverteParaCrudExtension
             Id = pesquisa.Id,
             PublicId = pesquisa.PublicId,
             Nome = pesquisa.Nome,
+            NomeResultadoDesejado = pesquisa.NomeDoResultadoDesejado,
             DataCriacao = pesquisa.DataCriacao,
             GruposQuestoes = pesquisa.GruposQuestoes.Select(g => g.ConverteParaCrud()).ToList(),
             RespostasPessoa = pesquisa.RespostasPessoa.Select(g => g.ConverteParaCrud()).ToList()

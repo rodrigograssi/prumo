@@ -5,6 +5,7 @@ public class PesquisaCrud
     public int Id { get; set; }
     public Guid PublicId { get; set; }
     public string Nome { get; set; } = string.Empty;
+    public string NomeResultadoDesejado { get; set; } = "Resultado Desejado";
     public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
     public List<GrupoQuestaoCrud> GruposQuestoes { get; set; } = [];
     public List<RespostaPessoaCrud> RespostasPessoa { get; set; } = [];
