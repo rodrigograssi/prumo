@@ -3,6 +3,7 @@
 public class PesquisaResultadoView
 {
     public string Nome { get; set; }
+    public string NomeDoResultadoDesejado { get; set; }
     public List<CategoriaView> Categorias { get; set; } = [];
 }
 

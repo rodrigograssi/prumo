@@ -88,9 +88,20 @@ namespace PesquisaX.Infra.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("nome");
 
+                    b.Property<string>("NomeDoResultadoDesejado")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasDefaultValue("Resultado Desejado")
+                        .HasColumnName("nome_do_resultado_desejado");
+
                     b.Property<Guid>("PublicId")
                         .HasColumnType("uuid")
                         .HasColumnName("public_id");
+
+                    b.Property<string>("TokenCompartilhamento")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

@@ -1,14 +1,16 @@
 @page "/resultado/{PesquisaId:guid}/{PersonId:guid}"
 @page "/resultados/{PesquisaId:guid}"
+@using Microsoft.AspNetCore.Authorization
 @using PesquisaX.Shared.Views
 @using PesquisaX.Shared.Comandos
-@using Microsoft.JSInterop
 
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
-@inject HttpClient HttpClient
 @inject IJSRuntime JS
+
+@attribute [Authorize]
+
 
 @inject ApiControllerGenerico ApiController
 
@@ -55,7 +57,7 @@ else if (IsResultView && _personResult != null)
                     <MudItem xs="12" lg="@(_mostrarComparacao ? 6 : 8)">
                         <MudPaper Elevation="2" Class="pa-4">
                             <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-4" Color="Color.Primary">
-                                @(_mostrarComparacao ? "Situação Atual" : $"Resultado - {_personResult?.NomePessoa}")
+                                @(_mostrarComparacao ? $"Situação Atual: {_personResult?.NomePessoa.Split(' ')[0]}": $"Resultado - {_personResult?.NomePessoa}")
                             </MudText>
                             <RadarChart Title=""
                                         Labels="@_chartLabels"
@@ -71,7 +73,7 @@ else if (IsResultView && _personResult != null)
                 <MudItem xs="12" lg="6">
                     <MudPaper Elevation="2" Class="pa-4">
                         <MudText Typo="Typo.h6" Align="Align.Center" Class="mb-4" Color="Color.Success">
-                            Situação Ideal (100%)
+                            @( !string.IsNullOrEmpty(_pesquisa.NomeDoResultadoDesejado) ? _pesquisa.NomeDoResultadoDesejado : "Resultado Desejado -x")
                         </MudText>
                         <RadarChart Title=""
                                   Labels="@_chartLabels"
@@ -272,6 +274,7 @@ else
             }
 
             _personResult = retornoPessoa.Data;
+         
             var retornoPorcentagesn = await ApiController.GetAsync<List<MediaDeResultadosDosGruposView>>($"api/Pesquisas/{PesquisaId}/resultados/{PersonId}/media");
             if(retornoPorcentagesn is { Sucesso: true, Data: not null }) 
               _groupoPorcentagens = retornoPorcentagesn.Data;

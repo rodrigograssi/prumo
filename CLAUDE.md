@@ -149,3 +149,4 @@ Para migrar dados existentes do LocalStorage:
 - API testável via Swagger UI
 - Postman collection recomendada para testes automatizados
 - Unit tests pendentes para repositórios e controllers
+- Para o migration o project é a Api e a Migração está no Infra

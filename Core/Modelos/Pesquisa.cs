@@ -9,6 +9,7 @@ public class Pesquisa: Entidade
     public string Nome { get; private set; } = string.Empty;
 
     public string NomeDoResultadoDesejado { get; set; } = "Resultado Desejado";
+    public string? TokenCompartilhamento { get; private set; }
     public DateTime DataCriacao { get; init; } = DateTime.UtcNow;
     public IReadOnlyCollection<GrupoQuestao> GruposQuestoes => _gruposQuestoes; 
     public List<RespostaPessoa> RespostasPessoa => _respostas;
@@ -63,5 +64,16 @@ public class Pesquisa: Entidade
         var grupoExistente = GruposQuestoes.FirstOrDefault(g => g.Id == grupo.Id);
         if (grupoExistente != null)
             _gruposQuestoes.Remove(grupoExistente);
+    }
+
+    public string GerarTokenCompartilhamento()
+    {
+        TokenCompartilhamento = Guid.NewGuid().ToString("N")[..16];
+        return TokenCompartilhamento;
+    }
+
+    public void RemoverCompartilhamento()
+    {
+        TokenCompartilhamento = null;
     }
 }

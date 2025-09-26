@@ -1,6 +1,9 @@
 @page "/changelog"
+@using Microsoft.AspNetCore.Authorization
 @using PesquisaX.Shared.Version
 @inject ISnackbar Snackbar
+
+@attribute [Authorize]
 
 <PageTitle>Histórico de Mudanças - PesquisaX</PageTitle>
 

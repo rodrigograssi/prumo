@@ -1,5 +1,6 @@
 @page "/primeiro-usuario"
 @layout AuthLayout
+@using Microsoft.AspNetCore.Authorization
 @using PesquisaX.Shared.Comandos
 @using PesquisaX.Web.Dto
 @inject ISnackbar Snackbar
@@ -7,6 +8,8 @@
 @inject IAuthService AuthService
 @inject ApiController<bool> ApiExisteUsuario
 @inject ApiController<dynamic> ApiPost
+
+@attribute [AllowAnonymous]
 
 <PageTitle>Primeiro Acesso - PesquisaX</PageTitle>
 

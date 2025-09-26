@@ -9,6 +9,7 @@
 @inject IServicoTema ServicoTema
 @inject NavigationManager Navigation
 @inject ApiUsuarioController ApiUsuarioController
+@inject AutenticacaoController AutenticacaoController
 
 @implements IDisposable
 
@@ -18,8 +19,8 @@
     <MudAppBar Elevation="1">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
-        <MudText Typo="Typo.h6">Pesquisa X</MudText>
-        <MudSpacer />
+        @* <MudText Typo="Typo.h6">Pesquisa X</MudText> *@
+        @* <MudSpacer /> *@
         <MudTooltip Text="@(ServicoTema.EModoEscuro ? "Modo Claro" : "Modo Escuro")">
             <MudIconButton Icon="@(ServicoTema.EModoEscuro ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
                          Color="Color.Inherit" 
@@ -139,6 +140,7 @@
     {
         await ApiUsuarioController.LogoutAsync();
         _usuarioAtual = null;
+        AutenticacaoController.Carregar();
         Navigation.NavigateTo("/", replace: true);
     }
 

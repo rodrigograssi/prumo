@@ -1,6 +1,7 @@
 @page "/criar-pesquisa"
 @page "/editar-pesquisa/{PesquisaId:guid}"
 
+@using Microsoft.AspNetCore.Authorization
 @using PesquisaX.Shared.Comandos
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
@@ -8,6 +9,7 @@
 @inject IAService IAService
 @inject IDialogService DialogService
 
+@attribute [Authorize]
 
 <PageTitle>@(IsEditing ? "Editar Pesquisa" : "Criar Nova Pesquisa")</PageTitle>
 

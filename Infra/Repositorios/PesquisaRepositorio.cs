@@ -241,4 +241,14 @@ public class PesquisaRepositorio(PesquisaXContexto db): IPesquisaRepositorio
         db.ResultadosPessoas.Remove(resultado);
         await db.SaveChangesAsync();
     }
+
+    public async Task<Pesquisa?> ObterPesquisaPorToken(string token)
+    {
+        var pesquisa = await db.Pesquisas
+            .Include(p => p.GruposQuestoes)
+                .ThenInclude(g => g.Questoes)
+            .FirstOrDefaultAsync(p => p.TokenCompartilhamento == token);
+
+        return pesquisa;
+    }
 }

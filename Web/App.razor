@@ -2,7 +2,7 @@
 @using ControleDeIp.FrontEnd.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using PesquisaX.Shared.Views
-@using PesquisaX.Web.Dto
+@using Microsoft.AspNetCore.Authorization
 
 @inject IServicoTema ServicoTema
 @inject NavigationManager Navigation
@@ -20,19 +20,21 @@
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-                <Authorizing>
-                    <h5>Autorizando o usuário...</h5>
-                </Authorizing>
-                <NotAuthorized>
-                    @code {
-                        protected override void OnInitialized()
-                        {
-                            Navigation.NavigateTo("/");
-                        }
-                    }
-                </NotAuthorized>
-            </AuthorizeRouteView>
+            @if (routeData.PageType.GetCustomAttributes(typeof(AllowAnonymousAttribute), true).Any())
+            {
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(PublicLayout)" />
+            }
+            else
+            {
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                    <Authorizing>
+                        <h5>Autorizando o usuário...</h5>
+                    </Authorizing>
+                    <NotAuthorized>
+                        <RedirecionaParaPaginaIncial />
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+            }
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />
         </Found>
         <NotFound>
@@ -47,6 +49,7 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
 @code {
     private MudTheme _theme = new MudTheme()
     {

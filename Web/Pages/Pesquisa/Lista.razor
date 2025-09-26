@@ -1,12 +1,16 @@
 @page "/pesquisas"
+@using Microsoft.AspNetCore.Authorization
 @using PesquisaX.Shared.Views
 
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 
+
 @inject ApiControllerGenerico ApiController
 @inject HttpClient HttpClient
+
+@attribute [Authorize]
 
 <PageTitle>Lista de Pesquisas</PageTitle>
 
@@ -90,6 +94,13 @@
                                                Disabled="@(pesquisa.TotalDeRespostas == 0)">
                                         Resultados
                                     </MudButton>
+                                    <MudButton StartIcon="@Icons.Material.Filled.Share" Color="Color.Success"
+                                               Variant="Variant.Text" Size="Size.Small" FullWidth="true"
+                                               OnClick="() => OpenSharedDialog(pesquisa.PublicId)">
+                                        Compartilhar
+                                    </MudButton>
+                                </MudStack>
+                                <MudStack Row Spacing="1">
                                     <MudButton StartIcon="@Icons.Material.Filled.Download" Color="Color.Warning"
                                                Variant="Variant.Text" Size="Size.Small" FullWidth="true"
                                                OnClick="() => ExportarPesquisa(pesquisa.PublicId)">
@@ -172,6 +183,9 @@
     private bool _showImportDialog = false;
     private bool _importando = false;
     private IBrowserFile? _selectedFile;
+
+    // Compartilhamento
+  
     
 
     protected override async Task OnInitializedAsync()
@@ -277,6 +291,22 @@
             StateHasChanged();
         }
     }
+
+    private async Task OpenSharedDialog(Guid pesquisaId)
+    {
+        var parametros = new DialogParameters
+        {
+            ["PesquisaId"] = pesquisaId
+        };
+        var options = new DialogOptions{ CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<DialogPesquisaShared>("Compartilhar Pesquisa", parametros, options);
+        var result = await dialog.Result;
+
+        if ( result is { Canceled: false })
+        {
+            await LoadPesquisas();
+        }
+    }
     
     private async Task OpenImportDialog()
     {
@@ -289,5 +319,9 @@
             await LoadPesquisas();
         }
     }
+
+   
+
+   
 }
 

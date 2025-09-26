@@ -19,8 +19,9 @@ namespace PesquisaX.Api.Controllers;
 [Route("api/[controller]")]
 [Authorize]
 public class PesquisasController(IPesquisaRepositorio repo,
-    ILogger<PesquisasController> logger, 
-    IPesquisaHandler handler) : ControllerBase
+    ILogger<PesquisasController> logger,
+    IPesquisaHandler handler,
+    IConfiguration configuration) : ControllerBase
 {
     /// <summary>
     /// Obtém o ‘ID’ do utilizador atual autenticado
@@ -211,6 +212,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
         var view = new PesquisaResultadoView()
         {
             Nome = pesquisa.Nome,
+            NomeDoResultadoDesejado = pesquisa.NomeDoResultadoDesejado,
             Categorias = categorias,
         };
         
@@ -533,6 +535,123 @@ public class PesquisasController(IPesquisaRepositorio repo,
             logger.LogError(ex, "Erro ao gerar PDF do resultado para pesquisa {PesquisaId}, pessoa {PessoaId}", 
                 pesquisaId, pessoaId);
             return StatusCode(500, new RetornoPadrao<object>("Erro interno do servidor"));
+        }
+    }
+
+    /// <summary>
+    /// Gera ou obtém o link de compartilhamento da pesquisa
+    /// </summary>
+    [HttpPost("{id:guid}/compartilhar")]
+    public async Task<ActionResult> GerarLinkCompartilhamento(Guid id)
+    {
+        try
+        {
+            var pesquisa = await repo.SelecionaAsync(id);
+            if (pesquisa == null)
+                return NotFound(new RetornoPadrao("Pesquisa não encontrada"));
+
+            var usuarioId = ObterUsuarioIdAtual();
+            var nomeUsuario = ObterNomeUsuarioAtual();
+
+            string token;
+            if (string.IsNullOrEmpty(pesquisa.TokenCompartilhamento))
+            {
+                token = pesquisa.GerarTokenCompartilhamento();
+                await repo.AlterarAsync(pesquisa);
+
+                logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) gerou link de compartilhamento para pesquisa: {NomePesquisa}",
+                    nomeUsuario, usuarioId, pesquisa.Nome);
+            }
+            else
+            {
+                token = pesquisa.TokenCompartilhamento;
+            }
+
+            var webAppBaseUrl = configuration["WebApp:BaseUrl"] ?? $"{Request.Scheme}://{Request.Host}";
+            var linkCompartilhamento = $"{webAppBaseUrl}/compartilhado/{token}";
+
+            return Ok(new RetornoPadrao<object>(true, "Link gerado com sucesso",
+                new { Token = token, Link = linkCompartilhamento }));
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao gerar link de compartilhamento para pesquisa {Id}", id);
+            return StatusCode(500, new RetornoPadrao("Erro interno do servidor"));
+        }
+    }
+
+    /// <summary>
+    /// Remove o compartilhamento da pesquisa
+    /// </summary>
+    [HttpDelete("{id:guid}/compartilhar")]
+    public async Task<ActionResult> RemoverCompartilhamento(Guid id)
+    {
+        try
+        {
+            var pesquisa = await repo.SelecionaAsync(id);
+            if (pesquisa == null)
+                return NotFound(new RetornoPadrao("Pesquisa não encontrada"));
+
+            var usuarioId = ObterUsuarioIdAtual();
+            var nomeUsuario = ObterNomeUsuarioAtual();
+
+            pesquisa.RemoverCompartilhamento();
+            await repo.AlterarAsync(pesquisa);
+
+            logger.LogInformation("Usuário {NomeUsuario} ({UsuarioId}) removeu compartilhamento da pesquisa: {NomePesquisa}",
+                nomeUsuario, usuarioId, pesquisa.Nome);
+
+            return Ok(new RetornoPadrao(true, "Compartilhamento removido com sucesso"));
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao remover compartilhamento da pesquisa {Id}", id);
+            return StatusCode(500, new RetornoPadrao("Erro interno do servidor"));
+        }
+    }
+
+    /// <summary>
+    /// Acesso público à pesquisa através do token de compartilhamento
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("compartilhado/{token}")]
+    public async Task<ActionResult> ObterPesquisaCompartilhada(string token)
+    {
+        try
+        {
+            var pesquisa = await repo.ObterPesquisaPorToken(token);
+            if (pesquisa == null)
+                return NotFound(new RetornoPadrao("Link de compartilhamento não encontrado ou expirado"));
+
+            // Retornar apenas as informações necessárias para visualização
+            var pesquisaCompartilhada = new
+            {
+                Id = pesquisa.PublicId,
+                Nome = pesquisa.Nome,
+                NomeDoResultadoDesejado = pesquisa.NomeDoResultadoDesejado,
+                DataCriacao = pesquisa.DataCriacao,
+                GruposQuestoes = pesquisa.GruposQuestoes.Select(g => new
+                {
+                    Nome = g.Nome,
+                    Categoria = g.Categoria,
+                    Cor = g.Cor,
+                    Questoes = g.Questoes.Select(q => new
+                    {
+                        Texto = q.Texto,
+                        EInvertida = q.EInvertida
+                    }).ToList()
+                }).ToList()
+            };
+
+            logger.LogInformation("Acesso público à pesquisa compartilhada: {NomePesquisa} via token {Token}",
+                pesquisa.Nome, token);
+
+            return Ok(new RetornoPadrao<object>(true, "", pesquisaCompartilhada));
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao acessar pesquisa compartilhada com token {Token}", token);
+            return StatusCode(500, new RetornoPadrao("Erro interno do servidor"));
         }
     }
 

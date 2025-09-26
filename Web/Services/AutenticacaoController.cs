@@ -10,7 +10,7 @@ namespace PesquisaX.Web.Services
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            // Verificar se já tem usuário em memória
+            // Verificar se já tem utilizador em memória
             if (ConfiguracoesWeb.UsuarioLogado != null && !string.IsNullOrEmpty(ConfiguracoesWeb.Token))
             {
                 var claims = new List<Claim>
@@ -55,8 +55,9 @@ namespace PesquisaX.Web.Services
                     await apiUsuario.LogoutAsync();
                 }
             }
-
-            // Não autenticado
+            
+            // Não autenticado -- Força limpar o cache
+            await apiUsuario.LogoutAsync();
             return new AuthenticationState(new ClaimsPrincipal());
         }
 

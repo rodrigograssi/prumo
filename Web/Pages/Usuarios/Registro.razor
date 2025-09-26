@@ -1,12 +1,14 @@
 @page "/registro"
 @layout AuthLayout
+@using Microsoft.AspNetCore.Authorization
 @using PesquisaX.Shared.Comandos
-@using PesquisaX.Shared.DTO.Requestes
 @using PesquisaX.Web.Dto
 
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject ApiController<dynamic> ApiController
+
+@attribute [Authorize]
 
 <PageTitle>Registrar - PesquisaX</PageTitle>
 

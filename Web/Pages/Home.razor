@@ -1,11 +1,14 @@
 ﻿@page "/home"
 
 
+@using Microsoft.AspNetCore.Authorization
 @using PesquisaX.Shared.Views
 @inject ISnackbar Snackbar
 
 @* @inject IDialogService DialogService *@
 @inject ApiController<List<PesquisaView>> ApiControle
+
+@attribute [Authorize]
 
 <PageTitle>Sistema de Pesquisas</PageTitle>
 

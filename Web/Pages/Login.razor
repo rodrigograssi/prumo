@@ -127,10 +127,12 @@
             if (retorno.Sucesso)
             {
                 ConfiguracoesWeb.Token = retorno.Data?.Token ?? "";
-                AuthController.Carregar();
+                ConfiguracoesWeb.UsuarioLogado = retorno.Data;
                 
                 if (_loginRequest.ManterConectado)
                     await Js.InvokeVoidAsync("localStorage.setItem", ConfiguracoesWeb.LocalStoragTokeneKey, retorno.Data?.Token);
+                
+                AuthController.Carregar();
                 
                 Snackbar.Add(retorno.Mensagem, Severity.Success);
                 Navigation.NavigateTo("/home", replace: true);

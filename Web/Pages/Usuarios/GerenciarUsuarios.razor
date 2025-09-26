@@ -1,10 +1,12 @@
 @page "/usuarios"
+@using Microsoft.AspNetCore.Authorization
 @using PesquisaX.Shared.Views
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
 @inject ApiControllerGenerico ApiController
 
+@attribute [Authorize]
 
 <PageTitle>Gerenciar Usuários - PesquisaX</PageTitle>
 

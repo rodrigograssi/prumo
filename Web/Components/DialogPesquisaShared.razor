@@ -1,0 +1,155 @@
+@inject IJSRuntime Js
+@inject ISnackbar Snackbar
+@inject ApiControllerGenerico ApiController
+@using System.Text.Json
+
+   <MudDialog>    
+        <DialogContent>
+            <MudText Typo="Typo.h6" Class="mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.Share" Class="mr-2"/>
+                Compartilhar Pesquisa
+            </MudText>
+            <MudText Typo="Typo.body2" Class="mb-4">
+                Compartilhe esta pesquisa com outras pessoas através de um link público.
+                Qualquer pessoa com o link poderá visualizar e aplicar a pesquisa.
+            </MudText>
+
+            @if (_isGeneratingLink)
+            {
+                <div class="d-flex align-center justify-center pa-4">
+                    <MudProgressCircular Indeterminate="true"/>
+                    <MudText Class="ml-3">Gerando link...</MudText>
+                </div>
+            }
+            else if (!string.IsNullOrEmpty(_shareLink))
+            {
+                <MudTextField @bind-Value="_shareLink" Label="Link de Compartilhamento"
+                              ReadOnly="true" Variant="Variant.Outlined" Class="mb-3"
+                              Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.ContentCopy"
+                              OnAdornmentClick="CopiarLink" AdornmentAriaLabel="Copiar link"/>
+
+                <MudAlert Severity="Severity.Info" Class="mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2"/>
+                    Este link permite acesso público à pesquisa. Para revogar o acesso, clique em "Remover Compartilhamento".
+                </MudAlert>
+
+                <MudStack Row Spacing="2" Class="mt-3">
+                    <MudButton StartIcon="@Icons.Material.Filled.ContentCopy" Color="Color.Primary" Variant="Variant.Outlined" OnClick="CopiarLink">
+                        Copiar Link
+                    </MudButton>
+                    <MudButton StartIcon="@Icons.Material.Filled.LinkOff" Color="Color.Error" Variant="Variant.Text" OnClick="RemoverCompartilhamento">
+                        Remover Compartilhamento
+                    </MudButton>
+                </MudStack>
+            }
+            else
+            {
+                <MudStack Row Spacing="2" Class="mt-3">
+                    <MudButton StartIcon="@Icons.Material.Filled.Share" Color="Color.Primary" Variant="Variant.Outlined" OnClick="CompartilharPesquisa">
+                        Criar Link
+                    </MudButton>
+                </MudStack>
+            }
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancelar">Fechar</MudButton>
+        </DialogActions>
+    </MudDialog>
+
+   @code {
+       
+       [CascadingParameter] public IMudDialogInstance  MudDialog { get; set; } = default!;
+       [Parameter] public Guid PesquisaId { get; set; } 
+
+    private bool _isGeneratingLink;
+    private string? _shareLink;
+    
+    private void Cancelar() => MudDialog.Cancel();
+    
+    
+    private async Task CopiarLink()
+    {
+        if (string.IsNullOrEmpty(_shareLink)) return;
+
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", _shareLink);
+            Snackbar.Add("Link copiado para a área de transferência!", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("Não foi possível copiar o link automaticamente. Copie manualmente.", Severity.Warning);
+        }
+    }
+
+    private async Task RemoverCompartilhamento()
+    {
+        try
+        {
+            var retorno = await ApiController.DeleteAsync($"/api/Pesquisas", PesquisaId.ToString() + "/compartilhar");
+
+            if (retorno.Sucesso)
+            {
+                Snackbar.Add("Compartilhamento removido com sucesso!", Severity.Success);
+                _shareLink = null;
+            }
+            else
+            {
+                Snackbar.Add($"Erro ao remover compartilhamento: {retorno.Mensagem}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao remover compartilhamento: {ex.Message}", Severity.Error);
+        }
+    }
+    
+    private async Task CompartilharPesquisa()
+    {
+        _isGeneratingLink = true;
+        _shareLink = null;
+
+        StateHasChanged();
+
+        try
+        {
+            var retorno = await ApiController.PostAsync<object>(new { }, $"/api/Pesquisas/{PesquisaId.ToString()}/compartilhar");
+
+            if (retorno.Sucesso && retorno.Data != null)
+            {
+                // Debug - mostrar o que foi recebido
+                var jsonString = retorno.Data.ToString();
+                Snackbar.Add($"Debug - Dados recebidos: {jsonString}", Severity.Info);
+
+                // Extrair o link da resposta - tenta tanto "link" quanto "Link"
+                using (var document = JsonDocument.Parse(jsonString!))
+                {
+                    var root = document.RootElement;
+                    if (root.TryGetProperty("link", out var linkElement) ||
+                        root.TryGetProperty("Link", out linkElement))
+                    {
+                        _shareLink = linkElement.GetString();
+                        Snackbar.Add($"Link extraído: {_shareLink}", Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add("Propriedade 'link' ou 'Link' não encontrada na resposta", Severity.Warning);
+                    }
+                }
+            }
+            else
+            {
+                Snackbar.Add($"Erro ao gerar link: {retorno.Mensagem}", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao gerar link de compartilhamento: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isGeneratingLink = false;
+            StateHasChanged();
+        }
+    }
+}

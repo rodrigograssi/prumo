@@ -1,6 +1,4 @@
 using PesquisaX.Shared.Comandos;
-using PesquisaX.Shared.DTO;
-using System.Text.Json;
 
 namespace PesquisaX.Web.Services;
 
@@ -10,8 +8,8 @@ public class IAService(ApiControllerGenerico apiController)
     {
         try
         {
-            var response = await apiController.GetAsync<bool>("ia/disponivel");
-            return response?.Sucesso == true && response.Data;
+            var response = await apiController.GetAsync("api/IA/disponivel");
+            return response?.Sucesso ?? false;
         }
         catch
         {
@@ -23,7 +21,7 @@ public class IAService(ApiControllerGenerico apiController)
     {
         try
         {
-            var response = await apiController.PostAsync(comando, "ia/gerar-perguntas");
+            var response = await apiController.PostAsync(comando, "api/IA/gerar-perguntas");
             return response?.Sucesso == true ? response.Notificacoes?.FirstOrDefault() : null;
         }
         catch
@@ -36,7 +34,7 @@ public class IAService(ApiControllerGenerico apiController)
     {
         try
         {
-            var response = await apiController.PostAsync(comando, "ia/melhorar-pesquisa");
+            var response = await apiController.PostAsync(comando, "api/IA/melhorar-pesquisa");
             return response?.Sucesso == true ? response.Notificacoes?.FirstOrDefault() : null;
         }
         catch
@@ -49,7 +47,7 @@ public class IAService(ApiControllerGenerico apiController)
     {
         try
         {
-            var response = await apiController.PostAsync(comando, "ia/sugerir-pesquisa");
+            var response = await apiController.PostAsync(comando, "api/IA/sugerir-pesquisa");
             return response?.Sucesso == true ? response.Notificacoes?.FirstOrDefault() : null;
         }
         catch

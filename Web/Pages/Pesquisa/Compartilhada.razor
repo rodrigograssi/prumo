@@ -1,0 +1,249 @@
+@page "/compartilhado/{token}"
+@layout PublicLayout
+@using PesquisaX.Shared.DTO
+@using System.Text.Json
+@using Microsoft.AspNetCore.Authorization
+
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject ApiControllerGenerico ApiController
+@inject HttpClient HttpClient
+
+@attribute [AllowAnonymous]
+
+<PageTitle>@(_pesquisaData?.Nome ?? "Pesquisa Compartilhada")</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    @if (_loading)
+    {
+        <div class="d-flex justify-center align-center" style="height: 50vh;">
+            <MudProgressCircular Indeterminate="true" Size="Size.Large" />
+            <MudText Class="ml-3">Carregando pesquisa...</MudText>
+        </div>
+    }
+    else if (_pesquisaData == null)
+    {
+        <MudPaper Elevation="2" Class="pa-8 text-center">
+            <MudIcon Icon="Icons.Material.Filled.ErrorOutline" Size="Size.Large" Color="Color.Error" Class="mb-4" />
+            <MudText Typo="Typo.h5" Color="Color.Error" Class="mb-2">
+                Link não encontrado
+            </MudText>
+            <MudText Typo="Typo.body1" Class="mb-4">
+                O link de compartilhamento não existe ou foi removido pelo proprietário da pesquisa.
+            </MudText>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Refresh"
+                       OnClick="RecarregarPagina">
+                Tentar Novamente
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <!-- Cabeçalho da Pesquisa -->
+        <MudPaper Elevation="2" Class="pa-4 mb-4">
+            <MudStack>
+                <div class="d-flex align-center justify-space-between">
+                    <div>
+                        <MudText Typo="Typo.h4" Class="mb-2">@_pesquisaData.Nome</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            <MudIcon Icon="@Icons.Material.Filled.Share" Class="mr-1" />
+                            Pesquisa Compartilhada • @_pesquisaData.GruposQuestoes.Count() grupos • @_pesquisaData.GruposQuestoes.Sum(g => g.Questoes.Count()) questões
+                        </MudText>
+                    </div>
+                    @* <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" *@
+                    @*            StartIcon="@Icons.Material.Filled.PlayArrow" *@
+                    @*            OnClick="IniciarPesquisa"> *@
+                    @*     Responder Pesquisa *@
+                    @* </MudButton> *@
+                </div>
+            </MudStack>
+        </MudPaper>
+
+        <!-- Informações Básicas -->
+        <MudPaper Elevation="1" Class="pa-4 mb-4">
+            <MudStack>
+                <MudText Typo="Typo.h6" Class="mb-3">Informações da Pesquisa</MudText>
+
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Nome da Pesquisa</MudText>
+                        <MudText Typo="Typo.body1" Class="mb-3">@_pesquisaData.Nome</MudText>
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Nome do Resultado Desejado</MudText>
+                        <MudText Typo="Typo.body1" Class="mb-3">@_pesquisaData.NomeDoResultadoDesejado</MudText>
+                    </MudItem>
+                </MudGrid>
+           
+            </MudStack>
+        </MudPaper>
+
+        <!-- Grupos e Questões -->
+        @foreach (var grupo in _pesquisaData.GruposQuestoes)
+        {
+            <MudPaper Elevation="2" Class="pa-4 mb-4" Style="@($"background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%); border-left: 4px solid {grupo.Cor};")">
+                <MudStack>
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.h6">
+                            <MudIcon Icon="@Icons.Material.Filled.Folder" Class="mr-2" Style="@($"color: {grupo.Cor};")" />
+                            Grupo de Perguntas
+                        </MudText>
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small">
+                            @grupo.Questoes.Count() questões
+                        </MudChip>
+                    </MudStack>
+
+                    <MudGrid>
+                        <MudItem xs="12" md="4">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Nome do Grupo</MudText>
+                            <MudText Typo="Typo.body1">@grupo.Nome</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Categoria (para gráfico)</MudText>
+                            <MudText Typo="Typo.body1">@grupo.Categoria</MudText>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Cor do Grupo</MudText>
+                            <div class="d-flex align-center">
+                                <div style="width: 20px; height: 20px; background-color: @grupo.Cor; border-radius: 4px; margin-right: 8px; border: 1px solid #ddd;"></div>
+                                <MudText Typo="Typo.body2">@grupo.Cor</MudText>
+                            </div>
+                        </MudItem>
+                    </MudGrid>
+
+                    <MudDivider Class="my-3" />
+
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Quiz" Class="mr-1" />
+                        Perguntas:
+                    </MudText>
+
+                    @foreach (var questao in grupo.Questoes)
+                    {
+                        <MudPaper Elevation="0" Class="pa-3 mb-2" Style="border: 1px solid #e0e0e0; border-radius: 8px; background: rgba(255,255,255,0.7);">
+                            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <div class="d-flex align-center" style="flex-grow: 1;">
+                                    <MudText Typo="Typo.body1" Style="flex-grow: 1;">@questao.Texto</MudText>
+                                </div>
+
+                                @if (questao.EInvertida)
+                                {
+                                    <MudChip T="string" Color="Color.Warning" Size="Size.Small" Icon="@Icons.Material.Filled.SwapVert">
+                                        Escala Invertida
+                                    </MudChip>
+                                }
+                            </MudStack>
+
+                            @if (questao.EInvertida)
+                            {
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                    Nesta pergunta, 10 = ruim e 0 = bom
+                                </MudText>
+                            }
+                        </MudPaper>
+                    }
+                </MudStack>
+            </MudPaper>
+        }
+
+        @* <!-- Ações --> *@
+        @* <MudPaper Elevation="1" Class="pa-4 text-center"> *@
+        @*     <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" *@
+        @*                StartIcon="@Icons.Material.Filled.PlayArrow" *@
+        @*                OnClick="IniciarPesquisa"> *@
+        @*         Responder esta Pesquisa *@
+        @*     </MudButton> *@
+        @* </MudPaper> *@
+    }
+</MudContainer>
+
+@code {
+    [Parameter] public string Token { get; set; } = "";
+
+    private bool _loading = true;
+    private PesquisaCompartilhadaDto? _pesquisaData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CarregarPesquisaCompartilhada();
+    }
+
+    private async Task CarregarPesquisaCompartilhada()
+    {
+        try
+        {
+            var baseUrl = HttpClient.BaseAddress?.ToString() ?? "https://localhost:7001/";
+            var url = $"{baseUrl.TrimEnd('/')}/api/Pesquisas/compartilhado/{Token}";
+
+            var response = await HttpClient.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonContent = await response.Content.ReadAsStringAsync();
+                var retorno = JsonSerializer.Deserialize<RetornoPadrao<JsonElement>>(jsonContent, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (retorno?.Sucesso == true)
+                {
+                    var pesquisaJson = retorno.Data.GetRawText();
+                    _pesquisaData = JsonSerializer.Deserialize<PesquisaCompartilhadaDto>(pesquisaJson, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Erro ao carregar pesquisa: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void IniciarPesquisa()
+    {
+        if (_pesquisaData != null)
+        {
+            Navigation.NavigateTo($"/aplicar-pesquisa/{_pesquisaData.Id}");
+        }
+    }
+
+    private async Task RecarregarPagina()
+    {
+        _loading = true;
+        _pesquisaData = null;
+        StateHasChanged();
+
+        await CarregarPesquisaCompartilhada();
+    }
+
+    // Classe auxiliar para deserialização
+    public class PesquisaCompartilhadaDto
+    {
+        public Guid Id { get; set; }
+        public string Nome { get; set; } = "";
+        public string NomeDoResultadoDesejado { get; set; } = "";
+        public DateTime DataCriacao { get; set; }
+        public List<GrupoQuestaoDto> GruposQuestoes { get; set; } = new();
+    }
+
+    public class GrupoQuestaoDto
+    {
+        public string Nome { get; set; } = "";
+        public string Categoria { get; set; } = "";
+        public string Cor { get; set; } = "";
+        public List<QuestaoDto> Questoes { get; set; } = new();
+    }
+
+    public class QuestaoDto
+    {
+        public string Texto { get; set; } = "";
+        public bool EInvertida { get; set; }
+    }
+}

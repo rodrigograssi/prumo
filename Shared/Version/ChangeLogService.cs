@@ -14,8 +14,34 @@ public static class ChangeLogService
         {
             new VersionChanges
             {
+                Version = "1.0.3",
+                ReleaseDate = new DateTime(2025, 01, 21),
+                Changes = new List<ChangeLogItem>()
+                {
+                    new ()
+                    {
+                        Type = ChangeType.Feature,
+                        Description = "Tornado Personalizavel o título do gráfico 100% (desejável)",
+                        Author = "Rodrigo",
+                    },
+                    new ()
+                    {
+                        Type = ChangeType.Feature,
+                        Description = "O Gráfico com o Resultado exibe o primeiro nome da pessoa",
+                        Author = "Rodrigo",
+                    },
+                    new()
+                    {
+                        Type = ChangeType.Fix,
+                        Description = "Corrigido o login com token",
+                        Author = "Rodrigo",
+                    }
+                }
+            },
+            new VersionChanges
+            {
                 Version = "1.0.2",
-                ReleaseDate = DateTime.Now,
+                ReleaseDate = new DateTime(2025, 09, 15),
                 Changes = new List<ChangeLogItem>
                 {
                     new ChangeLogItem
@@ -54,7 +80,7 @@ public static class ChangeLogService
             new VersionChanges
             {
                 Version = "1.0.1",
-                ReleaseDate = DateTime.Now,
+                ReleaseDate = new DateTime(2025, 09, 10),
                 Changes = new List<ChangeLogItem>
                 {
                     new ChangeLogItem
@@ -82,7 +108,7 @@ public static class ChangeLogService
             new VersionChanges
             {
                 Version = "1.0.0",
-                ReleaseDate = new DateTime(2025, 01, 06),
+                ReleaseDate = new DateTime(2025, 09, 01),
                 Changes = new List<ChangeLogItem>
                 {
                     new ChangeLogItem

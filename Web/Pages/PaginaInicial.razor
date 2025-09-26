@@ -1,7 +1,10 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @layout AuthLayout
 @inject NavigationManager Navigation
+
+@attribute [AllowAnonymous]
 
 <PageTitle>PesquisaX - Sistema de Pesquisas</PageTitle>
 

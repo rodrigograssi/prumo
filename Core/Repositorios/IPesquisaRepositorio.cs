@@ -30,4 +30,5 @@ public interface IPesquisaRepositorio
     Task<List<MediaDeResultadosDosGruposView>> ObtemMediaDosResultadosPorGrupoView(Guid personId);
     Task<List<Questao>> ObterQuestoes(Guid pesquisaId);
     Task ExcluirResultadoAsync(RespostaPessoa resultado);
+    Task<Pesquisa?> ObterPesquisaPorToken(string token);
 }
