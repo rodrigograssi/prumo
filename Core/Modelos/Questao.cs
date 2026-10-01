@@ -1,4 +1,4 @@
-namespace PesquisaX.Core.Modelos;
+namespace Prumo.Core.Modelos;
 
 public class Questao:Entidade
 {

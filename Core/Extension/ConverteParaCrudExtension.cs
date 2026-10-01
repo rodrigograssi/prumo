@@ -1,7 +1,7 @@
-﻿using PesquisaX.Core.Modelos;
-using PesquisaX.Shared.Comandos;
+﻿using Prumo.Core.Modelos;
+using Prumo.Shared.Comandos;
 
-namespace PesquisaX.Core.Extension;
+namespace Prumo.Core.Extension;
 
 public static class ConverteParaCrudExtension
 {

@@ -1,7 +1,7 @@
 ﻿
-using PesquisaX.Shared.Views;
+using Prumo.Shared.Views;
 
-namespace PesquisaX.Web.Dto
+namespace Prumo.Web.Dto
 {
     public class Autenticacao
     {

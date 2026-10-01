@@ -1,7 +1,7 @@
-using PesquisaX.Shared.Comandos;
-using PesquisaX.Shared.Views;
+using Prumo.Shared.Comandos;
+using Prumo.Shared.Views;
 
-namespace PesquisaX.Web.Servicos;
+namespace Prumo.Web.Servicos;
 
 public interface IServicoPesquisa
 {

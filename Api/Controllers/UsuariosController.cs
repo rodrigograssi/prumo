@@ -1,18 +1,18 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PesquisaX.Core.Repositorios;
-using PesquisaX.Core;
+using Prumo.Core.Repositorios;
+using Prumo.Core;
 using BCrypt.Net;
 using Microsoft.Net.Http.Headers;
-using PesquisaX.Core.Extension;
-using PesquisaX.Core.Interfaces;
-using PesquisaX.Shared.Comandos;
-using PesquisaX.Shared.DTO;
-using PesquisaX.Shared.DTO.Requestes;
-using PesquisaX.Shared.DTO.Responses;
-using PesquisaX.Shared.Views;
+using Prumo.Core.Extension;
+using Prumo.Core.Interfaces;
+using Prumo.Shared.Comandos;
+using Prumo.Shared.DTO;
+using Prumo.Shared.DTO.Requestes;
+using Prumo.Shared.DTO.Responses;
+using Prumo.Shared.Views;
 
-namespace PesquisaX.Api.Controllers;
+namespace Prumo.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

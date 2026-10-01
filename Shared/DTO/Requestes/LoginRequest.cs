@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PesquisaX.Shared.DTO.Requestes;
+namespace Prumo.Shared.DTO.Requestes;
 
 public class LoginRequest
 {

@@ -1,11 +1,11 @@
 @page "/changelog"
 @using Microsoft.AspNetCore.Authorization
-@using PesquisaX.Shared.Version
+@using Prumo.Shared.Version
 @inject ISnackbar Snackbar
 
 @attribute [Authorize]
 
-<PageTitle>Histórico de Mudanças - PesquisaX</PageTitle>
+<PageTitle>Histórico de Mudanças - Prumo</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large">
     <!-- Header -->
@@ -17,7 +17,7 @@
                     Histórico de Mudanças
                 </MudText>
                 <MudText Typo="Typo.body1" Color="Color.Secondary">
-                    Acompanhe todas as novidades e melhorias do PesquisaX
+                    Acompanhe todas as novidades e melhorias do Prumo
                 </MudText>
             </MudStack>
             <MudChip T="string" 

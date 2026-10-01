@@ -1,6 +1,6 @@
-using PesquisaX.Core;
+using Prumo.Core;
 
-namespace PesquisaX.Core.Repositorios;
+namespace Prumo.Core.Repositorios;
 
 public interface IRepositorioUsuario : IRepositorioBase<Usuario>
 {

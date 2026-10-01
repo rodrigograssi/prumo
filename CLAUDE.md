@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Sistema completo para criação e aplicação de pesquisas personalizadas com visualização em radar charts. Migrado para arquitetura API + Blazor WebAssembly com persistência em PostgreSQL.
+Prumo é um sistema de pesquisas de alinhamento: perguntas com escala de 0 a 10 revelam em que ponto da jornada a pessoa se encontra (ex.: o momento atual de um jogador de tênis e o que precisa melhorar), com visualização em radar charts. Faz parte do "paiol", a coleção de ferramentas do Rodrigo. Migrado para arquitetura API + Blazor WebAssembly com persistência em PostgreSQL.
 
 ## Commands
 
@@ -27,7 +27,7 @@ dotnet run --project Web           # Executar Web
 ### Database
 ```bash
 # PostgreSQL deve estar rodando localmente
-# Connection string padrão: Host=localhost;Database=pesquisax;Username=postgres;Password=postgres;Port=5432
+# Connection string padrão: Host=localhost;Database=prumo;Username=postgres;Password=postgres;Port=5432
 ```
 
 ## Architecture
@@ -43,7 +43,7 @@ dotnet run --project Web           # Executar Web
 
 ### Project Structure
 ```
-PesquisaX/
+Prumo/
 ├── Api/                           # ASP.NET Core Web API
 │   ├── Controllers/
 │   │   └── PesquisasController.cs # CRUD completo de pesquisas
@@ -59,7 +59,7 @@ PesquisaX/
 │   └── wwwroot/
 ├── Infra/                        # Entity Framework + Repositórios
 │   ├── Contexto/
-│   │   └── PesquisaXContexto.cs  # DbContext configurado
+│   │   └── PrumoContexto.cs  # DbContext configurado
 │   └── Repositorios/
 │       ├── IRepositorioBase.cs    # Interface base
 │       ├── RepositorioBase.cs     # Implementação base
@@ -71,7 +71,7 @@ PesquisaX/
 │   ├── Questao.cs               # Question → Questao
 │   ├── ResultadoPessoa.cs       # PersonResult → ResultadoPessoa
 │   └── Resposta.cs              # Answer → Resposta
-└── PesquisaX.sln                # Solução com todos os projetos
+└── Prumo.sln                # Solução com todos os projetos
 ```
 
 ### Key Models (em Português)

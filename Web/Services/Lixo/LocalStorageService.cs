@@ -1,13 +1,13 @@
 // using Microsoft.JSInterop;
 // using System.Text.Json;
-// using PesquisaX.Core.Modelos;
+// using Prumo.Core.Modelos;
 //
-// namespace PesquisaX.Web.Servicos;
+// namespace Prumo.Web.Servicos;
 //
 // public class LocalStorageService : IServicoPesquisa
 // {
 //     private readonly IJSRuntime _jsRuntime;
-//     private const string CHAVE_PESQUISAS = "pesquisax_pesquisas";
+//     private const string CHAVE_PESQUISAS = "prumo_pesquisas";
 //     
 //     public LocalStorageService(IJSRuntime jsRuntime)
 //     {

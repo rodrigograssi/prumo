@@ -1,6 +1,6 @@
-using PesquisaX.Shared.Comandos;
+using Prumo.Shared.Comandos;
 
-namespace PesquisaX.Api.Services;
+namespace Prumo.Api.Services;
 
 public interface IAIService
 {

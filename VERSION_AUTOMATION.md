@@ -1,6 +1,6 @@
-# Sistema de Versionamento Automático - PesquisaX
+# Sistema de Versionamento Automático - Prumo
 
-Este documento descreve como o sistema de versionamento automático funciona no PesquisaX.
+Este documento descreve como o sistema de versionamento automático funciona no Prumo.
 
 ## 📋 Visão Geral
 
@@ -192,7 +192,7 @@ O sistema gera logs detalhados incluindo:
 Use a propriedade `BuildInfo` para debugging:
 ```csharp
 Console.WriteLine(AppVersion.BuildInfo);
-// Output: PesquisaX v1.0.0 | Build 202501061430 | Development | Compiled 2025-01-06 14:30:15
+// Output: Prumo v1.0.0 | Build 202501061430 | Development | Compiled 2025-01-06 14:30:15
 ```
 
 ## ✅ Benefícios

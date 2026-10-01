@@ -1,7 +1,7 @@
-﻿using PesquisaX.Core.Modelos;
-using PesquisaX.Shared.Views;
+﻿using Prumo.Core.Modelos;
+using Prumo.Shared.Views;
 
-namespace PesquisaX.Core.Extension;
+namespace Prumo.Core.Extension;
 
 public static class ConverteParaViewExtension
 {

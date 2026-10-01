@@ -1,8 +1,8 @@
 @page "/primeiro-usuario"
 @layout AuthLayout
 @using Microsoft.AspNetCore.Authorization
-@using PesquisaX.Shared.Comandos
-@using PesquisaX.Web.Dto
+@using Prumo.Shared.Comandos
+@using Prumo.Web.Dto
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
@@ -11,7 +11,7 @@
 
 @attribute [AllowAnonymous]
 
-<PageTitle>Primeiro Acesso - PesquisaX</PageTitle>
+<PageTitle>Primeiro Acesso - Prumo</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
     <MudCard>
@@ -20,7 +20,7 @@
                 <div class="d-flex align-center">
                     <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Class="mr-3" Color="Color.Primary" Size="Size.Large" />
                     <div>
-                        <MudText Typo="Typo.h5">Bem-vindo ao PesquisaX!</MudText>
+                        <MudText Typo="Typo.h5">Bem-vindo ao Prumo!</MudText>
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
                             Configure o primeiro usuário administrador
                         </MudText>

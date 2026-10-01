@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script para configurar Docker Secrets para o PesquisaX
+# Script para configurar Docker Secrets para o Prumo
 # Execute este script antes do primeiro deploy
 
 set -e
@@ -32,7 +32,7 @@ log_error() {
 # Banner
 echo -e "${BLUE}"
 echo "=========================================="
-echo "    PesquisaX Docker Secrets Setup    "
+echo "    Prumo Docker Secrets Setup    "
 echo "=========================================="
 echo -e "${NC}"
 
@@ -87,7 +87,7 @@ else
     log_info "Senha do PostgreSQL gerada automaticamente"
 fi
 
-create_secret "pesquisax_postgres_password" "$POSTGRES_PASS" "Senha do banco PostgreSQL"
+create_secret "prumo_postgres_password" "$POSTGRES_PASS" "Senha do banco PostgreSQL"
 
 # 2. Configurar JWT Secret
 log_info "Configurando JWT Secret..."
@@ -102,7 +102,7 @@ else
     log_info "JWT Secret gerado automaticamente"
 fi
 
-create_secret "pesquisax_jwt_secret" "$JWT_SEC" "Chave secreta para JWT"
+create_secret "prumo_jwt_secret" "$JWT_SEC" "Chave secreta para JWT"
 
 # 3. Salvar informações em arquivo seguro (opcional)
 SECRETS_FILE="secrets-backup.txt"
@@ -110,7 +110,7 @@ if [ "$SAVE_SECRETS" = "true" ]; then
     log_info "Salvando secrets em arquivo '$SECRETS_FILE'..."
     
     cat > "$SECRETS_FILE" << EOF
-# PesquisaX Secrets Backup
+# Prumo Secrets Backup
 # Generated on: $(date)
 # ⚠️ MANTENHA ESTE ARQUIVO SEGURO E PRIVADO! ⚠️
 
@@ -118,8 +118,8 @@ POSTGRES_PASSWORD=$POSTGRES_PASS
 JWT_SECRET=$JWT_SEC
 
 # Para recriar os secrets:
-# echo -n "$POSTGRES_PASS" | docker secret create pesquisax_postgres_password -
-# echo -n "$JWT_SEC" | docker secret create pesquisax_jwt_secret -
+# echo -n "$POSTGRES_PASS" | docker secret create prumo_postgres_password -
+# echo -n "$JWT_SEC" | docker secret create prumo_jwt_secret -
 EOF
     
     chmod 600 "$SECRETS_FILE"
@@ -129,15 +129,15 @@ fi
 
 # 4. Verificar secrets criados
 log_info "Verificando secrets criados..."
-echo -e "\n${BLUE}Secrets do PesquisaX:${NC}"
-docker secret ls --filter name=pesquisax --format "table {{.Name}}\t{{.CreatedAt}}\t{{.UpdatedAt}}"
+echo -e "\n${BLUE}Secrets do Prumo:${NC}"
+docker secret ls --filter name=prumo --format "table {{.Name}}\t{{.CreatedAt}}\t{{.UpdatedAt}}"
 
 # 5. Mostrar próximos passos
 echo -e "\n${GREEN}✅ Secrets configurados com sucesso!${NC}"
 echo -e "\n${BLUE}Próximos passos:${NC}"
 echo -e "  1. Execute o deploy: ${YELLOW}./deploy.sh${NC}"
-echo -e "  2. Verifique se os serviços estão rodando: ${YELLOW}docker stack services pesquisax${NC}"
-echo -e "  3. Acesse a aplicação em: ${YELLOW}https://pesquisax.local${NC}"
+echo -e "  2. Verifique se os serviços estão rodando: ${YELLOW}docker stack services prumo${NC}"
+echo -e "  3. Acesse a aplicação em: ${YELLOW}https://prumo.local${NC}"
 
 # 6. Informações importantes
 echo -e "\n${YELLOW}⚠️ Informações Importantes:${NC}"

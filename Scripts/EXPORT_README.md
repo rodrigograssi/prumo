@@ -1,4 +1,4 @@
-# Guia de Export e Import de Imagens Docker - PesquisaX
+# Guia de Export e Import de Imagens Docker - Prumo
 
 Este guia explica como criar as imagens Docker na sua máquina local e transferir para o servidor de produção.
 
@@ -39,12 +39,12 @@ cd Scripts
 **Usando SCP:**
 ```bash
 # Compactar primeiro (opcional)
-tar -czf pesquisax-images.tar.gz docker-images/
+tar -czf prumo-images.tar.gz docker-images/
 
 # Transferir
 scp -r docker-images/ user@servidor:/home/user/
 # ou
-scp pesquisax-images.tar.gz user@servidor:/home/user/
+scp prumo-images.tar.gz user@servidor:/home/user/
 ```
 
 **Usando FTP/SFTP:**
@@ -64,7 +64,7 @@ chmod +x import-images.sh
 ./import-images.sh
 
 # Verificar se importou
-docker images | grep pesquisax
+docker images | grep prumo
 ```
 
 ### Passo 4: Deploy no Servidor
@@ -74,10 +74,10 @@ docker images | grep pesquisax
 ./setup-secrets.sh
 
 # 2. Fazer deploy
-docker stack deploy -c docker-compose.yml pesquisax
+docker stack deploy -c docker-compose.yml prumo
 
 # 3. Verificar status
-docker stack services pesquisax
+docker stack services prumo
 ```
 
 ## 📁 Arquivos Gerados
@@ -86,8 +86,8 @@ O script cria os seguintes arquivos na pasta `docker-images/`:
 
 ```
 docker-images/
-├── pesquisax-api-YYYYMMDDHHMMSS.tar     # Imagem da API (~200-500MB)
-├── pesquisax-web-YYYYMMDDHHMMSS.tar     # Imagem do Web (~200-400MB)  
+├── prumo-api-YYYYMMDDHHMMSS.tar     # Imagem da API (~200-500MB)
+├── prumo-web-YYYYMMDDHHMMSS.tar     # Imagem do Web (~200-400MB)  
 ├── import-images.sh                      # Script de import para o servidor
 └── version-info.txt                      # Informações da build
 ```
@@ -104,7 +104,7 @@ docker build -f Api/Dockerfile \
     --build-arg BUILD_CONFIGURATION=Release \
     --build-arg BUILD_NUMBER=$(date +%Y%m%d%H%M%S) \
     --build-arg GIT_COMMIT_HASH=$(git rev-parse HEAD) \
-    -t pesquisax/api:latest \
+    -t prumo/api:latest \
     .
 
 # Web  
@@ -112,7 +112,7 @@ docker build -f Web/Dockerfile \
     --build-arg BUILD_CONFIGURATION=Release \
     --build-arg BUILD_NUMBER=$(date +%Y%m%d%H%M%S) \
     --build-arg GIT_COMMIT_HASH=$(git rev-parse HEAD) \
-    -t pesquisax/web:latest \
+    -t prumo/web:latest \
     .
 ```
 
@@ -123,23 +123,23 @@ docker build -f Web/Dockerfile \
 mkdir docker-images
 
 # Exportar API
-docker save pesquisax/api:latest > docker-images/pesquisax-api.tar
+docker save prumo/api:latest > docker-images/prumo-api.tar
 
 # Exportar Web
-docker save pesquisax/web:latest > docker-images/pesquisax-web.tar
+docker save prumo/web:latest > docker-images/prumo-web.tar
 ```
 
 ### Import Manual no Servidor
 
 ```bash
 # Importar API
-docker load < pesquisax-api.tar
+docker load < prumo-api.tar
 
 # Importar Web
-docker load < pesquisax-web.tar
+docker load < prumo-web.tar
 
 # Verificar
-docker images | grep pesquisax
+docker images | grep prumo
 ```
 
 ## 🔍 Verificações
@@ -148,10 +148,10 @@ docker images | grep pesquisax
 
 ```bash
 # Listar imagens locais
-docker images | grep pesquisax
+docker images | grep prumo
 
 # Verificar tamanho das imagens
-docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" | grep pesquisax
+docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" | grep prumo
 ```
 
 ### Verificar Arquivos Exportados
@@ -168,11 +168,11 @@ du -sh docker-images/*
 
 ```bash
 # Após import, testar se a API funciona
-docker run --rm -p 8080:8080 pesquisax/api:latest &
+docker run --rm -p 8080:8080 prumo/api:latest &
 curl http://localhost:8080/health
 
 # Testar se o Web funciona  
-docker run --rm -p 8081:8080 pesquisax/web:latest &
+docker run --rm -p 8081:8080 prumo/web:latest &
 curl http://localhost:8081/
 ```
 
@@ -208,19 +208,19 @@ sudo usermod -aG docker $USER
 
 ```bash
 # Compactar primeiro
-tar -czf pesquisax-images.tar.gz docker-images/
+tar -czf prumo-images.tar.gz docker-images/
 
 # Ou usar docker registry (alternativa)
-docker tag pesquisax/api:latest registry.com/pesquisax/api
-docker push registry.com/pesquisax/api
+docker tag prumo/api:latest registry.com/prumo/api
+docker push registry.com/prumo/api
 ```
 
 ### Erro: Import falha no servidor
 
 ```bash
 # Verificar integridade do arquivo
-md5sum pesquisax-api.tar  # local
-md5sum pesquisax-api.tar  # servidor (devem ser iguais)
+md5sum prumo-api.tar  # local
+md5sum prumo-api.tar  # servidor (devem ser iguais)
 
 # Verificar espaço em disco
 df -h
@@ -239,11 +239,11 @@ sudo systemctl status docker
 docker run -d -p 5000:5000 --name registry registry:2
 
 # Push images
-docker tag pesquisax/api:latest localhost:5000/pesquisax/api
-docker push localhost:5000/pesquisax/api
+docker tag prumo/api:latest localhost:5000/prumo/api
+docker push localhost:5000/prumo/api
 
 # Pull no servidor
-docker pull servidor:5000/pesquisax/api
+docker pull servidor:5000/prumo/api
 ```
 
 ### 2. GitHub Container Registry
@@ -253,16 +253,16 @@ docker pull servidor:5000/pesquisax/api
 echo $PAT | docker login ghcr.io -u USERNAME --password-stdin
 
 # Tag e push
-docker tag pesquisax/api:latest ghcr.io/username/pesquisax/api
-docker push ghcr.io/username/pesquisax/api
+docker tag prumo/api:latest ghcr.io/username/prumo/api
+docker push ghcr.io/username/prumo/api
 ```
 
 ### 3. Build direto no servidor
 
 ```bash
 # Fazer git clone no servidor
-git clone https://github.com/user/pesquisax.git
-cd pesquisax/Scripts
+git clone https://github.com/user/prumo.git
+cd prumo/Scripts
 
 # Build direto no servidor
 ./build-and-export.sh  # mas sem export, direto deploy

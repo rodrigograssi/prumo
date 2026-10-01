@@ -1,4 +1,4 @@
-namespace PesquisaX.Core.Interfaces;
+namespace Prumo.Core.Interfaces;
 
 public interface IEntidade
 {

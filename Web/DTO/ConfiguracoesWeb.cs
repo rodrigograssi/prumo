@@ -1,7 +1,7 @@
 ﻿
-using PesquisaX.Shared.Views;
+using Prumo.Shared.Views;
 
-namespace PesquisaX.Web.Dto
+namespace Prumo.Web.Dto
 {
     public class ConfiguracoesWeb
     {
@@ -9,7 +9,7 @@ namespace PesquisaX.Web.Dto
         public static string Token = string.Empty;
         
         public static string LocalStoragTokeneKey = "authToken";
-        public static string LocalStorageChaveTema = "pesquisax-tema"; // "pesquisax-tema"
+        public static string LocalStorageChaveTema = "prumo-tema"; // "prumo-tema"
 
         public static string EnderecoApi = "http://localhost:5092";
         public static string VersaoDoSistema = "1.0.2";

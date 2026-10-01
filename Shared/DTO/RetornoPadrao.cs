@@ -1,5 +1,5 @@
 ﻿
-namespace PesquisaX.Shared.DTO
+namespace Prumo.Shared.DTO
 {
     public class RetornoPadrao
     {

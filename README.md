@@ -1,4 +1,4 @@
-# PesquisaX
+# Prumo
 
 Sistema completo para criação e aplicação de pesquisas personalizadas com visualização em radar charts. Desenvolvido em ASP.NET Core Web API + Blazor WebAssembly com persistência em PostgreSQL.
 
@@ -23,7 +23,7 @@ Sistema completo para criação e aplicação de pesquisas personalizadas com vi
 ## 🏗️ Arquitetura
 
 ```
-PesquisaX/
+Prumo/
 ├── Api/                           # ASP.NET Core Web API
 │   ├── Controllers/
 │   │   └── PesquisasController.cs # CRUD completo de pesquisas
@@ -38,7 +38,7 @@ PesquisaX/
 │   └── Pages/ (Home, SurveyList, CreateSurvey, ApplySurvey, ShowResult)
 ├── Infra/                        # Entity Framework + Repositórios
 │   ├── Contexto/
-│   │   └── PesquisaXContexto.cs  # DbContext configurado
+│   │   └── PrumoContexto.cs  # DbContext configurado
 │   └── Repositorios/
 │       └── RepositorioPesquisa.cs # Repository pattern
 ├── Shared/                       # Modelos compartilhados (DTOs)
@@ -47,7 +47,7 @@ PesquisaX/
 │   ├── Questao.cs               # Questões individuais
 │   ├── ResultadoPessoa.cs       # Resultados de avaliações
 │   └── Resposta.cs              # Respostas individuais
-└── PesquisaX.sln                # Solução completa
+└── Prumo.sln                # Solução completa
 ```
 
 ## 📊 Modelo de Dados
@@ -76,14 +76,14 @@ PesquisaX/
 
 ### 1. Clone o repositório
 ```bash
-git clone git@github.com:rodrigograssi/pesquisax.git
-cd pesquisax
+git clone git@github.com:rodrigograssi/prumo.git
+cd prumo
 ```
 
 ### 2. Configure o PostgreSQL
 Certifique-se de que o PostgreSQL está rodando com as seguintes configurações:
 - **Host**: localhost
-- **Database**: pesquisax  
+- **Database**: prumo  
 - **Username**: postgres
 - **Password**: postgres
 - **Port**: 5432

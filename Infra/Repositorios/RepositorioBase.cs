@@ -1,17 +1,17 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using PesquisaX.Core;
-using PesquisaX.Core.Repositorios;
-using PesquisaX.Infra.Contexto;
+using Prumo.Core;
+using Prumo.Core.Repositorios;
+using Prumo.Infra.Contexto;
 
-namespace PesquisaX.Infra.Repositorios;
+namespace Prumo.Infra.Repositorios;
 
 public abstract class RepositorioBase<T> : IRepositorioBase<T> where T : Entidade
 {
-    protected readonly PesquisaXContexto Db;
+    protected readonly PrumoContexto Db;
     protected readonly DbSet<T> _dbSet;
 
-    protected RepositorioBase(PesquisaXContexto db)
+    protected RepositorioBase(PrumoContexto db)
     {
         Db = db;
         _dbSet = db.Set<T>();

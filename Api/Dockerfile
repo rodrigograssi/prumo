@@ -6,11 +6,11 @@ ARG GIT_COMMIT_HASH=docker-build
 
 WORKDIR /src
 
-COPY ["Api/PesquisaX.Api.csproj", "Api/"]
-COPY ["Shared/PesquisaX.Shared.csproj", "Shared/"]
-COPY ["Infra/PesquisaX.Infra.csproj", "Infra/"]
+COPY ["Api/Prumo.Api.csproj", "Api/"]
+COPY ["Shared/Prumo.Shared.csproj", "Shared/"]
+COPY ["Infra/Prumo.Infra.csproj", "Infra/"]
 
-RUN dotnet restore "Api/PesquisaX.Api.csproj"
+RUN dotnet restore "Api/Prumo.Api.csproj"
 COPY . .
 
 ENV BUILD_NUMBER=$BUILD_NUMBER
@@ -18,7 +18,7 @@ ENV GIT_COMMIT_HASH=$GIT_COMMIT_HASH
 ENV ASPNETCORE_ENVIRONMENT=Production
 
 WORKDIR "/src/Api"
-RUN dotnet publish "PesquisaX.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Prumo.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
@@ -37,4 +37,4 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
-ENTRYPOINT ["dotnet", "PesquisaX.Api.dll"]
+ENTRYPOINT ["dotnet", "Prumo.Api.dll"]

@@ -1,4 +1,4 @@
-namespace PesquisaX.Shared.Version;
+namespace Prumo.Shared.Version;
 
 /// <summary>
 /// Tipos de mudanças no changelog

@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using PesquisaX.Core.Repositorios;
+using Prumo.Core.Repositorios;
 using System.Text;
 using System.Text.Json;
-using PesquisaX.Core.Interfaces;
-using PesquisaX.Infra.Contexto;
-using PesquisaX.Infra.Handlers;
-using PesquisaX.Infra.Repositorios;
+using Prumo.Core.Interfaces;
+using Prumo.Infra.Contexto;
+using Prumo.Infra.Handlers;
+using Prumo.Infra.Repositorios;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +31,7 @@ string GetSecret(string secretName, string? defaultValue = null)
 
 // Configuração do banco de dados com suporte a Docker Secrets
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? 
-    "Host=localhost;Database=pesquisax;Username=pesquisax_user;Password=pesquisax_2024!;Port=5432;Timezone=UTC";
+    "Host=localhost;Database=prumo;Username=prumo_user;Password=prumo_2024!;Port=5432;Timezone=UTC";
 
 Console.WriteLine($"[DEBUG] ConnectionString inicial: {connectionString}");
 Console.WriteLine($"[DEBUG] Ambiente: {builder.Environment.EnvironmentName}");
@@ -51,7 +51,7 @@ if (builder.Environment.IsProduction())
         if (!connectionString.Contains("Password="))
         {
             Console.WriteLine("[DEBUG] Connection string não contém Password=, reconstruindo...");
-            connectionString = $"Host=database;Database=pesquisax;Username=pesquisax;Password={dbPassword};Port=5432;Include Error Detail=false";
+            connectionString = $"Host=database;Database=prumo;Username=prumo;Password={dbPassword};Port=5432;Include Error Detail=false";
         }
         Console.WriteLine($"[DEBUG] ConnectionString final: {connectionString}");
     }
@@ -62,7 +62,7 @@ if (builder.Environment.IsProduction())
     }
 }
 
-builder.Services.AddDbContext<PesquisaXContexto>(options =>
+builder.Services.AddDbContext<PrumoContexto>(options =>
     options.UseNpgsql(connectionString));
 
 // Configuração dos repositórios
@@ -72,7 +72,7 @@ builder.Services.AddScoped<IPesquisaHandler, PesquisaHandler>();
 builder.Services.AddScoped<IUsuarioHandler, UsuarioHandler>();
 
 // Configuração do serviço de IA (OpenAI)
-builder.Services.AddScoped<PesquisaX.Api.Services.IAIService, PesquisaX.Api.Services.OpenAIService>();
+builder.Services.AddScoped<Prumo.Api.Services.IAIService, Prumo.Api.Services.OpenAIService>();
 
 // Configuração da API
 builder.Services.AddControllers()
@@ -84,7 +84,7 @@ builder.Services.AddControllers()
 
 // Configuração do JWT com suporte a Docker Secrets
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] ?? "PesquisaXSecretKeyPadrao123456789!@#$%^&*()";
+var secretKey = jwtSettings["SecretKey"] ?? "PrumoSecretKeyPadrao123456789!@#$%^&*()";
 
 // Usar Docker Secret para JWT se estiver em produção
 if (builder.Environment.IsProduction())
@@ -128,7 +128,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        Title = "PesquisaX API",
+        Title = "Prumo API",
         Version = "v1",
         Description = "API para gerenciamento de pesquisas e avaliações com visualização em radar charts"
     });
@@ -179,7 +179,7 @@ builder.Services.AddCors(options =>
         //           "https://localhost:7088",  "http://localhost:5173",
         //
         //           // Produção
-        //           "https://pesquisax.thaishiroki.com.br", "https://www.pesquisax.thaishiroki.com.br"
+        //           "https://prumo.thaishiroki.com.br", "https://www.prumo.thaishiroki.com.br"
         //       )
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
@@ -209,7 +209,7 @@ if (app.Environment.IsDevelopment())
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "PesquisaX API V1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Prumo API V1");
     c.RoutePrefix = "swagger"; // Swagger disponível em /swagger
 });
 
@@ -220,7 +220,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Health Check endpoint para Docker Swarm
-app.MapGet("/health", async (PesquisaXContexto context) =>
+app.MapGet("/health", async (PrumoContexto context) =>
 {
     try
     {
@@ -253,7 +253,7 @@ app.MapControllers();
 // Aplicar migrations automaticamente
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<PesquisaXContexto>();
+    var context = scope.ServiceProvider.GetRequiredService<PrumoContexto>();
     try
     {
         context.Database.Migrate();
@@ -266,6 +266,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 
-app.Logger.LogInformation("PesquisaX API iniciada em {Environment}", app.Environment.EnvironmentName);
+app.Logger.LogInformation("Prumo API iniciada em {Environment}", app.Environment.EnvironmentName);
 
 app.Run();

@@ -1,9 +1,9 @@
 using System.Reflection;
 
-namespace PesquisaX.Shared.Version;
+namespace Prumo.Shared.Version;
 
 /// <summary>
-/// Informações de versão da aplicação PesquisaX com versionamento automático
+/// Informações de versão da aplicação Prumo com versionamento automático
 /// </summary>
 public static class AppVersion
 {
@@ -15,12 +15,12 @@ public static class AppVersion
     /// <summary>
     /// Nome da aplicação
     /// </summary>
-    public const string AppName = "PesquisaX";
+    public const string AppName = "Prumo";
     
     /// <summary>
     /// Nome completo da aplicação
     /// </summary>
-    public const string FullName = "PesquisaX - Sistema de Pesquisas";
+    public const string FullName = "Prumo - Pesquisas de Alinhamento";
     
     /// <summary>
     /// Data de release da versão atual
@@ -69,7 +69,7 @@ public static class AppVersion
     /// <summary>
     /// Copyright da aplicação
     /// </summary>
-    public static string Copyright => $"© {ReleaseDate.Year} PesquisaX - Todos os direitos reservados";
+    public static string Copyright => $"© {ReleaseDate.Year} Prumo - Todos os direitos reservados";
     
     /// <summary>
     /// Indica se é uma build de desenvolvimento

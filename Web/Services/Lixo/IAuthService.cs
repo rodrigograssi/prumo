@@ -1,8 +1,8 @@
-using PesquisaX.Shared.DTO.Requestes;
-using PesquisaX.Shared.DTO.Responses;
-using PesquisaX.Shared.Views;
+using Prumo.Shared.DTO.Requestes;
+using Prumo.Shared.DTO.Responses;
+using Prumo.Shared.Views;
 
-namespace PesquisaX.Web.Services;
+namespace Prumo.Web.Services;
 
 public interface IAuthService
 {

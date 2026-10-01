@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace PesquisaX.Shared.Comandos;
+namespace Prumo.Shared.Comandos;
 
 public class UsuarioCrud
 {

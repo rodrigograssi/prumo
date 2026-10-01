@@ -1,8 +1,8 @@
 @page "/registro"
 @layout AuthLayout
 @using Microsoft.AspNetCore.Authorization
-@using PesquisaX.Shared.Comandos
-@using PesquisaX.Web.Dto
+@using Prumo.Shared.Comandos
+@using Prumo.Web.Dto
 
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
@@ -10,7 +10,7 @@
 
 @attribute [Authorize]
 
-<PageTitle>Registrar - PesquisaX</PageTitle>
+<PageTitle>Registrar - Prumo</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
     <MudCard>

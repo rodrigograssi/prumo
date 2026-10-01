@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
-using PesquisaX.Web.Dto;
+using Prumo.Web.Dto;
 using ControleDeIp.FrontEnd.Services;
 
-namespace PesquisaX.Web.Services
+namespace Prumo.Web.Services
 {
     public class AutenticacaoController(ApiUsuarioController apiUsuario) : AuthenticationStateProvider
     {

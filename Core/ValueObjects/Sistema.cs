@@ -1,4 +1,4 @@
-﻿namespace PesquisaX.Core.ValueObjects;
+﻿namespace Prumo.Core.ValueObjects;
 
 public class Sistema
 {

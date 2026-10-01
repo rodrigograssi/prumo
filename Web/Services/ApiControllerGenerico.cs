@@ -2,9 +2,9 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Forms;
-using PesquisaX.Shared.DTO;
+using Prumo.Shared.DTO;
 
-namespace PesquisaX.Web.Services
+namespace Prumo.Web.Services
 {
     /// <summary>
     /// Controller unificado para comunicação com APIs REST

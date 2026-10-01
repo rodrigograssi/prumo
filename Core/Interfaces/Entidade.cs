@@ -1,4 +1,4 @@
-namespace PesquisaX.Core;
+namespace Prumo.Core;
 
 public abstract class Entidade
 {

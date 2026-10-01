@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using PesquisaX.Api.Services;
-using PesquisaX.Shared.Comandos;
-using PesquisaX.Shared.DTO;
+using Prumo.Api.Services;
+using Prumo.Shared.Comandos;
+using Prumo.Shared.DTO;
 
-namespace PesquisaX.Api.Controllers;
+namespace Prumo.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

@@ -1,10 +1,10 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using Microsoft.JSInterop;
-using PesquisaX.Shared.DTO;
-using PesquisaX.Shared.DTO.Requestes;
-using PesquisaX.Shared.Views;
-using PesquisaX.Web.Dto;
-using PesquisaX.Web.Services;
+using Prumo.Shared.DTO;
+using Prumo.Shared.DTO.Requestes;
+using Prumo.Shared.Views;
+using Prumo.Web.Dto;
+using Prumo.Web.Services;
 
 namespace ControleDeIp.FrontEnd.Services
 {

@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using PesquisaX.Infra.Contexto;
+using Prumo.Infra.Contexto;
 
 #nullable disable
 
-namespace PesquisaX.Infra.Migrations
+namespace Prumo.Infra.Migrations
 {
-    [DbContext(typeof(PesquisaXContexto))]
+    [DbContext(typeof(PrumoContexto))]
     [Migration("20250921153532_AdicionarNomeDoResultadoDesejado")]
     partial class AdicionarNomeDoResultadoDesejado
     {
@@ -25,7 +25,7 @@ namespace PesquisaX.Infra.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("PesquisaX.Core.Modelos.GrupoQuestao", b =>
+            modelBuilder.Entity("Prumo.Core.Modelos.GrupoQuestao", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -72,7 +72,7 @@ namespace PesquisaX.Infra.Migrations
                     b.ToTable("grupos_questoes", (string)null);
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Modelos.Pesquisa", b =>
+            modelBuilder.Entity("Prumo.Core.Modelos.Pesquisa", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -108,7 +108,7 @@ namespace PesquisaX.Infra.Migrations
                     b.ToTable("pesquisas", (string)null);
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Modelos.Questao", b =>
+            modelBuilder.Entity("Prumo.Core.Modelos.Questao", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -147,7 +147,7 @@ namespace PesquisaX.Infra.Migrations
                     b.ToTable("questoes", (string)null);
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Modelos.Resposta", b =>
+            modelBuilder.Entity("Prumo.Core.Modelos.Resposta", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -185,7 +185,7 @@ namespace PesquisaX.Infra.Migrations
                     b.ToTable("respostas", (string)null);
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Modelos.RespostaPessoa", b =>
+            modelBuilder.Entity("Prumo.Core.Modelos.RespostaPessoa", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -225,7 +225,7 @@ namespace PesquisaX.Infra.Migrations
                     b.ToTable("resultados_pessoas", (string)null);
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Usuario", b =>
+            modelBuilder.Entity("Prumo.Core.Usuario", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -271,51 +271,51 @@ namespace PesquisaX.Infra.Migrations
                     b.ToTable("usuarios", (string)null);
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Modelos.GrupoQuestao", b =>
+            modelBuilder.Entity("Prumo.Core.Modelos.GrupoQuestao", b =>
                 {
-                    b.HasOne("PesquisaX.Core.Modelos.Pesquisa", null)
+                    b.HasOne("Prumo.Core.Modelos.Pesquisa", null)
                         .WithMany("GruposQuestoes")
                         .HasForeignKey("PesquisaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Modelos.Questao", b =>
+            modelBuilder.Entity("Prumo.Core.Modelos.Questao", b =>
                 {
-                    b.HasOne("PesquisaX.Core.Modelos.GrupoQuestao", null)
+                    b.HasOne("Prumo.Core.Modelos.GrupoQuestao", null)
                         .WithMany("Questoes")
                         .HasForeignKey("GrupoDeQuestaoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Modelos.Resposta", b =>
+            modelBuilder.Entity("Prumo.Core.Modelos.Resposta", b =>
                 {
-                    b.HasOne("PesquisaX.Core.Modelos.Questao", null)
+                    b.HasOne("Prumo.Core.Modelos.Questao", null)
                         .WithMany()
                         .HasForeignKey("QuestaoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("PesquisaX.Core.Modelos.RespostaPessoa", null)
+                    b.HasOne("Prumo.Core.Modelos.RespostaPessoa", null)
                         .WithMany("Respostas")
                         .HasForeignKey("ResultadoPessoaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Modelos.RespostaPessoa", b =>
+            modelBuilder.Entity("Prumo.Core.Modelos.RespostaPessoa", b =>
                 {
-                    b.HasOne("PesquisaX.Core.Modelos.Pesquisa", null)
+                    b.HasOne("Prumo.Core.Modelos.Pesquisa", null)
                         .WithMany("RespostasPessoa")
                         .HasForeignKey("PesquisaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Usuario", b =>
+            modelBuilder.Entity("Prumo.Core.Usuario", b =>
                 {
-                    b.OwnsOne("PesquisaX.Core.ValueObjects.Sistema", "Sistema", b1 =>
+                    b.OwnsOne("Prumo.Core.ValueObjects.Sistema", "Sistema", b1 =>
                         {
                             b1.Property<int>("UsuarioId")
                                 .HasColumnType("integer");
@@ -340,19 +340,19 @@ namespace PesquisaX.Infra.Migrations
                     b.Navigation("Sistema");
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Modelos.GrupoQuestao", b =>
+            modelBuilder.Entity("Prumo.Core.Modelos.GrupoQuestao", b =>
                 {
                     b.Navigation("Questoes");
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Modelos.Pesquisa", b =>
+            modelBuilder.Entity("Prumo.Core.Modelos.Pesquisa", b =>
                 {
                     b.Navigation("GruposQuestoes");
 
                     b.Navigation("RespostasPessoa");
                 });
 
-            modelBuilder.Entity("PesquisaX.Core.Modelos.RespostaPessoa", b =>
+            modelBuilder.Entity("Prumo.Core.Modelos.RespostaPessoa", b =>
                 {
                     b.Navigation("Respostas");
                 });

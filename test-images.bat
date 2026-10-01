@@ -1,16 +1,16 @@
 @echo off
-REM Script para Teste Rápido das Imagens Docker do PesquisaX
+REM Script para Teste Rápido das Imagens Docker do Prumo
 
 echo ==========================================
-echo     Teste das Imagens PesquisaX        
+echo     Teste das Imagens Prumo        
 echo ==========================================
 echo.
 
 REM Verificar se as imagens existem
 echo [INFO] Verificando imagens disponiveis...
-docker images | findstr pesquisax
+docker images | findstr prumo
 if errorlevel 1 (
-    echo [ERROR] Nenhuma imagem PesquisaX encontrada!
+    echo [ERROR] Nenhuma imagem Prumo encontrada!
     echo [ERROR] Execute primeiro: build-images.bat
     pause
     exit /b 1
@@ -19,7 +19,7 @@ echo.
 
 REM Teste 1: Health check da API
 echo [TESTE 1] Testando API standalone...
-start /B docker run --rm --name pesquisax-api-test -p 8001:8080 pesquisax/api:latest
+start /B docker run --rm --name prumo-api-test -p 8001:8080 prumo/api:latest
 
 REM Aguardar API iniciar
 echo [INFO] Aguardando API inicializar (30 segundos)...
@@ -36,7 +36,7 @@ if errorlevel 1 (
 echo.
 
 REM Parar API test
-docker stop pesquisax-api-test >nul 2>&1
+docker stop prumo-api-test >nul 2>&1
 
 REM Teste 2: Stack completo com Docker Compose
 echo [TESTE 2] Testando stack completo...
@@ -77,7 +77,7 @@ echo URLs de Teste:
 echo - API Health: http://localhost:8001/health
 echo - API Swagger: http://localhost:8001/swagger
 echo - Frontend: http://localhost:8002
-echo - PostgreSQL: localhost:5433 (user: pesquisax, pass: teste123)
+echo - PostgreSQL: localhost:5433 (user: prumo, pass: teste123)
 echo.
 echo Para parar os testes:
 echo   docker-compose -f docker-compose-test.yml down -v

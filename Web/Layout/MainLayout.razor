@@ -2,9 +2,9 @@
 
 @using ControleDeIp.FrontEnd.Services
 @using Microsoft.AspNetCore.Authorization
-@using PesquisaX.Shared.Version
-@using PesquisaX.Shared.Views
-@using PesquisaX.Web.Dto
+@using Prumo.Shared.Version
+@using Prumo.Shared.Views
+@using Prumo.Web.Dto
 
 @inject IServicoTema ServicoTema
 @inject NavigationManager Navigation
@@ -19,7 +19,7 @@
     <MudAppBar Elevation="1">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
-        @* <MudText Typo="Typo.h6">Pesquisa X</MudText> *@
+        @* <MudText Typo="Typo.h6">Prumo</MudText> *@
         @* <MudSpacer /> *@
         <MudTooltip Text="@(ServicoTema.EModoEscuro ? "Modo Claro" : "Modo Escuro")">
             <MudIconButton Icon="@(ServicoTema.EModoEscuro ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 

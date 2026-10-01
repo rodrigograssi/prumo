@@ -1,11 +1,11 @@
 // using System.Net.Http.Json;
 // using System.Text.Json;
-// using PesquisaX.Core.Modelos;
-// using PesquisaX.Shared.DTO;
-// using PesquisaX.Shared.Views;
-// using PesquisaX.Web.Servicos;
+// using Prumo.Core.Modelos;
+// using Prumo.Shared.DTO;
+// using Prumo.Shared.Views;
+// using Prumo.Web.Servicos;
 //
-// namespace PesquisaX.Web.Servicos;
+// namespace Prumo.Web.Servicos;
 //
 // public class HttpPesquisaService : IServicoPesquisa
 // {

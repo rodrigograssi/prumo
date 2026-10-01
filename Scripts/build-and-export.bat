@@ -1,5 +1,5 @@
 @echo off
-REM Script para Build e Export das Imagens Docker do PesquisaX (Windows)
+REM Script para Build e Export das Imagens Docker do Prumo (Windows)
 REM Cria as imagens localmente e exporta para arquivos .tar para transferir para o servidor
 
 setlocal enabledelayedexpansion
@@ -15,7 +15,7 @@ if "!GIT_COMMIT_HASH!"=="" set "GIT_COMMIT_HASH=local-build"
 set "EXPORT_DIR=docker-images"
 
 echo ==========================================
-echo     PesquisaX Docker Build ^& Export     
+echo     Prumo Docker Build ^& Export     
 echo ==========================================
 echo.
 
@@ -39,7 +39,7 @@ echo [OK] Diretorio !EXPORT_DIR! criado
 echo.
 
 REM Passo 2: Build da API
-echo [STEP 2/6] Building PesquisaX API
+echo [STEP 2/6] Building Prumo API
 echo [INFO] Construindo imagem da API...
 
 REM Mudar para diretório raiz do projeto
@@ -49,9 +49,9 @@ docker build -f Api\Dockerfile ^
     --build-arg BUILD_CONFIGURATION=Release ^
     --build-arg BUILD_NUMBER=!BUILD_NUMBER! ^
     --build-arg GIT_COMMIT_HASH=!GIT_COMMIT_HASH! ^
-    -t pesquisax/api:latest ^
-    -t pesquisax/api:!BUILD_NUMBER! ^
-    -t pesquisax/api:production ^
+    -t prumo/api:latest ^
+    -t prumo/api:!BUILD_NUMBER! ^
+    -t prumo/api:production ^
     .
 
 REM Voltar para diretório Scripts
@@ -64,11 +64,11 @@ if errorlevel 1 (
 )
 
 echo [OK] Imagem da API construida com sucesso!
-docker images | findstr pesquisax/api
+docker images | findstr prumo/api
 echo.
 
 REM Passo 3: Build do Web
-echo [STEP 3/6] Building PesquisaX Web
+echo [STEP 3/6] Building Prumo Web
 echo [INFO] Construindo imagem do Web...
 
 REM Mudar para diretório raiz do projeto
@@ -78,9 +78,9 @@ docker build -f Web\Dockerfile ^
     --build-arg BUILD_CONFIGURATION=Release ^
     --build-arg BUILD_NUMBER=!BUILD_NUMBER! ^
     --build-arg GIT_COMMIT_HASH=!GIT_COMMIT_HASH! ^
-    -t pesquisax/web:latest ^
-    -t pesquisax/web:!BUILD_NUMBER! ^
-    -t pesquisax/web:production ^
+    -t prumo/web:latest ^
+    -t prumo/web:!BUILD_NUMBER! ^
+    -t prumo/web:production ^
     .
 
 REM Voltar para diretório Scripts
@@ -93,15 +93,15 @@ if errorlevel 1 (
 )
 
 echo [OK] Imagem do Web construida com sucesso!
-docker images | findstr pesquisax/web
+docker images | findstr prumo/web
 echo.
 
 REM Passo 4: Export da API
 echo [STEP 4/6] Exportando imagem da API
-set "API_TAR_FILE=!EXPORT_DIR!\pesquisax-api-!BUILD_NUMBER!.tar"
+set "API_TAR_FILE=!EXPORT_DIR!\prumo-api-!BUILD_NUMBER!.tar"
 
-echo [INFO] Exportando pesquisax/api:latest para !API_TAR_FILE!...
-docker save pesquisax/api:latest > "!API_TAR_FILE!"
+echo [INFO] Exportando prumo/api:latest para !API_TAR_FILE!...
+docker save prumo/api:latest > "!API_TAR_FILE!"
 
 if errorlevel 1 (
     echo [ERROR] Falha na exportacao da API!
@@ -114,10 +114,10 @@ echo.
 
 REM Passo 5: Export do Web
 echo [STEP 5/6] Exportando imagem do Web
-set "WEB_TAR_FILE=!EXPORT_DIR!\pesquisax-web-!BUILD_NUMBER!.tar"
+set "WEB_TAR_FILE=!EXPORT_DIR!\prumo-web-!BUILD_NUMBER!.tar"
 
-echo [INFO] Exportando pesquisax/web:latest para !WEB_TAR_FILE!...
-docker save pesquisax/web:latest > "!WEB_TAR_FILE!"
+echo [INFO] Exportando prumo/web:latest para !WEB_TAR_FILE!...
+docker save prumo/web:latest > "!WEB_TAR_FILE!"
 
 if errorlevel 1 (
     echo [ERROR] Falha na exportacao do Web!
@@ -135,32 +135,32 @@ set "IMPORT_SCRIPT=!EXPORT_DIR!\import-images.sh"
 (
 echo #!/bin/bash
 echo.
-echo # Script para importar imagens Docker do PesquisaX no servidor
+echo # Script para importar imagens Docker do Prumo no servidor
 echo # Execute este script no servidor de destino
 echo.
 echo set -e
 echo.
 echo echo "======================================"
-echo echo "    PesquisaX Docker Images Import   "
+echo echo "    Prumo Docker Images Import   "
 echo echo "======================================"
 echo.
 echo # Importar API
-echo if [ -f "pesquisax-api-!BUILD_NUMBER!.tar" ]; then
-echo     echo "[INFO] Importando pesquisax/api..."
-echo     docker load ^< pesquisax-api-!BUILD_NUMBER!.tar
+echo if [ -f "prumo-api-!BUILD_NUMBER!.tar" ]; then
+echo     echo "[INFO] Importando prumo/api..."
+echo     docker load ^< prumo-api-!BUILD_NUMBER!.tar
 echo     echo "[OK] API importada com sucesso!"
 echo else
-echo     echo "[ERROR] Arquivo pesquisax-api-!BUILD_NUMBER!.tar nao encontrado!"
+echo     echo "[ERROR] Arquivo prumo-api-!BUILD_NUMBER!.tar nao encontrado!"
 echo     exit 1
 echo fi
 echo.
 echo # Importar Web
-echo if [ -f "pesquisax-web-!BUILD_NUMBER!.tar" ]; then
-echo     echo "[INFO] Importando pesquisax/web..."
-echo     docker load ^< pesquisax-web-!BUILD_NUMBER!.tar
+echo if [ -f "prumo-web-!BUILD_NUMBER!.tar" ]; then
+echo     echo "[INFO] Importando prumo/web..."
+echo     docker load ^< prumo-web-!BUILD_NUMBER!.tar
 echo     echo "[OK] Web importado com sucesso!"
 echo else
-echo     echo "[ERROR] Arquivo pesquisax-web-!BUILD_NUMBER!.tar nao encontrado!"
+echo     echo "[ERROR] Arquivo prumo-web-!BUILD_NUMBER!.tar nao encontrado!"
 echo     exit 1
 echo fi
 echo.
@@ -168,7 +168,7 @@ echo echo ""
 echo echo "Todas as imagens foram importadas com sucesso!"
 echo echo ""
 echo echo "Imagens disponiveis:"
-echo docker images ^| grep pesquisax
+echo docker images ^| grep prumo
 ) > "!IMPORT_SCRIPT!"
 
 echo [OK] Script de import criado: !IMPORT_SCRIPT!
@@ -178,7 +178,7 @@ REM Criar arquivo de informações
 set "VERSION_INFO=!EXPORT_DIR!\version-info.txt"
 
 (
-echo PesquisaX Docker Images Export Information
+echo Prumo Docker Images Export Information
 echo ==========================================
 echo.
 echo Build Date: %date% %time%
@@ -187,8 +187,8 @@ echo Git Commit: !GIT_COMMIT_HASH!
 echo Environment: Production
 echo.
 echo Files Generated:
-echo - pesquisax-api-!BUILD_NUMBER!.tar
-echo - pesquisax-web-!BUILD_NUMBER!.tar  
+echo - prumo-api-!BUILD_NUMBER!.tar
+echo - prumo-web-!BUILD_NUMBER!.tar  
 echo - import-images.sh ^(Import script for server^)
 echo - version-info.txt ^(This file^)
 echo.
@@ -199,10 +199,10 @@ echo 3. Run: ./import-images.sh
 echo 4. Configure Docker Secrets and deploy
 echo.
 echo URLs ^(after deploy^):
-echo - Frontend: https://pesquisax.thaishiroki.com.br
-echo - API: https://api-pesquisax.thaishiroki.com.br
-echo - Health Check: https://api-pesquisax.thaishiroki.com.br/health
-echo - DB Admin: https://db-pesquisax.thaishiroki.com.br
+echo - Frontend: https://prumo.thaishiroki.com.br
+echo - API: https://api-prumo.thaishiroki.com.br
+echo - Health Check: https://api-prumo.thaishiroki.com.br/health
+echo - DB Admin: https://db-prumo.thaishiroki.com.br
 ) > "!VERSION_INFO!"
 
 echo [OK] Informacoes da versao salvas: !VERSION_INFO!

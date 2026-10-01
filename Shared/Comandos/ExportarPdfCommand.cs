@@ -1,6 +1,6 @@
-using PesquisaX.Shared.Views;
+using Prumo.Shared.Views;
 
-namespace PesquisaX.Shared.Comandos;
+namespace Prumo.Shared.Comandos;
 
 public class ExportarPdfCommand
 {

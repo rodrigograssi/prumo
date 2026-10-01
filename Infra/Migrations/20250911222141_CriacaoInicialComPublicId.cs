@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace PesquisaX.Infra.Migrations
+namespace Prumo.Infra.Migrations
 {
     /// <inheritdoc />
     public partial class CriacaoInicialComPublicId : Migration

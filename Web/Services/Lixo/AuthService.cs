@@ -1,9 +1,9 @@
 using System.Text.Json;
 using Microsoft.JSInterop;
-using PesquisaX.Shared.Views;
-using PesquisaX.Web.Dto;
+using Prumo.Shared.Views;
+using Prumo.Web.Dto;
 
-namespace PesquisaX.Web.Services;
+namespace Prumo.Web.Services;
 
 public class AuthService(ILogger<AuthService> logger, IJSRuntime jsRuntime, HttpClient _httpClient) : IAuthService
 {

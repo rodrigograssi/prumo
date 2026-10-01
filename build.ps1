@@ -1,4 +1,4 @@
-# Script de Build do PesquisaX com Versionamento Automático
+# Script de Build do Prumo com Versionamento Automático
 # PowerShell script para builds locais e CI/CD
 
 param(
@@ -12,7 +12,7 @@ param(
 )
 
 Write-Host "=====================================" -ForegroundColor Cyan
-Write-Host "    PesquisaX Build Script v1.0     " -ForegroundColor Cyan
+Write-Host "    Prumo Build Script v1.0     " -ForegroundColor Cyan
 Write-Host "=====================================" -ForegroundColor Cyan
 Write-Host ""
 

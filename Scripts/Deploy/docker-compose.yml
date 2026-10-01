@@ -1,29 +1,29 @@
 #secrets:
 #  postgres_password:
 #    external: true
-#    name: pesquisax_postgres_password
+#    name: prumo_postgres_password
 #  jwt_secret:
 #    external: true
-#    name: pesquisax_jwt_secret
+#    name: prumo_jwt_secret
 
 services:
   # PostgreSQL Database
   database:
     image: postgres:16-alpine
     environment:
-      - POSTGRES_DB=pesquisax
-      - POSTGRES_USER=pesquisax
+      - POSTGRES_DB=prumo
+      - POSTGRES_USER=prumo
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - PGDATA=/var/lib/postgresql/data/pgdata
 #    secrets:
 #      - postgres_password
     volumes:
-      - /data/services/pesquisax/postgres/data:/var/lib/postgresql/data
-      - /data/services/pesquisax/postgres/backup:/backup
+      - /data/services/prumo/postgres/data:/var/lib/postgresql/data
+      - /data/services/prumo/postgres/backup:/backup
     networks:
       - network_public
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pesquisax -d pesquisax"]
+      test: ["CMD-SHELL", "pg_isready -U prumo -d prumo"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,16 +47,16 @@ services:
       labels:
         - "traefik.enable=false"
 
-  # PesquisaX API
+  # Prumo API
   api:
-    image: rodrigoeajt/pesquisax-api:latest
+    image: rodrigoeajt/prumo-api:latest
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - "ConnectionStrings__DefaultConnection=Host=database;Database=pesquisax;Username=pesquisax;Password=${POSTGRES_PASSWORD};Port=5432;Include Error Detail=true"
+      - "ConnectionStrings__DefaultConnection=Host=database;Database=prumo;Username=prumo;Password=${POSTGRES_PASSWORD};Port=5432;Include Error Detail=true"
       - JWT__SecretKey=Nqt5wbuZdF8ODX68h1tQGRe7GhdOGPDdatTdsxg9n16PSjKL3nSgqvLBAFd2MmF5qyHap8MpEgYaxrkpAxg
-      - JWT__Issuer=PesquisaX
-      - JWT__Audience=PesquisaX.Users
+      - JWT__Issuer=Prumo
+      - JWT__Audience=Prumo.Users
       - JWT__ExpirationHours=24
       - Logging__LogLevel__Default=Information
       - Logging__LogLevel__Microsoft.AspNetCore=Warning
@@ -102,19 +102,19 @@ services:
         - "traefik.docker.network=network_public"
         
         # HTTP Router
-        - "traefik.http.routers.pesquisax-api.rule=Host(`api-pesquisax.thaishiroki.com.br`)"
-        - "traefik.http.routers.pesquisax-api.entrypoints=websecure"
-        - "traefik.http.routers.pesquisax-api.tls=true"
-        - "traefik.http.routers.pesquisax-api.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.prumo-api.rule=Host(`api-prumo.thaishiroki.com.br`)"
+        - "traefik.http.routers.prumo-api.entrypoints=websecure"
+        - "traefik.http.routers.prumo-api.tls=true"
+        - "traefik.http.routers.prumo-api.tls.certresolver=letsencryptresolver"
         
         # Load Balancer
-        - "traefik.http.services.pesquisax-api.loadbalancer.server.port=8080"
-        - "traefik.http.services.pesquisax-api.loadbalancer.healthcheck.path=/health"
-        - "traefik.http.services.pesquisax-api.loadbalancer.healthcheck.interval=10s"
+        - "traefik.http.services.prumo-api.loadbalancer.server.port=8080"
+        - "traefik.http.services.prumo-api.loadbalancer.healthcheck.path=/health"
+        - "traefik.http.services.prumo-api.loadbalancer.healthcheck.interval=10s"
             
         # Middleware CORS
-        - "traefik.http.routers.pesquisax-api.middlewares=api-cors,api-headers"
-        - "traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=https://pesquisax.thaishiroki.com.br,https://www.pesquisax.thaishiroki.com.br"
+        - "traefik.http.routers.prumo-api.middlewares=api-cors,api-headers"
+        - "traefik.http.middlewares.api-cors.headers.accesscontrolalloworiginlist=https://prumo.thaishiroki.com.br,https://www.prumo.thaishiroki.com.br"
         - "traefik.http.middlewares.api-cors.headers.accesscontrolallowheaders=*"
         - "traefik.http.middlewares.api-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
         - "traefik.http.middlewares.api-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
@@ -126,18 +126,18 @@ services:
         - "traefik.http.middlewares.swagger-auth.basicauth.users=admin:$apr1$2B.TuWvt$vgyh9n2GeEr5YZBhXnhIS."
 
         # Roteador só para o Swagger
-        - "traefik.http.routers.pesquisax-swagger.rule=Host(`api-pesquisax.thaishiroki.com.br`) && PathPrefix(`/swagger`)"
-        - "traefik.http.routers.pesquisax-swagger.entrypoints=websecure"
-        - "traefik.http.routers.pesquisax-swagger.tls=true"
-        - "traefik.http.routers.pesquisax-swagger.tls.certresolver=letsencryptresolver"
-        - "traefik.http.routers.pesquisax-swagger.middlewares=swagger-auth"
-        - "traefik.http.services.pesquisax-swagger.loadbalancer.server.port=8080"
+        - "traefik.http.routers.prumo-swagger.rule=Host(`api-prumo.thaishiroki.com.br`) && PathPrefix(`/swagger`)"
+        - "traefik.http.routers.prumo-swagger.entrypoints=websecure"
+        - "traefik.http.routers.prumo-swagger.tls=true"
+        - "traefik.http.routers.prumo-swagger.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.prumo-swagger.middlewares=swagger-auth"
+        - "traefik.http.services.prumo-swagger.loadbalancer.server.port=8080"
 
-  # PesquisaX Web Frontend
+  # Prumo Web Frontend
   web:
-    image: rodrigoeajt/pesquisax-web:latest
+    image: rodrigoeajt/prumo-web:latest
     environment:
-      - API_BASE_URL=https://api-pesquisax.thaishiroki.com.br
+      - API_BASE_URL=https://api-prumo.thaishiroki.com.br
       - BUILD_NUMBER=${BUILD_NUMBER:-swarm}
       - GIT_COMMIT_HASH=${GIT_COMMIT_HASH:-swarm-deploy}
     networks:
@@ -177,44 +177,44 @@ services:
         - "traefik.docker.network=network_public"
         
         # HTTP Router
-        - "traefik.http.routers.pesquisax-web.rule=Host(`pesquisax.thaishiroki.com.br`)"
-        - "traefik.http.routers.pesquisax-web.entrypoints=websecure"
-        - "traefik.http.routers.pesquisax-web.tls=true"
-        - "traefik.http.routers.pesquisax-web.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.prumo-web.rule=Host(`prumo.thaishiroki.com.br`)"
+        - "traefik.http.routers.prumo-web.entrypoints=websecure"
+        - "traefik.http.routers.prumo-web.tls=true"
+        - "traefik.http.routers.prumo-web.tls.certresolver=letsencryptresolver"
         
         # Load Balancer
-        - "traefik.http.services.pesquisax-web.loadbalancer.server.port=8081"
+        - "traefik.http.services.prumo-web.loadbalancer.server.port=8081"
         
         # Middleware para SPA
-        - "traefik.http.routers.pesquisax-web.middlewares=web-headers,spa-redirect"
+        - "traefik.http.routers.prumo-web.middlewares=web-headers,spa-redirect"
         - "traefik.http.middlewares.web-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
-        - "traefik.http.middlewares.spa-redirect.redirectregex.regex=^https://www.pesquisax.thaishiroki.com.br/(.*)"
-        - "traefik.http.middlewares.spa-redirect.redirectregex.replacement=https://pesquisax.thaishiroki.com.br/$${1}"
+        - "traefik.http.middlewares.spa-redirect.redirectregex.regex=^https://www.prumo.thaishiroki.com.br/(.*)"
+        - "traefik.http.middlewares.spa-redirect.redirectregex.replacement=https://prumo.thaishiroki.com.br/$${1}"
         - "traefik.http.middlewares.spa-redirect.redirectregex.permanent=true"
 
   # PostgreSQL Backup Service (opcional)
   db-backup:
     image: postgres:16-alpine
     environment:
-      - POSTGRES_DB=pesquisax
-      - POSTGRES_USER=pesquisax
+      - POSTGRES_DB=prumo
+      - POSTGRES_USER=prumo
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - PGPASSFILE=/tmp/.pgpass
 #    secrets:
 #      - postgres_password
     volumes:
-      - /data/services/pesquisax/postgres/backup:/backup
+      - /data/services/prumo/postgres/backup:/backup
     networks:
       - network_public
     depends_on:
       - database
     command: |
       sh -c '
-        echo "database:5432:pesquisax:pesquisax:$$(cat /run/secrets/postgres_password)" > /tmp/.pgpass &&
+        echo "database:5432:prumo:prumo:$$(cat /run/secrets/postgres_password)" > /tmp/.pgpass &&
         chmod 600 /tmp/.pgpass &&
         while true; do
           echo "$$(date): Starting backup..."
-          pg_dump -h database -U pesquisax -d pesquisax > /backup/pesquisax_$$(date +%Y%m%d_%H%M%S).sql
+          pg_dump -h database -U prumo -d prumo > /backup/prumo_$$(date +%Y%m%d_%H%M%S).sql
           find /backup -name "*.sql" -mtime +7 -delete
           echo "$$(date): Backup completed. Sleeping for 6 hours..."
           sleep 21600
@@ -267,11 +267,11 @@ services:
         # Traefik Configuration
         - "traefik.enable=true"
         - "traefik.docker.network=network_public"
-        - "traefik.http.routers.pesquisax-adminer.rule=Host(`db-pesquisax.thaishiroki.com.br`)"
-        - "traefik.http.routers.pesquisax-adminer.entrypoints=websecure"
-        - "traefik.http.routers.pesquisax-adminer.tls=true"
-        - "traefik.http.routers.pesquisax-adminer.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.pesquisax-adminer.loadbalancer.server.port=8080"
+        - "traefik.http.routers.prumo-adminer.rule=Host(`db-prumo.thaishiroki.com.br`)"
+        - "traefik.http.routers.prumo-adminer.entrypoints=websecure"
+        - "traefik.http.routers.prumo-adminer.tls=true"
+        - "traefik.http.routers.prumo-adminer.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.prumo-adminer.loadbalancer.server.port=8080"
         
         
 networks:

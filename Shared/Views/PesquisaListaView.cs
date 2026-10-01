@@ -1,4 +1,4 @@
-﻿namespace PesquisaX.Shared.Views;
+﻿namespace Prumo.Shared.Views;
 
 public class PesquisaListaView
 {

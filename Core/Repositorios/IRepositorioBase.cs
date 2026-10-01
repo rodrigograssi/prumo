@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace PesquisaX.Core.Repositorios;
+namespace Prumo.Core.Repositorios;
 
 public interface IRepositorioBase<T> where T : class
 {

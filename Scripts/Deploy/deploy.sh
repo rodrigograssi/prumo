@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script de Deploy do PesquisaX para Docker Swarm
+# Script de Deploy do Prumo para Docker Swarm
 # Configurado para usar Traefik como Proxy Reverso
 
 set -e
@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configurações
-STACK_NAME="pesquisax"
+STACK_NAME="prumo"
 COMPOSE_FILE="docker-compose.yml"
 ENV_FILE=".env"
 
@@ -44,7 +44,7 @@ fi
 # Banner
 echo -e "${BLUE}"
 echo "======================================"
-echo "    PesquisaX Docker Swarm Deploy    "
+echo "    Prumo Docker Swarm Deploy    "
 echo "======================================"
 echo -e "${NC}"
 
@@ -87,14 +87,14 @@ check_secret() {
 log_info "Verificando secrets..."
 secrets_ok=true
 
-if ! check_secret "pesquisax_postgres_password"; then
+if ! check_secret "prumo_postgres_password"; then
     secrets_ok=false
-    log_info "Exemplo: echo 'senha_super_segura' | docker secret create pesquisax_postgres_password -"
+    log_info "Exemplo: echo 'senha_super_segura' | docker secret create prumo_postgres_password -"
 fi
 
-if ! check_secret "pesquisax_jwt_secret"; then
+if ! check_secret "prumo_jwt_secret"; then
     secrets_ok=false
-    log_info "Exemplo: openssl rand -base64 32 | docker secret create pesquisax_jwt_secret -"
+    log_info "Exemplo: openssl rand -base64 32 | docker secret create prumo_jwt_secret -"
 fi
 
 if [ "$secrets_ok" = false ]; then
@@ -112,8 +112,8 @@ build_images() {
         --build-arg BUILD_CONFIGURATION=Release \
         --build-arg BUILD_NUMBER="$BUILD_NUMBER" \
         --build-arg GIT_COMMIT_HASH="$GIT_COMMIT_HASH" \
-        -t pesquisax/api:latest \
-        -t "pesquisax/api:$BUILD_NUMBER" \
+        -t prumo/api:latest \
+        -t "prumo/api:$BUILD_NUMBER" \
         ..
     
     # Build do Web
@@ -122,8 +122,8 @@ build_images() {
         --build-arg BUILD_CONFIGURATION=Release \
         --build-arg BUILD_NUMBER="$BUILD_NUMBER" \
         --build-arg GIT_COMMIT_HASH="$GIT_COMMIT_HASH" \
-        -t pesquisax/web:latest \
-        -t "pesquisax/web:$BUILD_NUMBER" \
+        -t prumo/web:latest \
+        -t "prumo/web:$BUILD_NUMBER" \
         ..
     
     log_success "Imagens buildadas com sucesso!"
@@ -171,10 +171,10 @@ check_deployment() {
 show_access_urls() {
     echo -e "\n${GREEN}🎉 Deploy Concluído!${NC}"
     echo -e "\n${BLUE}URLs de Acesso:${NC}"
-    echo -e "  🌐 Frontend: https://pesquisax.local"
-    echo -e "  🔌 API: https://api.pesquisax.local"
-    echo -e "  🗄️  Adminer: https://db.pesquisax.local"
-    echo -e "  📊 Swagger: https://api.pesquisax.local/swagger"
+    echo -e "  🌐 Frontend: https://prumo.local"
+    echo -e "  🔌 API: https://api.prumo.local"
+    echo -e "  🗄️  Adminer: https://db.prumo.local"
+    echo -e "  📊 Swagger: https://api.prumo.local/swagger"
     
     echo -e "\n${YELLOW}⚠️  Certifique-se de que os domínios estão configurados no DNS ou /etc/hosts${NC}"
     echo -e "\n${BLUE}Comandos Úteis:${NC}"

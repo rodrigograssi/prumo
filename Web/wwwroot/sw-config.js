@@ -1,7 +1,7 @@
-// Configuração do Service Worker para PesquisaX
+// Configuração do Service Worker para Prumo
 window.swConfig = {
     version: '1.0.3',
-    cacheName: 'pesquisax-v1.0.3',
+    cacheName: 'prumo-v1.0.3',
     staticAssets: [
         '/',
         '/css/app.css',

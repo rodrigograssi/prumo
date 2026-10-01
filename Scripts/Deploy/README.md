@@ -1,4 +1,4 @@
-# Scripts do PostgreSQL - PesquisaX
+# Scripts do PostgreSQL - Prumo
 
 ## Executar PostgreSQL
 
@@ -14,15 +14,15 @@ docker-compose up -d
 Se quiser usar configurações personalizadas, execute na pasta DataBase:
 ```bash
 cd DataBase
-docker build -t pesquisax-postgres .
-docker run -d --name pesquisax-db -p 5432:5432 pesquisax-postgres
+docker build -t prumo-postgres .
+docker run -d --name prumo-db -p 5432:5432 prumo-postgres
 ```
 
 ## Configurações
 
-- **Database**: pesquisax
-- **Usuário**: pesquisax_user
-- **Senha**: pesquisax_2024!
+- **Database**: prumo
+- **Usuário**: prumo_user
+- **Senha**: prumo_2024!
 - **Porta**: 5432
 - **Timezone**: UTC
 - **Locale**: C.UTF-8
@@ -30,7 +30,7 @@ docker run -d --name pesquisax-db -p 5432:5432 pesquisax-postgres
 ## String de Conexão
 
 ```
-Host=localhost;Database=pesquisax;Username=pesquisax_user;Password=pesquisax_2024!;Port=5432
+Host=localhost;Database=prumo;Username=prumo_user;Password=prumo_2024!;Port=5432
 ```
 
 ## Comandos Úteis
@@ -42,7 +42,7 @@ docker ps
 
 ### Ver logs
 ```bash
-docker logs pesquisax-postgres
+docker logs prumo-postgres
 ```
 
 ### Parar container

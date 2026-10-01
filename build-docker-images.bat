@@ -1,5 +1,5 @@
 @echo off
-REM Script para Build e Push das Imagens Docker do PesquisaX para DockerHub
+REM Script para Build e Push das Imagens Docker do Prumo para DockerHub
 REM Execute este script da raiz do projeto (onde est�o as pastas Api, Web)
 
 REM For�ar o script a rodar no diret�rio onde ele est�
@@ -8,7 +8,7 @@ cd /d "%~dp0"
 setlocal enabledelayedexpansion
 
 echo ============================================
-echo    PesquisaX Docker Build e Push DockerHub
+echo    Prumo Docker Build e Push DockerHub
 echo ============================================
 echo.
 
@@ -45,15 +45,15 @@ echo [OK] Docker esta funcionando!
 echo.
 
 REM Build da API
-echo [STEP 1/4] Building PesquisaX API
+echo [STEP 1/4] Building Prumo API
 echo [INFO] Construindo imagem da API para DockerHub...
 
 docker build -f Api\Dockerfile ^
     --build-arg BUILD_CONFIGURATION=Release ^
     --build-arg BUILD_NUMBER=!BUILD_NUMBER! ^
     --build-arg GIT_COMMIT_HASH=!GIT_COMMIT_HASH! ^
-    -t %DOCKERHUB_USER%/pesquisax-api:%IMAGE_TAG% ^
-    -t %DOCKERHUB_USER%/pesquisax-api:!BUILD_NUMBER! ^
+    -t %DOCKERHUB_USER%/prumo-api:%IMAGE_TAG% ^
+    -t %DOCKERHUB_USER%/prumo-api:!BUILD_NUMBER! ^
     .
 
 if errorlevel 1 (
@@ -66,15 +66,15 @@ echo [OK] Imagem da API construida com sucesso!
 echo.
 
 REM Build do Web
-echo [STEP 2/4] Building PesquisaX Web
+echo [STEP 2/4] Building Prumo Web
 echo [INFO] Construindo imagem do Web para DockerHub...
 
 docker build -f Web\Dockerfile ^
     --build-arg BUILD_CONFIGURATION=Release ^
     --build-arg BUILD_NUMBER=!BUILD_NUMBER! ^
     --build-arg GIT_COMMIT_HASH=!GIT_COMMIT_HASH! ^
-    -t %DOCKERHUB_USER%/pesquisax-web:%IMAGE_TAG% ^
-    -t %DOCKERHUB_USER%/pesquisax-web:!BUILD_NUMBER! ^
+    -t %DOCKERHUB_USER%/prumo-web:%IMAGE_TAG% ^
+    -t %DOCKERHUB_USER%/prumo-web:!BUILD_NUMBER! ^
     .
 
 if errorlevel 1 (
@@ -103,8 +103,8 @@ echo.
 REM Push das imagens
 echo [STEP 4/4] Push para DockerHub
 echo [INFO] Enviando imagem da API para DockerHub...
-docker push %DOCKERHUB_USER%/pesquisax-api:%IMAGE_TAG%
-docker push %DOCKERHUB_USER%/pesquisax-api:!BUILD_NUMBER!
+docker push %DOCKERHUB_USER%/prumo-api:%IMAGE_TAG%
+docker push %DOCKERHUB_USER%/prumo-api:!BUILD_NUMBER!
 
 if errorlevel 1 (
     echo [ERROR] Falha no push da imagem da API!
@@ -113,8 +113,8 @@ if errorlevel 1 (
 )
 
 echo [INFO] Enviando imagem do Web para DockerHub...
-docker push %DOCKERHUB_USER%/pesquisax-web:%IMAGE_TAG%
-docker push %DOCKERHUB_USER%/pesquisax-web:!BUILD_NUMBER!
+docker push %DOCKERHUB_USER%/prumo-web:%IMAGE_TAG%
+docker push %DOCKERHUB_USER%/prumo-web:!BUILD_NUMBER!
 
 if errorlevel 1 (
     echo [ERROR] Falha no push da imagem do Web!
@@ -131,15 +131,15 @@ echo        Build e Push Concluidos!
 echo ==========================================
 echo.
 echo Imagens enviadas para DockerHub:
-echo - %DOCKERHUB_USER%/pesquisax-api:%IMAGE_TAG%
-echo - %DOCKERHUB_USER%/pesquisax-api:!BUILD_NUMBER!
-echo - %DOCKERHUB_USER%/pesquisax-web:%IMAGE_TAG%
-echo - %DOCKERHUB_USER%/pesquisax-web:!BUILD_NUMBER!
+echo - %DOCKERHUB_USER%/prumo-api:%IMAGE_TAG%
+echo - %DOCKERHUB_USER%/prumo-api:!BUILD_NUMBER!
+echo - %DOCKERHUB_USER%/prumo-web:%IMAGE_TAG%
+echo - %DOCKERHUB_USER%/prumo-web:!BUILD_NUMBER!
 echo.
 echo Para usar no servidor, atualize o docker-compose.yml com:
 echo   api-test:
-echo     image: %DOCKERHUB_USER%/pesquisax-api:%IMAGE_TAG%
+echo     image: %DOCKERHUB_USER%/prumo-api:%IMAGE_TAG%
 echo   web-test:
-echo     image: %DOCKERHUB_USER%/pesquisax-web:%IMAGE_TAG%
+echo     image: %DOCKERHUB_USER%/prumo-web:%IMAGE_TAG%
 echo.
 pause

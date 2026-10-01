@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Quick Start Script para PesquisaX Docker Swarm Deploy
+# Quick Start Script para Prumo Docker Swarm Deploy
 # Este script configura tudo automaticamente para um deploy rápido
 
 set -e
@@ -15,10 +15,10 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configurações
-STACK_NAME="pesquisax"
-DOMAIN_WEB="pesquisax.local"
-DOMAIN_API="api.pesquisax.local"
-DOMAIN_DB="db.pesquisax.local"
+STACK_NAME="prumo"
+DOMAIN_WEB="prumo.local"
+DOMAIN_API="api.prumo.local"
+DOMAIN_DB="db.prumo.local"
 
 # Banner
 echo -e "${PURPLE}"
@@ -143,10 +143,10 @@ setup_secrets() {
     log_step 4 "Configurando Docker Secrets"
     
     # PostgreSQL password
-    if ! docker secret ls --format '{{.Name}}' | grep -q "^pesquisax_postgres_password$"; then
+    if ! docker secret ls --format '{{.Name}}' | grep -q "^prumo_postgres_password$"; then
         log_info "Criando secret do PostgreSQL..."
         POSTGRES_PASS=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
-        echo -n "$POSTGRES_PASS" | docker secret create pesquisax_postgres_password -
+        echo -n "$POSTGRES_PASS" | docker secret create prumo_postgres_password -
         log_success "Secret do PostgreSQL criado"
         echo -e "  ${YELLOW}Senha gerada: $POSTGRES_PASS${NC}"
     else
@@ -154,10 +154,10 @@ setup_secrets() {
     fi
     
     # JWT secret
-    if ! docker secret ls --format '{{.Name}}' | grep -q "^pesquisax_jwt_secret$"; then
+    if ! docker secret ls --format '{{.Name}}' | grep -q "^prumo_jwt_secret$"; then
         log_info "Criando JWT secret..."
         JWT_SECRET=$(openssl rand -base64 64 | tr -d "=+/" | cut -c1-64)
-        echo -n "$JWT_SECRET" | docker secret create pesquisax_jwt_secret -
+        echo -n "$JWT_SECRET" | docker secret create prumo_jwt_secret -
         log_success "JWT secret criado"
         echo -e "  ${YELLOW}Secret gerado: ${JWT_SECRET:0:20}...${NC}"
     else
@@ -179,24 +179,24 @@ build_images() {
     log_info "Git Commit: ${GIT_COMMIT:0:8}"
     
     # API
-    log_info "Building PesquisaX API..."
+    log_info "Building Prumo API..."
     docker build -f ../Api/Dockerfile \
         --build-arg BUILD_CONFIGURATION=Release \
         --build-arg BUILD_NUMBER="$BUILD_NUMBER" \
         --build-arg GIT_COMMIT_HASH="$GIT_COMMIT" \
-        -t pesquisax/api:latest \
-        -t "pesquisax/api:$BUILD_NUMBER" \
+        -t prumo/api:latest \
+        -t "prumo/api:$BUILD_NUMBER" \
         .. > /dev/null 2>&1
     log_success "API image criada"
     
     # Web
-    log_info "Building PesquisaX Web..."
+    log_info "Building Prumo Web..."
     docker build -f ../Web/Dockerfile \
         --build-arg BUILD_CONFIGURATION=Release \
         --build-arg BUILD_NUMBER="$BUILD_NUMBER" \
         --build-arg GIT_COMMIT_HASH="$GIT_COMMIT" \
-        -t pesquisax/web:latest \
-        -t "pesquisax/web:$BUILD_NUMBER" \
+        -t prumo/web:latest \
+        -t "prumo/web:$BUILD_NUMBER" \
         .. > /dev/null 2>&1
     log_success "Web image criada"
 }
@@ -226,7 +226,7 @@ show_results() {
     log_info "Status dos serviços:"
     docker stack services "$STACK_NAME" --format "table {{.Name}}\t{{.Replicas}}\t{{.Image}}"
     
-    echo -e "\n${GREEN}🎉 Deploy do PesquisaX concluído com sucesso!${NC}\n"
+    echo -e "\n${GREEN}🎉 Deploy do Prumo concluído com sucesso!${NC}\n"
     
     # URLs de acesso
     echo -e "${CYAN}📱 URLs de Acesso:${NC}"
@@ -264,7 +264,7 @@ show_results() {
 
 # Executar todos os passos
 main() {
-    echo -e "${BLUE}Iniciando quick start do PesquisaX...${NC}\n"
+    echo -e "${BLUE}Iniciando quick start do Prumo...${NC}\n"
     
     check_prerequisites
     setup_traefik_network

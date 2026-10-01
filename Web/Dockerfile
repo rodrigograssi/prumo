@@ -7,11 +7,11 @@ ARG GIT_COMMIT_HASH=docker-build
 WORKDIR /src
 
 # Copiar arquivos de projeto para cache das camadas
-COPY ["Web/PesquisaX.Web.csproj", "Web/"]
-COPY ["Shared/PesquisaX.Shared.csproj", "Shared/"]
+COPY ["Web/Prumo.Web.csproj", "Web/"]
+COPY ["Shared/Prumo.Shared.csproj", "Shared/"]
 
 # Restore das dependências
-RUN dotnet restore "Web/PesquisaX.Web.csproj"
+RUN dotnet restore "Web/Prumo.Web.csproj"
 
 # Copiar todo o código fonte
 COPY . .
@@ -22,7 +22,7 @@ ENV GIT_COMMIT_HASH=$GIT_COMMIT_HASH
 
 # Build da aplicação Blazor WebAssembly
 WORKDIR "/src/Web"
-RUN dotnet publish "PesquisaX.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish --no-restore
+RUN dotnet publish "Prumo.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish --no-restore
 
 # Stage 2: Imagem final leve com nginx
 FROM nginx:alpine AS final

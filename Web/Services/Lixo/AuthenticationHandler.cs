@@ -1,7 +1,7 @@
 using System.Net.Http.Headers;
-using PesquisaX.Web.Dto;
+using Prumo.Web.Dto;
 
-namespace PesquisaX.Web.Services;
+namespace Prumo.Web.Services;
 
 public class AuthenticationHandler : DelegatingHandler
 {

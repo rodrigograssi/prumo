@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using PesquisaX.Core;
-using PesquisaX.Core.Modelos;
+using Prumo.Core;
+using Prumo.Core.Modelos;
 
-namespace PesquisaX.Infra.Contexto;
+namespace Prumo.Infra.Contexto;
 
-public class PesquisaXContexto : DbContext
+public class PrumoContexto : DbContext
 {
-    public PesquisaXContexto(DbContextOptions<PesquisaXContexto> options) : base(options)
+    public PrumoContexto(DbContextOptions<PrumoContexto> options) : base(options)
     {
     }
 

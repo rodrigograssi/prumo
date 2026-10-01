@@ -1,4 +1,4 @@
-namespace PesquisaX.Shared.Version;
+namespace Prumo.Shared.Version;
 
 /// <summary>
 /// Serviço para gerenciar e obter informações do changelog

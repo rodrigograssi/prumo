@@ -1,4 +1,4 @@
-namespace PesquisaX.Web.Servicos;
+namespace Prumo.Web.Servicos;
 
 public interface IServicoTema
 {

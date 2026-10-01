@@ -1,11 +1,11 @@
-﻿using PesquisaX.Core;
-using PesquisaX.Core.Interfaces;
-using PesquisaX.Core.Repositorios;
-using PesquisaX.Shared.Comandos;
-using PesquisaX.Shared.DTO;
-using PesquisaX.Shared.DTO.Responses;
+﻿using Prumo.Core;
+using Prumo.Core.Interfaces;
+using Prumo.Core.Repositorios;
+using Prumo.Shared.Comandos;
+using Prumo.Shared.DTO;
+using Prumo.Shared.DTO.Responses;
 
-namespace PesquisaX.Infra.Handlers;
+namespace Prumo.Infra.Handlers;
 
 public class UsuarioHandler(IRepositorioUsuario repo) : IUsuarioHandler
 {

@@ -5,15 +5,15 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api", "Api", "{D82C56D6-B2CD-F611-9E31-04638F7EC30E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PesquisaX.Api", "Api\PesquisaX.Api.csproj", "{8D0534F2-18FD-4719-B5E4-5F430C9E99B5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prumo.Api", "Api\Prumo.Api.csproj", "{8D0534F2-18FD-4719-B5E4-5F430C9E99B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PesquisaX.Web", "Web\PesquisaX.Web.csproj", "{1BBA554C-DEEE-47A9-A733-62A2A16268E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prumo.Web", "Web\Prumo.Web.csproj", "{1BBA554C-DEEE-47A9-A733-62A2A16268E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PesquisaX.Infra", "Infra\PesquisaX.Infra.csproj", "{D764B1D2-9BF5-4DBF-87B1-7C74DC4CDA9E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prumo.Infra", "Infra\Prumo.Infra.csproj", "{D764B1D2-9BF5-4DBF-87B1-7C74DC4CDA9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PesquisaX.Shared", "Shared\PesquisaX.Shared.csproj", "{CE80EF54-7B7D-463C-8610-86965C3A5548}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prumo.Shared", "Shared\Prumo.Shared.csproj", "{CE80EF54-7B7D-463C-8610-86965C3A5548}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PesquisaX.Core", "Core\PesquisaX.Core.csproj", "{B52916BA-DC27-48D0-B40D-078FA72CAD3C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prumo.Core", "Core\Prumo.Core.csproj", "{B52916BA-DC27-48D0-B40D-078FA72CAD3C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

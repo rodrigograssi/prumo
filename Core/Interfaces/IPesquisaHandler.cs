@@ -1,8 +1,8 @@
-﻿using PesquisaX.Core.Modelos;
-using PesquisaX.Shared.Comandos;
-using PesquisaX.Shared.DTO;
+﻿using Prumo.Core.Modelos;
+using Prumo.Shared.Comandos;
+using Prumo.Shared.DTO;
 
-namespace PesquisaX.Core.Interfaces;
+namespace Prumo.Core.Interfaces;
 
 public interface IPesquisaHandler
 {

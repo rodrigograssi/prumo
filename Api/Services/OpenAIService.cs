@@ -1,8 +1,8 @@
 using OpenAI.Chat;
-using PesquisaX.Shared.Comandos;
+using Prumo.Shared.Comandos;
 using System.Text.Json;
 
-namespace PesquisaX.Api.Services;
+namespace Prumo.Api.Services;
 
 public class OpenAIService : IAIService
 {

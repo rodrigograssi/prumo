@@ -1,6 +1,6 @@
-using PesquisaX.Core.ValueObjects;
+using Prumo.Core.ValueObjects;
 
-namespace PesquisaX.Core;
+namespace Prumo.Core;
 
 public class Usuario: Entidade
 {

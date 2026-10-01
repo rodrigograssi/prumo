@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using PesquisaX.Core.Modelos;
-using PesquisaX.Core.Repositorios;
-using PesquisaX.Infra.Contexto;
-using PesquisaX.Shared.Views;
+using Prumo.Core.Modelos;
+using Prumo.Core.Repositorios;
+using Prumo.Infra.Contexto;
+using Prumo.Shared.Views;
 
-namespace PesquisaX.Infra.Repositorios;
+namespace Prumo.Infra.Repositorios;
 
-public class PesquisaRepositorio(PesquisaXContexto db): IPesquisaRepositorio
+public class PesquisaRepositorio(PrumoContexto db): IPesquisaRepositorio
 {
     public async Task AlterarAsync(Pesquisa pesquisa)
     {

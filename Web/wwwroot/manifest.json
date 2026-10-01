@@ -1,6 +1,6 @@
 {
-  "name": "PesquisaX - Sistema de Pesquisas",
-  "short_name": "PesquisaX",
+  "name": "Prumo - Pesquisas de Alinhamento",
+  "short_name": "Prumo",
   "description": "Sistema completo para criar e aplicar pesquisas personalizadas com visualizações em radar charts",
   "start_url": "/",
   "display": "standalone",
@@ -54,7 +54,7 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Interface principal do PesquisaX"
+      "label": "Interface principal do Prumo"
     }
   ]
 }

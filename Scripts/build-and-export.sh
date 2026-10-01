@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script para Build e Export das Imagens Docker do PesquisaX
+# Script para Build e Export das Imagens Docker do Prumo
 # Cria as imagens localmente e exporta para arquivos .tar para transferir para o servidor
 
 set -e
@@ -44,7 +44,7 @@ log_step() {
 # Banner
 echo -e "${CYAN}"
 echo "=========================================="
-echo "    PesquisaX Docker Build & Export     "
+echo "    Prumo Docker Build & Export     "
 echo "=========================================="
 echo -e "${NC}"
 
@@ -65,7 +65,7 @@ mkdir -p "$EXPORT_DIR"
 log_success "Diretório $EXPORT_DIR criado"
 
 # Passo 2: Build da API
-log_step 2 "Building PesquisaX API"
+log_step 2 "Building Prumo API"
 log_info "Construindo imagem da API..."
 
 # Mudar para diretório raiz do projeto
@@ -75,19 +75,19 @@ docker build -f Api/Dockerfile \
     --build-arg BUILD_CONFIGURATION=Release \
     --build-arg BUILD_NUMBER="$BUILD_NUMBER" \
     --build-arg GIT_COMMIT_HASH="$GIT_COMMIT_HASH" \
-    -t pesquisax/api:latest \
-    -t "pesquisax/api:$BUILD_NUMBER" \
-    -t pesquisax/api:production \
+    -t prumo/api:latest \
+    -t "prumo/api:$BUILD_NUMBER" \
+    -t prumo/api:production \
     .
 
 # Voltar para diretório Scripts
 cd Scripts
 
 log_success "Imagem da API construída com sucesso!"
-docker images | grep pesquisax/api
+docker images | grep prumo/api
 
 # Passo 3: Build do Web
-log_step 3 "Building PesquisaX Web"
+log_step 3 "Building Prumo Web"
 log_info "Construindo imagem do Web..."
 
 # Mudar para diretório raiz do projeto
@@ -97,23 +97,23 @@ docker build -f Web/Dockerfile \
     --build-arg BUILD_CONFIGURATION=Release \
     --build-arg BUILD_NUMBER="$BUILD_NUMBER" \
     --build-arg GIT_COMMIT_HASH="$GIT_COMMIT_HASH" \
-    -t pesquisax/web:latest \
-    -t "pesquisax/web:$BUILD_NUMBER" \
-    -t pesquisax/web:production \
+    -t prumo/web:latest \
+    -t "prumo/web:$BUILD_NUMBER" \
+    -t prumo/web:production \
     .
 
 # Voltar para diretório Scripts
 cd Scripts
 
 log_success "Imagem do Web construída com sucesso!"
-docker images | grep pesquisax/web
+docker images | grep prumo/web
 
 # Passo 4: Export da API
 log_step 4 "Exportando imagem da API"
-API_TAR_FILE="$EXPORT_DIR/pesquisax-api-$BUILD_NUMBER.tar"
+API_TAR_FILE="$EXPORT_DIR/prumo-api-$BUILD_NUMBER.tar"
 
-log_info "Exportando pesquisax/api:latest para $API_TAR_FILE..."
-docker save pesquisax/api:latest > "$API_TAR_FILE"
+log_info "Exportando prumo/api:latest para $API_TAR_FILE..."
+docker save prumo/api:latest > "$API_TAR_FILE"
 
 # Verificar tamanho do arquivo
 API_SIZE=$(du -h "$API_TAR_FILE" | cut -f1)
@@ -121,10 +121,10 @@ log_success "API exportada: $API_TAR_FILE ($API_SIZE)"
 
 # Passo 5: Export do Web
 log_step 5 "Exportando imagem do Web"
-WEB_TAR_FILE="$EXPORT_DIR/pesquisax-web-$BUILD_NUMBER.tar"
+WEB_TAR_FILE="$EXPORT_DIR/prumo-web-$BUILD_NUMBER.tar"
 
-log_info "Exportando pesquisax/web:latest para $WEB_TAR_FILE..."
-docker save pesquisax/web:latest > "$WEB_TAR_FILE"
+log_info "Exportando prumo/web:latest para $WEB_TAR_FILE..."
+docker save prumo/web:latest > "$WEB_TAR_FILE"
 
 # Verificar tamanho do arquivo
 WEB_SIZE=$(du -h "$WEB_TAR_FILE" | cut -f1)
@@ -137,13 +137,13 @@ IMPORT_SCRIPT="$EXPORT_DIR/import-images.sh"
 cat > "$IMPORT_SCRIPT" << EOF
 #!/bin/bash
 
-# Script para importar imagens Docker do PesquisaX no servidor
+# Script para importar imagens Docker do Prumo no servidor
 # Execute este script no servidor de destino
 
 set -e
 
 echo "======================================"
-echo "    PesquisaX Docker Images Import   "
+echo "    Prumo Docker Images Import   "
 echo "======================================"
 
 # Cores
@@ -151,25 +151,25 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo -e "\${BLUE}[INFO]\${NC} Importando imagens Docker do PesquisaX..."
+echo -e "\${BLUE}[INFO]\${NC} Importando imagens Docker do Prumo..."
 
 # Importar API
-if [ -f "pesquisax-api-$BUILD_NUMBER.tar" ]; then
-    echo -e "\${BLUE}[INFO]\${NC} Importando pesquisax/api..."
-    docker load < pesquisax-api-$BUILD_NUMBER.tar
+if [ -f "prumo-api-$BUILD_NUMBER.tar" ]; then
+    echo -e "\${BLUE}[INFO]\${NC} Importando prumo/api..."
+    docker load < prumo-api-$BUILD_NUMBER.tar
     echo -e "\${GREEN}[OK]\${NC} API importada com sucesso!"
 else
-    echo -e "\${RED}[ERROR]\${NC} Arquivo pesquisax-api-$BUILD_NUMBER.tar não encontrado!"
+    echo -e "\${RED}[ERROR]\${NC} Arquivo prumo-api-$BUILD_NUMBER.tar não encontrado!"
     exit 1
 fi
 
 # Importar Web
-if [ -f "pesquisax-web-$BUILD_NUMBER.tar" ]; then
-    echo -e "\${BLUE}[INFO]\${NC} Importando pesquisax/web..."
-    docker load < pesquisax-web-$BUILD_NUMBER.tar
+if [ -f "prumo-web-$BUILD_NUMBER.tar" ]; then
+    echo -e "\${BLUE}[INFO]\${NC} Importando prumo/web..."
+    docker load < prumo-web-$BUILD_NUMBER.tar
     echo -e "\${GREEN}[OK]\${NC} Web importado com sucesso!"
 else
-    echo -e "\${RED}[ERROR]\${NC} Arquivo pesquisax-web-$BUILD_NUMBER.tar não encontrado!"
+    echo -e "\${RED}[ERROR]\${NC} Arquivo prumo-web-$BUILD_NUMBER.tar não encontrado!"
     exit 1
 fi
 
@@ -177,7 +177,7 @@ echo ""
 echo -e "\${GREEN}✅ Todas as imagens foram importadas com sucesso!\${NC}"
 echo ""
 echo "Imagens disponíveis:"
-docker images | grep pesquisax
+docker images | grep prumo
 
 echo ""
 echo -e "\${BLUE}Próximos passos:\${NC}"
@@ -185,10 +185,10 @@ echo "1. Configure os Docker Secrets:"
 echo "   ./setup-secrets.sh"
 echo ""
 echo "2. Faça o deploy:"
-echo "   docker stack deploy -c docker-compose.yml pesquisax"
+echo "   docker stack deploy -c docker-compose.yml prumo"
 echo ""
 echo "3. Verifique o status:"
-echo "   docker stack services pesquisax"
+echo "   docker stack services prumo"
 EOF
 
 chmod +x "$IMPORT_SCRIPT"
@@ -197,7 +197,7 @@ log_success "Script de import criado: $IMPORT_SCRIPT"
 # Criar arquivo de informações da versão
 VERSION_INFO="$EXPORT_DIR/version-info.txt"
 cat > "$VERSION_INFO" << EOF
-PesquisaX Docker Images Export Information
+Prumo Docker Images Export Information
 ==========================================
 
 Build Date: $(date)
@@ -206,18 +206,18 @@ Git Commit: $GIT_COMMIT_HASH
 Environment: Production
 
 Files Generated:
-- pesquisax-api-$BUILD_NUMBER.tar ($API_SIZE)
-- pesquisax-web-$BUILD_NUMBER.tar ($WEB_SIZE)
+- prumo-api-$BUILD_NUMBER.tar ($API_SIZE)
+- prumo-web-$BUILD_NUMBER.tar ($WEB_SIZE)
 - import-images.sh (Import script for server)
 - version-info.txt (This file)
 
 Docker Images Created:
-- pesquisax/api:latest
-- pesquisax/api:$BUILD_NUMBER
-- pesquisax/api:production
-- pesquisax/web:latest
-- pesquisax/web:$BUILD_NUMBER
-- pesquisax/web:production
+- prumo/api:latest
+- prumo/api:$BUILD_NUMBER
+- prumo/api:production
+- prumo/web:latest
+- prumo/web:$BUILD_NUMBER
+- prumo/web:production
 
 Server Import Instructions:
 1. Copy all files from $EXPORT_DIR to your server
@@ -226,10 +226,10 @@ Server Import Instructions:
 4. Configure Docker Secrets and deploy
 
 URLs (after deploy):
-- Frontend: https://pesquisax.thaishiroki.com.br
-- API: https://api-pesquisax.thaishiroki.com.br
-- Health Check: https://api-pesquisax.thaishiroki.com.br/health
-- DB Admin: https://db-pesquisax.thaishiroki.com.br
+- Frontend: https://prumo.thaishiroki.com.br
+- API: https://api-prumo.thaishiroki.com.br
+- Health Check: https://api-prumo.thaishiroki.com.br/health
+- DB Admin: https://db-prumo.thaishiroki.com.br
 EOF
 
 log_success "Informações da versão salvas: $VERSION_INFO"
@@ -242,8 +242,8 @@ ls -lah "$EXPORT_DIR/"
 
 echo -e "\n${CYAN}📋 Resumo:${NC}"
 echo -e "  📁 Diretório: ${YELLOW}$EXPORT_DIR${NC}"
-echo -e "  🐳 API Image: ${YELLOW}pesquisax-api-$BUILD_NUMBER.tar${NC} ($API_SIZE)"
-echo -e "  🌐 Web Image: ${YELLOW}pesquisax-web-$BUILD_NUMBER.tar${NC} ($WEB_SIZE)"
+echo -e "  🐳 API Image: ${YELLOW}prumo-api-$BUILD_NUMBER.tar${NC} ($API_SIZE)"
+echo -e "  🌐 Web Image: ${YELLOW}prumo-web-$BUILD_NUMBER.tar${NC} ($WEB_SIZE)"
 echo -e "  📜 Import Script: ${YELLOW}import-images.sh${NC}"
 echo -e "  📝 Version Info: ${YELLOW}version-info.txt${NC}"
 
@@ -258,4 +258,4 @@ TOTAL_SIZE=$(du -sh "$EXPORT_DIR" | cut -f1)
 echo -e "  ${YELLOW}$TOTAL_SIZE${NC}"
 
 echo -e "\n${BLUE}Comando para compactar (opcional):${NC}"
-echo -e "  ${YELLOW}tar -czf pesquisax-images-$BUILD_NUMBER.tar.gz $EXPORT_DIR${NC}"
+echo -e "  ${YELLOW}tar -czf prumo-images-$BUILD_NUMBER.tar.gz $EXPORT_DIR${NC}"

@@ -1,10 +1,10 @@
-﻿using PesquisaX.Core.Interfaces;
-using PesquisaX.Core.Modelos;
-using PesquisaX.Core.Repositorios;
-using PesquisaX.Shared.Comandos;
-using PesquisaX.Shared.DTO;
+﻿using Prumo.Core.Interfaces;
+using Prumo.Core.Modelos;
+using Prumo.Core.Repositorios;
+using Prumo.Shared.Comandos;
+using Prumo.Shared.DTO;
 
-namespace PesquisaX.Infra.Handlers;
+namespace Prumo.Infra.Handlers;
 
 public class PesquisaHandler(IPesquisaRepositorio repo): IPesquisaHandler
 {

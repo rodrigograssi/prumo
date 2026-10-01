@@ -1,4 +1,4 @@
-# Scripts do Banco de Dados PostgreSQL - PesquisaX
+# Scripts do Banco de Dados PostgreSQL - Prumo
 
 Esta pasta contém os arquivos necessários para configurar e executar o banco de dados PostgreSQL usando Docker.
 
@@ -23,15 +23,15 @@ docker-compose up -d
 
 ```bash
 cd Scripts
-docker build -t pesquisax-postgres .
-docker run -d --name pesquisax-db -p 5432:5432 pesquisax-postgres
+docker build -t prumo-postgres .
+docker run -d --name prumo-db -p 5432:5432 prumo-postgres
 ```
 
 ## Configurações do Banco
 
-- **Database**: pesquisax
-- **Usuário**: pesquisax_user
-- **Senha**: pesquisax_2024!
+- **Database**: prumo
+- **Usuário**: prumo_user
+- **Senha**: prumo_2024!
 - **Porta**: 5432
 - **Timezone**: UTC
 - **Locale**: C.UTF-8
@@ -39,7 +39,7 @@ docker run -d --name pesquisax-db -p 5432:5432 pesquisax-postgres
 ## String de Conexão
 
 ```
-Host=localhost;Database=pesquisax;Username=pesquisax_user;Password=pesquisax_2024!;Port=5432
+Host=localhost;Database=prumo;Username=prumo_user;Password=prumo_2024!;Port=5432
 ```
 
 ## Comandos Úteis
@@ -51,12 +51,12 @@ docker ps
 
 ### Ver logs do container
 ```bash
-docker logs pesquisax-postgres
+docker logs prumo-postgres
 ```
 
 ### Conectar ao banco via psql
 ```bash
-docker exec -it pesquisax-postgres psql -U pesquisax_user -d pesquisax
+docker exec -it prumo-postgres psql -U prumo_user -d prumo
 ```
 
 ### Parar o container
@@ -73,12 +73,12 @@ docker-compose down -v
 
 ### Fazer backup
 ```bash
-docker exec pesquisax-postgres pg_dump -U pesquisax_user pesquisax > backup.sql
+docker exec prumo-postgres pg_dump -U prumo_user prumo > backup.sql
 ```
 
 ### Restaurar backup
 ```bash
-docker exec -i pesquisax-postgres psql -U pesquisax_user -d pesquisax < backup.sql
+docker exec -i prumo-postgres psql -U prumo_user -d prumo < backup.sql
 ```
 
 ## Monitoramento
@@ -86,5 +86,5 @@ docker exec -i pesquisax-postgres psql -U pesquisax_user -d pesquisax < backup.s
 O container inclui um healthcheck que verifica se o PostgreSQL está respondendo. Você pode verificar o status com:
 
 ```bash
-docker inspect pesquisax-postgres | grep Health
+docker inspect prumo-postgres | grep Health
 ```

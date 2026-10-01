@@ -1,6 +1,6 @@
-using PesquisaX.Shared.Views;
+using Prumo.Shared.Views;
 
-namespace PesquisaX.Shared.DTO.Responses;
+namespace Prumo.Shared.DTO.Responses;
 
 public class LoginResponse
 {

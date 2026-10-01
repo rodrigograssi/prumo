@@ -1,12 +1,12 @@
-PesquisaX Docker Images - Build 20250609180128
+Prumo Docker Images - Build 20250609180128
 =============================================
 Build Date: 06/09/2025 18:03:26,63
 Git Commit: 3fa981f1f63cc30e9999e51fd87b6807e54e7a13
 Environment: Production
 
 Arquivos:
-- pesquisax-api-20250609180128.tar
-- pesquisax-web-20250609180128.tar  
+- prumo-api-20250609180128.tar
+- prumo-web-20250609180128.tar  
 - import-images.sh
 - build-info.txt
 
@@ -16,7 +16,7 @@ Para usar no servidor:
 3. ./import-images.sh
 
 URLs apos deploy:
-- Frontend: https://pesquisax.thaishiroki.com.br
-- API: https://api-pesquisax.thaishiroki.com.br
-- Health: https://api-pesquisax.thaishiroki.com.br/health
-- DB Admin: https://db-pesquisax.thaishiroki.com.br
+- Frontend: https://prumo.thaishiroki.com.br
+- API: https://api-prumo.thaishiroki.com.br
+- Health: https://api-prumo.thaishiroki.com.br/health
+- DB Admin: https://db-prumo.thaishiroki.com.br

@@ -1,8 +1,8 @@
-﻿using PesquisaX.Shared.Comandos;
-using PesquisaX.Shared.DTO;
-using PesquisaX.Shared.DTO.Responses;
+﻿using Prumo.Shared.Comandos;
+using Prumo.Shared.DTO;
+using Prumo.Shared.DTO.Responses;
 
-namespace PesquisaX.Core.Interfaces;
+namespace Prumo.Core.Interfaces;
 
 public interface IUsuarioHandler
 {

@@ -2,18 +2,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using PesquisaX.Infra.Contexto;
+using Prumo.Infra.Contexto;
 
-namespace PesquisaX.Api.Controllers;
+namespace Prumo.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 public class HealthController : ControllerBase
 {
-    private readonly PesquisaXContexto _context;
+    private readonly PrumoContexto _context;
     private readonly ILogger<HealthController> _logger;
 
-    public HealthController(PesquisaXContexto context, ILogger<HealthController> logger)
+    public HealthController(PrumoContexto context, ILogger<HealthController> logger)
     {
         _context = context;
         _logger = logger;

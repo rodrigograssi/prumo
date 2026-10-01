@@ -4,16 +4,16 @@ using System.Text.Json;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using PesquisaX.Core.Repositorios;
-using PesquisaX.Core.Modelos;
+using Prumo.Core.Repositorios;
+using Prumo.Core.Modelos;
 using System.Security.Claims;
-using PesquisaX.Core.Extension;
-using PesquisaX.Core.Interfaces;
-using PesquisaX.Shared.Comandos;
-using PesquisaX.Shared.DTO;
-using PesquisaX.Shared.Views;
+using Prumo.Core.Extension;
+using Prumo.Core.Interfaces;
+using Prumo.Shared.Comandos;
+using Prumo.Shared.DTO;
+using Prumo.Shared.Views;
 
-namespace PesquisaX.Api.Controllers;
+namespace Prumo.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -517,7 +517,7 @@ public class PesquisasController(IPesquisaRepositorio repo,
                         .BorderTop(1)
                         .BorderColor(Colors.Grey.Lighten2)
                         .PaddingTop(10)
-                        .Text($"Relatório gerado em {DateTime.Now:dd/MM/yyyy HH:mm} - PesquisaX")
+                        .Text($"Relatório gerado em {DateTime.Now:dd/MM/yyyy HH:mm} - Prumo")
                         .FontSize(10).FontColor(Colors.Grey.Medium);
                 });
             });

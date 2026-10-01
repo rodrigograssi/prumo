@@ -1,6 +1,6 @@
-using PesquisaX.Shared.Comandos;
+using Prumo.Shared.Comandos;
 
-namespace PesquisaX.Web.Services;
+namespace Prumo.Web.Services;
 
 public class IAService(ApiControllerGenerico apiController)
 {

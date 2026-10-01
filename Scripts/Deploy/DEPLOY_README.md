@@ -1,6 +1,6 @@
-# Guia de Deploy - PesquisaX Docker Swarm
+# Guia de Deploy - Prumo Docker Swarm
 
-Este guia contém todas as informações necessárias para fazer o deploy do PesquisaX em um cluster Docker Swarm com Traefik como proxy reverso.
+Este guia contém todas as informações necessárias para fazer o deploy do Prumo em um cluster Docker Swarm com Traefik como proxy reverso.
 
 ## 📋 Pré-requisitos
 
@@ -57,8 +57,8 @@ nano .env
 ```
 
 **Principais variáveis:**
-- `DOMAIN_WEB`: Domínio principal (ex: pesquisax.com)
-- `DOMAIN_API`: Domínio da API (ex: api.pesquisax.com)
+- `DOMAIN_WEB`: Domínio principal (ex: prumo.com)
+- `DOMAIN_API`: Domínio da API (ex: api.prumo.com)
 - `BUILD_NUMBER`: Número do build (automático)
 - `GIT_COMMIT_HASH`: Hash do commit (automático)
 
@@ -68,10 +68,10 @@ O sistema usa Docker Secrets para informações sensíveis:
 
 ```bash
 # Senha do PostgreSQL
-echo "sua_senha_super_segura" | docker secret create pesquisax_postgres_password -
+echo "sua_senha_super_segura" | docker secret create prumo_postgres_password -
 
 # JWT Secret
-openssl rand -base64 64 | docker secret create pesquisax_jwt_secret -
+openssl rand -base64 64 | docker secret create prumo_jwt_secret -
 ```
 
 ## 🏗️ Arquitetura do Deploy
@@ -83,14 +83,14 @@ openssl rand -base64 64 | docker secret create pesquisax_jwt_secret -
    - Persistência: Volume `postgres_data`
    - Backup: Volume `postgres_backup`
 
-2. **api** (PesquisaX API)
+2. **api** (Prumo API)
    - Réplicas: 2 (load balancing)
-   - URL: `https://api.pesquisax.local`
+   - URL: `https://api.prumo.local`
    - Healthcheck: `/health`
 
 3. **web** (Frontend Blazor)
    - Réplicas: 2 (load balancing)
-   - URL: `https://pesquisax.local`
+   - URL: `https://prumo.local`
    - SPA routing configurado
 
 4. **db-backup** (Backup automático)
@@ -98,12 +98,12 @@ openssl rand -base64 64 | docker secret create pesquisax_jwt_secret -
    - Retenção de 7 dias
 
 5. **adminer** (Administração DB - opcional)
-   - URL: `https://db.pesquisax.local`
+   - URL: `https://db.prumo.local`
 
 ### Redes
 
 - **traefik**: Rede externa para proxy reverso
-- **pesquisax-internal**: Rede interna dos serviços
+- **prumo-internal**: Rede interna dos serviços
 
 ### Volumes
 
@@ -161,37 +161,37 @@ POSTGRES_PASSWORD="minha_senha" JWT_SECRET="meu_jwt_secret" ./setup-secrets.sh
 Para testar localmente, adicione ao `/etc/hosts` (Linux/Mac) ou `C:\Windows\System32\drivers\etc\hosts` (Windows):
 
 ```
-127.0.0.1 pesquisax.local
-127.0.0.1 api.pesquisax.local
-127.0.0.1 db.pesquisax.local
+127.0.0.1 prumo.local
+127.0.0.1 api.prumo.local
+127.0.0.1 db.prumo.local
 ```
 
 ## 🔍 Monitoramento e Logs
 
 ### Verificar Status dos Serviços
 ```bash
-docker stack services pesquisax
+docker stack services prumo
 ```
 
 ### Logs em Tempo Real
 ```bash
 # API
-docker service logs pesquisax_api -f
+docker service logs prumo_api -f
 
 # Web
-docker service logs pesquisax_web -f
+docker service logs prumo_web -f
 
 # Database
-docker service logs pesquisax_database -f
+docker service logs prumo_database -f
 ```
 
 ### Informações dos Containers
 ```bash
 # Listar containers do stack
-docker stack ps pesquisax
+docker stack ps prumo
 
 # Entrar em um container
-docker exec -it $(docker ps -q -f name=pesquisax_api) bash
+docker exec -it $(docker ps -q -f name=prumo_api) bash
 ```
 
 ## 🔒 Segurança
@@ -217,7 +217,7 @@ docker exec -it $(docker ps -q -f name=pesquisax_api) bash
 ### Serviços não iniciam
 ```bash
 # Verificar logs detalhados
-docker service logs pesquisax_api --details
+docker service logs prumo_api --details
 
 # Verificar recursos disponíveis
 docker node ls
@@ -242,10 +242,10 @@ docker secret ls
 ### Database não conecta
 ```bash
 # Verificar se PostgreSQL está rodando
-docker service logs pesquisax_database
+docker service logs prumo_database
 
 # Testar conexão
-docker exec -it $(docker ps -q -f name=pesquisax_database) psql -U pesquisax -d pesquisax
+docker exec -it $(docker ps -q -f name=prumo_database) psql -U prumo -d prumo
 ```
 
 ## 🔄 Atualizações
@@ -259,7 +259,7 @@ docker exec -it $(docker ps -q -f name=pesquisax_database) psql -U pesquisax -d 
 ### Rollback
 ```bash
 # Remover stack atual
-docker stack rm pesquisax
+docker stack rm prumo
 
 # Fazer checkout do commit anterior
 git checkout HEAD~1
@@ -271,8 +271,8 @@ git checkout HEAD~1
 ### Backup antes de Atualizar
 ```bash
 # Backup manual do banco
-docker exec $(docker ps -q -f name=pesquisax_database) \
-  pg_dump -U pesquisax pesquisax > backup_$(date +%Y%m%d_%H%M%S).sql
+docker exec $(docker ps -q -f name=prumo_database) \
+  pg_dump -U prumo prumo > backup_$(date +%Y%m%d_%H%M%S).sql
 ```
 
 ## 📊 Métricas e Performance
@@ -283,7 +283,7 @@ docker exec $(docker ps -q -f name=pesquisax_database) \
 docker stats --no-stream
 
 # Informações detalhadas dos serviços
-docker service inspect pesquisax_api --pretty
+docker service inspect prumo_api --pretty
 ```
 
 ### Configurações de Performance
@@ -302,11 +302,11 @@ docker service inspect pesquisax_api --pretty
 
 Após deploy bem-sucedido:
 
-- 🌐 **Frontend**: https://pesquisax.local
-- 🔌 **API**: https://api.pesquisax.local
-- 📋 **Swagger**: https://api.pesquisax.local/swagger
-- 🗄️ **Adminer**: https://db.pesquisax.local
-- 📈 **Health Check**: https://api.pesquisax.local/health
+- 🌐 **Frontend**: https://prumo.local
+- 🔌 **API**: https://api.prumo.local
+- 📋 **Swagger**: https://api.prumo.local/swagger
+- 🗄️ **Adminer**: https://db.prumo.local
+- 📈 **Health Check**: https://api.prumo.local/health
 
 ## 📞 Suporte
 

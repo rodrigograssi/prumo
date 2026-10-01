@@ -1,7 +1,7 @@
 using Microsoft.JSInterop;
-using PesquisaX.Web.Dto;
+using Prumo.Web.Dto;
 
-namespace PesquisaX.Web.Servicos;
+namespace Prumo.Web.Servicos;
 
 public class ServicoTema : IServicoTema
 {

@@ -2,11 +2,11 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using PesquisaX.Shared.DTO;
-using PesquisaX.Shared.Views;
-using PesquisaX.Web.Dto;
+using Prumo.Shared.DTO;
+using Prumo.Shared.Views;
+using Prumo.Web.Dto;
 
-namespace PesquisaX.Web.Services
+namespace Prumo.Web.Services
 {
     /// <summary>
     /// Controller base para comunicação com APIs REST (sem tipo genérico)

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PesquisaX.Shared.DTO.Responses;
+namespace Prumo.Shared.DTO.Responses;
 
 public class ResetPasswordRequest
 {

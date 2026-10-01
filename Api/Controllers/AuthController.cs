@@ -1,20 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-using PesquisaX.Core.Repositorios;
-using PesquisaX.Core;
+using Prumo.Core.Repositorios;
+using Prumo.Core;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.Net.Http.Headers;
-using PesquisaX.Core.Extension;
-using PesquisaX.Core.Interfaces;
-using PesquisaX.Shared.Comandos;
-using PesquisaX.Shared.DTO;
-using PesquisaX.Shared.DTO.Requestes;
-using PesquisaX.Shared.Views;
+using Prumo.Core.Extension;
+using Prumo.Core.Interfaces;
+using Prumo.Shared.Comandos;
+using Prumo.Shared.DTO;
+using Prumo.Shared.DTO.Requestes;
+using Prumo.Shared.Views;
 
-namespace PesquisaX.Api.Controllers;
+namespace Prumo.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -133,7 +133,7 @@ public class AuthController(
     private string GerarTokenJwt(Usuario usuario)
     {
         var jwtSettings = configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings["SecretKey"] ?? "PesquisaXSecretKeyPadrao123456789!@#$%^&*()";
+        var secretKey = jwtSettings["SecretKey"] ?? "PrumoSecretKeyPadrao123456789!@#$%^&*()";
         var key = Encoding.ASCII.GetBytes(secretKey);
 
         var tokenDescriptor = new SecurityTokenDescriptor

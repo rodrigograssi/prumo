@@ -1,6 +1,6 @@
 using System.Transactions;
 
-namespace PesquisaX.Core.Modelos;
+namespace Prumo.Core.Modelos;
 
 public class Pesquisa: Entidade
 {

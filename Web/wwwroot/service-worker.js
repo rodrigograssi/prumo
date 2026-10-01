@@ -1,5 +1,5 @@
-// PesquisaX Service Worker  
-const CACHE_NAME = 'pesquisax-v1.0.1';
+// Prumo Service Worker  
+const CACHE_NAME = 'prumo-v1.0.1';
 const urlsToCache = [
   '/',
   '/css/app.css',

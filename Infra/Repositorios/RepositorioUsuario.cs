@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using PesquisaX.Core;
-using PesquisaX.Core.Repositorios;
-using PesquisaX.Infra.Contexto;
+using Prumo.Core;
+using Prumo.Core.Repositorios;
+using Prumo.Infra.Contexto;
 
-namespace PesquisaX.Infra.Repositorios;
+namespace Prumo.Infra.Repositorios;
 
-public class RepositorioUsuario(PesquisaXContexto db) : RepositorioBase<Usuario>(db), IRepositorioUsuario
+public class RepositorioUsuario(PrumoContexto db) : RepositorioBase<Usuario>(db), IRepositorioUsuario
 {
     public async Task GravarAsync(Usuario usuario)
     {

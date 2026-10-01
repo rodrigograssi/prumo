@@ -1,10 +1,10 @@
-# Dockerfile para PostgreSQL - Sistema PesquisaX
+# Dockerfile para PostgreSQL - Sistema Prumo
 FROM postgres:16
 
 # Definir variáveis de ambiente para configuração do banco
-ENV POSTGRES_DB=pesquisax
-ENV POSTGRES_USER=pesquisax_user
-ENV POSTGRES_PASSWORD=pesquisax_2024!
+ENV POSTGRES_DB=prumo
+ENV POSTGRES_USER=prumo_user
+ENV POSTGRES_PASSWORD=prumo_2024!
 ENV POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256 --auth-local=scram-sha-256"
 
 # Configurar locale usando padrões disponíveis na imagem
